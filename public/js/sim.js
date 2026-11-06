@@ -205,13 +205,56 @@
     return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
   }
 
+  // ------------------------------------------------------------------ robot appearance (cosmetic only: never affects driving, sensors or collisions)
+  const LOOK_OPTIONS = {
+    shape: { rounded: 'Rounded box', box: 'Square box', wedge: 'Wedge', round: 'Round' },
+    wheels: { standard: 'Standard', big: 'Big wheels', treads: 'Tank treads' },
+    deco: { none: 'None', stripe: 'Racing stripe', flames: 'Flames', eyes: 'Eyes', star: 'Star' }
+  };
+  const DEFAULT_LOOK = { name: '', shape: 'rounded', wheels: 'standard', deco: 'none', body: '#f2f2f2', brain: '#0b5cad', decoColor: '#f76b15', trail: '#3e63dd' };
+  function normalizeLook(raw) {
+    const out = { ...DEFAULT_LOOK }; if (!raw || typeof raw !== 'object') return out;
+    for (const k of ['shape', 'wheels', 'deco']) if (Object.hasOwn(LOOK_OPTIONS[k], raw[k])) out[k] = raw[k];
+    for (const k of ['body', 'brain', 'decoColor', 'trail']) if (/^#[0-9a-f]{6}$/i.test(raw[k])) out[k] = raw[k];
+    if (typeof raw.name === 'string') out.name = raw.name.trim().slice(0, 12);
+    return out;
+  }
+  // Draws the robot centered on the origin, facing up. k = canvas pixels per inch.
+  function drawRobot(ctx, k, look, state = {}) {
+    const poly = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x * k, y * k) : ctx.moveTo(x * k, y * k)); ctx.closePath(); };
+    ctx.fillStyle = '#222';
+    if (look.wheels === 'treads') {
+      [-5.4, 3.9].forEach(x => { ctx.fillStyle = '#222'; ctx.fillRect(x * k, -5 * k, 1.5 * k, 10 * k); ctx.fillStyle = '#666'; for (let y = -4.4; y < 5; y += 1.4) ctx.fillRect(x * k, y * k, 1.5 * k, .4 * k); });
+    } else if (look.wheels === 'big') {
+      [[-5.8, -4.4], [3.9, -4.4], [-5.8, .9], [3.9, .9]].forEach(([x, y]) => ctx.fillRect(x * k, y * k, 1.9 * k, 3.6 * k));
+    } else {
+      [[-5.4, -3.8], [3.9, -3.8], [-5.4, 1.4], [3.9, 1.4]].forEach(([x, y]) => ctx.fillRect(x * k, y * k, 1.5 * k, 2.6 * k));
+    }
+    ctx.fillStyle = state.colliding ? '#e5484d' : look.body; ctx.strokeStyle = '#3a404a'; ctx.lineWidth = 2;
+    if (look.shape === 'wedge') poly([[-2.2, -5], [2.2, -5], [3.9, -1.2], [3.9, 5], [-3.9, 5], [-3.9, -1.2]]);
+    else if (look.shape === 'round') { ctx.beginPath(); ctx.ellipse(0, 0, 4.2 * k, 5.2 * k, 0, 0, 7); }
+    else { ctx.beginPath(); ctx.roundRect(-3.9 * k, -5 * k, 7.8 * k, 10 * k, (look.shape === 'box' ? .2 : 1.2) * k); }
+    ctx.fill(); ctx.stroke();
+    if (look.deco === 'stripe') { ctx.fillStyle = look.decoColor; ctx.fillRect(-.9 * k, -4.9 * k, 1.8 * k, 9.8 * k); }
+    ctx.fillStyle = look.brain; ctx.beginPath(); ctx.roundRect(-2.6 * k, -1.2 * k, 5.2 * k, 4 * k, .6 * k); ctx.fill(); // brain
+    if (look.deco === 'flames') { ctx.fillStyle = look.decoColor; [-1, 1].forEach(d => { poly([[d * 1.2, 4.8], [d * 3.6, 4.8], [d * 3.2, .6], [d * 2.7, 2.6], [d * 2.2, 1.4], [d * 1.8, 3.2]]); ctx.fill(); }); }
+    if (look.deco === 'star') { ctx.fillStyle = look.decoColor; ctx.beginPath(); for (let i = 0; i < 10; i++) { const r = (i % 2 ? .7 : 1.6) * k, a = -Math.PI / 2 + i * Math.PI / 5; ctx[i ? 'lineTo' : 'moveTo'](Math.cos(a) * r, .8 * k + Math.sin(a) * r); } ctx.closePath(); ctx.fill(); }
+    if (look.deco === 'eyes') { [-1, 1].forEach(d => { ctx.fillStyle = '#fff'; ctx.strokeStyle = '#222'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(d * 2.3 * k, -3 * k, 1 * k, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = look.decoColor; ctx.beginPath(); ctx.arc(d * 2.3 * k, -3.3 * k, .5 * k, 0, 7); ctx.fill(); }); }
+    ctx.fillStyle = state.led ? (COLORS[state.led] || COLORS.white).css : '#9aa3ad'; ctx.beginPath(); ctx.arc(0, 3.9 * k, .8 * k, 0, 7); ctx.fill();
+    ctx.fillStyle = '#e5484d'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; poly([[0, -4.6], [-1.3, -2.6], [1.3, -2.6]]); ctx.stroke(); ctx.fill(); // front arrow
+    const cl = state.claw > 0.5 ? 0.6 : 1.8; ctx.fillStyle = '#7c8691';
+    ctx.fillRect((-cl - .7) * k, -7.2 * k, .7 * k, 2.4 * k); ctx.fillRect(cl * k, -7.2 * k, .7 * k, 2.4 * k);
+    if (state.arm > 0) { ctx.fillStyle = 'rgba(124,134,145,.6)'; ctx.fillRect(-.6 * k, -5 * k, 1.2 * k, -state.arm * 2 * k); }
+  }
+
   class Sim {
     constructor(canvas, field) {
-      this.canvas = canvas; this.ctx = canvas.getContext('2d');
+      this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.look = normalizeLook();
       this.speed = 1; this.listeners = {};
       this.setField(field);
       this._loop = this._loop.bind(this); this._last = performance.now(); requestAnimationFrame(this._loop);
     }
+    setLook(look) { this.look = normalizeLook(look); this.draw(); }
     on(ev, fn) { (this.listeners[ev] = this.listeners[ev] || []).push(fn); }
     emit(ev, ...a) { (this.listeners[ev] || []).forEach(f => f(...a)); }
     setField(field) {
@@ -226,7 +269,7 @@
       this.t = 0; this.timerStart = 0; this.motion = null; this.waiters = [];
       this.driveVel = 50; this.turnVel = 50; this.holding = null; this.claw = 0; this.arm = 0;
       this.collisions = 0; this.colliding = false; this.trail = [[s.x, s.y]]; this.visited = new Set();
-      this.led = null; this.running = false; this.stopped = false;
+      this.led = null; this.running = false;
       this.screen = { lines: [''], row: 0, col: 0 }; this.output = '';
       this.emit('screen'); this.draw();
     }
@@ -314,7 +357,9 @@
     }
     halt(msg) {
       if (!this.running) return;
+      const m = this.motion; // finish a move in progress so the program can see it was stopped and exit
       this.running = false; this.stopped = true; this.motion = null;
+      if (m && m.done) m.done();
       this.waiters.forEach(w => w.resolve()); this.waiters = [];
       if (msg) this.emit('error', { message: msg });
     }
@@ -347,8 +392,8 @@
       (F.walls || []).forEach(R => { ctx.fillStyle = '#5b6370'; ctx.fillRect(R.x * k, R.y * k, R.w * k, R.h * k); });
       ctx.strokeStyle = '#3a404a'; ctx.lineWidth = 4; ctx.strokeRect(2, 2, W - 4, H - 4);
       // trail
-      ctx.strokeStyle = 'rgba(62,99,221,.45)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.beginPath();
-      this.trail.forEach((p, i) => i ? ctx.lineTo(p[0] * k, p[1] * k) : ctx.moveTo(p[0] * k, p[1] * k)); ctx.lineTo(this.r.x * k, this.r.y * k); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = this.look.trail; ctx.globalAlpha = .45; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.beginPath();
+      this.trail.forEach((p, i) => i ? ctx.lineTo(p[0] * k, p[1] * k) : ctx.moveTo(p[0] * k, p[1] * k)); ctx.lineTo(this.r.x * k, this.r.y * k); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
       // cubes
       this.cubes.forEach(c => { ctx.fillStyle = (COLORS[c.color] || COLORS.red).css; ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 1.5; ctx.fillRect((c.x - 1.5) * k, (c.y - 1.5) * k, 3 * k, 3 * k); ctx.strokeRect((c.x - 1.5) * k, (c.y - 1.5) * k, 3 * k, 3 * k); });
       // distance ray
@@ -356,16 +401,14 @@
       if (d !== null && d < 80) { const [fx, fy] = this.frontPt(); const [dx, dy] = this.dir(); ctx.strokeStyle = 'rgba(229,72,77,.35)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(fx * k, fy * k); ctx.lineTo((fx + dx * d) * k, (fy + dy * d) * k); ctx.stroke(); }
       // robot
       ctx.translate(this.r.x * k, this.r.y * k); ctx.rotate(this.r.h * Math.PI / 180);
-      ctx.fillStyle = '#222'; [[-5.4, -3.8], [3.9, -3.8], [-5.4, 1.4], [3.9, 1.4]].forEach(([x, y]) => ctx.fillRect(x * k, y * k, 1.5 * k, 2.6 * k));
-      ctx.fillStyle = this.colliding ? '#e5484d' : '#f2f2f2'; ctx.strokeStyle = '#3a404a'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.roundRect(-3.9 * k, -5 * k, 7.8 * k, 10 * k, 1.2 * k); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#0b5cad'; ctx.beginPath(); ctx.roundRect(-2.6 * k, -1.2 * k, 5.2 * k, 4 * k, .6 * k); ctx.fill(); // brain
-      ctx.fillStyle = this.led ? (COLORS[this.led] || COLORS.white).css : '#9aa3ad'; ctx.beginPath(); ctx.arc(0, 3.9 * k, .8 * k, 0, 7); ctx.fill();
-      ctx.fillStyle = '#e5484d'; ctx.beginPath(); ctx.moveTo(0, -4.6 * k); ctx.lineTo(-1.3 * k, -2.6 * k); ctx.lineTo(1.3 * k, -2.6 * k); ctx.fill();
-      const cl = this.claw > 0.5 ? 0.6 : 1.8; ctx.fillStyle = '#7c8691';
-      ctx.fillRect((-cl - .7) * k, -7.2 * k, .7 * k, 2.4 * k); ctx.fillRect(cl * k, -7.2 * k, .7 * k, 2.4 * k);
-      if (this.arm > 0) { ctx.fillStyle = 'rgba(124,134,145,.6)'; ctx.fillRect(-.6 * k, -5 * k, 1.2 * k, -this.arm * 2 * k); }
+      drawRobot(ctx, k, this.look, { colliding: this.colliding, led: this.led, claw: this.claw, arm: this.arm });
       ctx.restore();
+      if (this.look.name) { // name tag stays upright above the robot (below it near the top wall)
+        ctx.font = `bold ${2.2 * k}px Tahoma, Arial, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const w = ctx.measureText(this.look.name).width + k, x = Math.max(w / 2, Math.min(W - w / 2, this.r.x * k)), y = (this.r.y < 12 ? this.r.y + 9.5 : this.r.y - 9.5) * k;
+        ctx.fillStyle = '#ffffe1'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.fillRect(x - w / 2, y - 1.6 * k, w, 3.2 * k); ctx.strokeRect(x - w / 2, y - 1.6 * k, w, 3.2 * k);
+        ctx.fillStyle = '#000'; ctx.fillText(this.look.name, x, y); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      }
       if (this.holding) { const c = this.holding; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect((c.x - 1.7) * k, (c.y - 1.7) * k, 3.4 * k, 3.4 * k); }
       this.emit('frame');
     }
@@ -514,6 +557,7 @@
     sim.reset(); sim.running = true; sim.stopped = false;
     try {
       await fn(...names.map(n => api[n]));
+      if (sim.stopped) return { ok: true, stopped: true };
       if (sim.motion && sim.motion.remaining === undefined) await sim.sleep(0.05);
       sim.motion = null; sim.running = false;
       return { ok: true };
@@ -544,5 +588,5 @@
     });
   }
 
-  window.VexSim = { Sim, run, translate, evaluate, FIELD_W, FIELD_H };
+  window.VexSim = { Sim, run, translate, evaluate, FIELD_W, FIELD_H, drawRobot, normalizeLook, LOOK_OPTIONS, DEFAULT_LOOK };
 })();

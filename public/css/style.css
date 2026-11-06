@@ -193,21 +193,38 @@ table.tbl { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: .
 .ide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 .ide > div { min-width: 0; }
 .ide .CodeMirror { height: 470px; font-family: var(--mono); font-size: 14px; line-height: 1.45; border: 3px solid var(--face); box-shadow: 0 0 0 1px var(--shade), 1px 1px 0 1px var(--hi); }
-.ide .CodeMirror .err-line { background: var(--bad); }
-.cm-s-retro.CodeMirror { background: var(--ide-bg); color: var(--ide-ink); }
-.cm-s-retro .CodeMirror-gutters { background: var(--ide-bg); border-right: 1px solid #5555ff; }
-.cm-s-retro .CodeMirror-linenumber { color: var(--ide-dim); }
-.cm-s-retro .CodeMirror-cursor { border-left: 2px solid #fff; }
-.cm-s-retro div.CodeMirror-selected, .cm-s-retro.CodeMirror-focused div.CodeMirror-selected { background: #00aaaa; }
-.cm-s-retro .CodeMirror-line::selection, .cm-s-retro .CodeMirror-line > span::selection, .cm-s-retro .CodeMirror-line > span > span::selection { background: #00aaaa; }
-.cm-s-retro .cm-keyword, .cm-s-retro .cm-type, .cm-s-retro .cm-builtin { color: #fff; font-weight: 700; }
-.cm-s-retro .cm-comment { color: var(--ide-dim); font-style: normal; }
-.cm-s-retro .cm-string, .cm-s-retro .cm-string-2 { color: var(--ide-str); }
-.cm-s-retro .cm-number, .cm-s-retro .cm-atom { color: var(--ide-num); }
-.cm-s-retro .cm-meta { color: #ff99ff; }
-.cm-s-retro .cm-def, .cm-s-retro .cm-variable, .cm-s-retro .cm-variable-2, .cm-s-retro .cm-variable-3, .cm-s-retro .cm-property, .cm-s-retro .cm-operator, .cm-s-retro .cm-qualifier, .cm-s-retro .cm-bracket { color: var(--ide-ink); }
-.cm-s-retro .cm-error { color: #fff; background: var(--bad); }
-.cm-s-retro .CodeMirror-matchingbracket { color: #000 !important; background: var(--ide-str); }
+.cm-s-retro { --cm-bg: var(--ide-bg); --cm-ink: var(--ide-ink); --cm-dim: var(--ide-dim); --cm-kw: #fff; --cm-str: var(--ide-str); --cm-num: var(--ide-num); --cm-meta: #ff99ff; --cm-sel: #00aaaa; --cm-rule: #5555ff; --cm-cursor: #fff; --cm-match: var(--ide-str); --cm-err: var(--bad); }
+.cm-s-paper { --cm-bg: #fff; --cm-ink: #000; --cm-dim: #6a6a6a; --cm-kw: #00008b; --cm-str: #a00000; --cm-num: #006000; --cm-meta: #800080; --cm-sel: #b4d0ff; --cm-rule: #c0c0c0; --cm-cursor: #000; --cm-match: #ffff00; --cm-err: #ffc8c8; }
+.cm-s-terminal { --cm-bg: #000; --cm-ink: #33ff66; --cm-dim: #3fb35f; --cm-kw: #fff; --cm-str: #ffff55; --cm-num: #55ffff; --cm-meta: #ff99ff; --cm-sel: #006633; --cm-rule: #006600; --cm-cursor: #33ff66; --cm-match: #33ff66; --cm-err: #800000; }
+.cm-s-night { --cm-bg: #1e1e2e; --cm-ink: #e0e0e8; --cm-dim: #9aa0b0; --cm-kw: #ff9e64; --cm-str: #a6e3a1; --cm-num: #f9c97f; --cm-meta: #cba6f7; --cm-sel: #44475a; --cm-rule: #444858; --cm-cursor: #fff; --cm-match: #f9c97f; --cm-err: #7a1f1f; }
+.ide .CodeMirror { background: var(--cm-bg); color: var(--cm-ink); }
+.ide .CodeMirror .err-line { background: var(--cm-err); }
+.ide .CodeMirror-gutters { background: var(--cm-bg); border-right: 1px solid var(--cm-rule); }
+.ide .CodeMirror-linenumber { color: var(--cm-dim); }
+.ide .CodeMirror-cursor { border-left: 2px solid var(--cm-cursor); }
+.ide div.CodeMirror-selected, .ide .CodeMirror-focused div.CodeMirror-selected { background: var(--cm-sel); }
+.ide .CodeMirror-line::selection, .ide .CodeMirror-line > span::selection, .ide .CodeMirror-line > span > span::selection { background: var(--cm-sel); }
+.ide .cm-keyword, .ide .cm-type, .ide .cm-builtin { color: var(--cm-kw); font-weight: 700; }
+.ide .cm-comment { color: var(--cm-dim); font-style: normal; }
+.ide .cm-string, .ide .cm-string-2 { color: var(--cm-str); }
+.ide .cm-number, .ide .cm-atom { color: var(--cm-num); }
+.ide .cm-meta { color: var(--cm-meta); }
+.ide .cm-def, .ide .cm-variable, .ide .cm-variable-2, .ide .cm-variable-3, .ide .cm-property, .ide .cm-operator, .ide .cm-qualifier, .ide .cm-bracket { color: var(--cm-ink); }
+.ide .cm-error { color: #fff; background: var(--bad); }
+.ide .CodeMirror-matchingbracket { color: #000 !important; background: var(--cm-match); }
+.ide-settings { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px 14px; align-items: end; margin: 0 0 10px; padding: 12px; background: var(--face); box-shadow: var(--groove); }
+.ide-settings[hidden] { display: none; }
+.ide-settings label.f { margin: 0; }
+.ide-settings label.row { flex-wrap: nowrap; align-items: flex-start; min-height: 24px; }
+.ide-settings .btn { justify-self: start; }
+[aria-expanded="true"].btn { box-shadow: var(--pressed); background: var(--dither); }
+.panel[hidden] { display: none; }
+.workshop { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
+.robot-preview { display: block; width: 100%; aspect-ratio: 1; border: 3px solid var(--face); box-shadow: 0 0 0 1px var(--shade), 1px 1px 0 1px var(--hi); }
+.workshop-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 0 14px; }
+label.f input[type=color] { height: 32px; padding: 4px; cursor: pointer; }
+.sec-kind .spacer { flex: 1; }
+.sec-kind .ctl { border: 0; padding: 0; cursor: pointer; }
 .simbox { display: flex; flex-direction: column; gap: 8px; }
 .simbox canvas { width: 100%; aspect-ratio: 4 / 3; display: block; background: #d9dde3; border: 3px solid var(--face); box-shadow: 0 0 0 1px var(--shade), 1px 1px 0 1px var(--hi); }
 .hud { display: flex; gap: 12px; flex-wrap: wrap; font-family: var(--mono); font-size: .8rem; color: #000; padding: 2px 6px; background: var(--face); box-shadow: inset 1px 1px var(--shade), inset -1px -1px var(--hi); }
@@ -273,7 +290,8 @@ summary { cursor: pointer; }
 .tree-leaf { background: var(--ok-soft); border-color: var(--ok); }
 
 @media (max-width: 960px) {
-  .hero, .ide, .lesson-layout { grid-template-columns: minmax(0, 1fr); }
+  .hero, .ide, .lesson-layout, .workshop { grid-template-columns: minmax(0, 1fr); }
+  .workshop > div:first-child { max-width: 240px; }
   .toc { position: static; }
   .pillars, .stats { grid-template-columns: repeat(2, 1fr); }
   .hero h1 { font-size: 2rem; }
