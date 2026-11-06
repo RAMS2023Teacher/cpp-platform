@@ -90,7 +90,7 @@
   };
 
   W['perceptron'] = el => {
-    const cv = h('canvas', { width: 420, height: 300, style: 'width:100%;max-width:420px;border-radius:10px;background:#fff;border:1px solid #e2e5ee;cursor:crosshair' });
+    const cv = h('canvas', { width: 420, height: 300, style: 'width:100%;max-width:420px;background:#fff;border:1px solid #e2e5ee;cursor:crosshair' });
     const ctx = cv.getContext('2d'); let pts = [], w = [0.2, -0.3, 0.05], label = 1, epochs = 0;
     const info = h('p', { class: 'small muted' });
     const pred = (x, y) => (w[0] * x + w[1] * y + w[2] >= 0 ? 1 : -1);

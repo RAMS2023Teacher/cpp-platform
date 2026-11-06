@@ -191,12 +191,13 @@
           ${teacher && L.teacherNote ? `<div class="callout warn"><b>Teacher note:</b> ${esc(L.teacherNote)}</div>` : ''}
           ${P?.feedback ? `<div class="feedback sec"><b>💬 Feedback from your teacher</b>${P.grade != null ? ` · Grade: <b>${P.grade}</b>` : ''}<p style="margin:6px 0 0">${esc(P.feedback)}</p></div>` : ''}
           <div class="panel sec" id="goals">
+            <div class="sec-kind">🎯 Overview</div>
             <p style="margin-top:0;font-size:1.05rem">${esc(L.summary)}</p>
             <h3>🎯 Learning goals</h3><ul>${(L.objectives || []).map(o => `<li>${esc(o)}</li>`).join('')}</ul>
             ${L.materials?.length ? `<h3>🧰 You'll need</h3><p>${L.materials.map(esc).join(' · ')}</p>` : ''}
             ${L.vocab?.length ? `<h3>📖 Vocabulary</h3><div class="vocab">${L.vocab.map(v => `<div><b>${esc(v.term)}</b>${esc(v.def)}</div>`).join('')}</div>` : ''}
           </div>
-          ${L.video ? `<div class="panel sec" id="video"><h3>🎬 Watch</h3>${videoEmbed(L.video)}</div>` : ''}
+          ${L.video ? `<div class="panel sec" id="video"><div class="sec-kind">🎬 Watch</div>${videoEmbed(L.video)}</div>` : ''}
           ${secs.map((s, i) => `<div class="panel sec ${esc(s.kind)}" id="s${i}"><div class="sec-kind">${(KIND[s.kind] || ['•', s.kind]).join(' ')} <span class="m">· ${s.minutes || '?'} min</span></div><h2>${esc(s.title)}</h2><div class="body">${s.html}</div></div>`).join('')}
           ${L.challenge ? `<div class="panel sec code" id="challenge"><div class="sec-kind">🤖 Code Challenge</div><h2>${esc(L.challenge.title)}</h2><div class="body">${L.challenge.prompt}</div>
               <div class="hints">${(L.challenge.hints || []).map((h, i) => `<details><summary>💡 Hint ${i + 1}</summary>${esc(h)}</details>`).join('')}</div>
@@ -287,16 +288,44 @@ std::vector&lt;int&gt; v;  v.push_back(4);  v.size();
 if / else if / else · while · for · do-while · switch · functions
 abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
 
+  // Saved per user in this browser and shared by every editor on the site.
+  const EDITOR_DEFAULTS = { fontSize: 14, theme: 'retro', indent: 2, lineNumbers: true, wrap: false, closeBrackets: true, matchBrackets: true };
+  const EDITOR_THEMES = { retro: 'Retro blue', paper: 'Notepad white', terminal: 'Terminal green', night: 'Night' };
+  const EDITOR_FONT_SIZES = [12, 14, 16, 18, 20, 24], EDITOR_INDENTS = [2, 4];
+  const editorKey = () => 'editor:' + (ME?.id || 'guest');
+  function loadEditorPrefs() {
+    let p = {}; try { p = JSON.parse(localStorage.getItem(editorKey())) || {}; } catch (e) {}
+    const out = { ...EDITOR_DEFAULTS };
+    if (EDITOR_FONT_SIZES.includes(p.fontSize)) out.fontSize = p.fontSize;
+    if (Object.hasOwn(EDITOR_THEMES, p.theme)) out.theme = p.theme;
+    if (EDITOR_INDENTS.includes(p.indent)) out.indent = p.indent;
+    for (const k of ['lineNumbers', 'wrap', 'closeBrackets', 'matchBrackets']) if (typeof p[k] === 'boolean') out[k] = p[k];
+    return out;
+  }
+  const options = (values, current, label = v => v) => values.map(v => `<option value="${v}" ${String(v) === String(current) ? 'selected' : ''}>${esc(label(v))}</option>`).join('');
+
   function createIDE(host, opts) {
+    let prefs = loadEditorPrefs();
     host.innerHTML = `
       <div class="ide-bar">
         <button class="btn go" data-a="run">▶ Run</button><button class="btn stop" data-a="stop" disabled>■ Stop</button>
         <button class="btn" data-a="reset">↺ Reset robot</button>
         <select class="input" data-a="speed" style="width:auto;margin:0"><option value="1">1× speed</option><option value="2">2×</option><option value="4">4×</option><option value="10">10×</option></select>
+        <button class="btn" data-a="settings" aria-expanded="false">⚙ Editor settings</button>
         <div class="spacer"></div>
         ${opts.starter ? '<button class="btn sm" data-a="restore">Restore starter code</button>' : ''}
         ${opts.checks?.length ? `<button class="btn primary" data-a="check">✔ ${esc(opts.submitLabel || 'Check')}</button>` : ''}
       </div>
+      <form class="ide-settings" hidden>
+        <label class="f">Text size<select name="fontSize">${options(EDITOR_FONT_SIZES, prefs.fontSize, v => v + ' pt')}</select></label>
+        <label class="f">Colors<select name="theme">${options(Object.keys(EDITOR_THEMES), prefs.theme, v => EDITOR_THEMES[v])}</select></label>
+        <label class="f">Indent size<select name="indent">${options(EDITOR_INDENTS, prefs.indent, v => v + ' spaces')}</select></label>
+        <label class="small row"><input type="checkbox" name="lineNumbers" ${prefs.lineNumbers ? 'checked' : ''}> Line numbers</label>
+        <label class="small row"><input type="checkbox" name="wrap" ${prefs.wrap ? 'checked' : ''}> Wrap long lines</label>
+        <label class="small row"><input type="checkbox" name="closeBrackets" ${prefs.closeBrackets ? 'checked' : ''}> Auto-close brackets</label>
+        <label class="small row"><input type="checkbox" name="matchBrackets" ${prefs.matchBrackets ? 'checked' : ''}> Highlight matching brackets</label>
+        <button class="btn sm" type="button" data-a="settings-reset">Reset to defaults</button>
+      </form>
       <div class="ide">
         <div><textarea></textarea><div class="ref" style="margin-top:10px"><b class="small">📚 Quick reference</b>${API_REF}</div></div>
         <div class="simbox">
@@ -308,8 +337,26 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
         </div>
       </div>`;
     const q = s => host.querySelector(s);
-    const cm = CodeMirror.fromTextArea(q('textarea'), { mode: 'text/x-c++src', theme: 'material-darker', lineNumbers: true, indentUnit: 2, tabSize: 2, matchBrackets: true, autoCloseBrackets: true, readOnly: !!opts.readOnly, extraKeys: { 'Ctrl-Enter': () => doRun(), 'Cmd-Enter': () => doRun() } });
+    const cm = CodeMirror.fromTextArea(q('textarea'), { mode: 'text/x-c++src', readOnly: !!opts.readOnly, extraKeys: { 'Ctrl-Enter': () => doRun(), 'Cmd-Enter': () => doRun() } });
     cm.setValue(opts.code || '');
+    function applyPrefs() {
+      cm.setOption('theme', prefs.theme); cm.setOption('indentUnit', prefs.indent); cm.setOption('tabSize', prefs.indent);
+      cm.setOption('lineNumbers', prefs.lineNumbers); cm.setOption('lineWrapping', prefs.wrap);
+      cm.setOption('autoCloseBrackets', prefs.closeBrackets); cm.setOption('matchBrackets', prefs.matchBrackets);
+      cm.getWrapperElement().style.fontSize = prefs.fontSize + 'px'; cm.refresh();
+    }
+    applyPrefs();
+    const settings = q('.ide-settings');
+    function syncSettingsForm() {
+      for (const el of settings.elements) { if (!el.name) continue; if (el.type === 'checkbox') el.checked = prefs[el.name]; else el.value = prefs[el.name]; }
+    }
+    settings.onsubmit = e => e.preventDefault();
+    settings.onchange = () => {
+      const f = settings.elements;
+      prefs = { fontSize: +f.fontSize.value, theme: f.theme.value, indent: +f.indent.value, lineNumbers: f.lineNumbers.checked, wrap: f.wrap.checked, closeBrackets: f.closeBrackets.checked, matchBrackets: f.matchBrackets.checked };
+      try { localStorage.setItem(editorKey(), JSON.stringify(prefs)); } catch (e) {}
+      applyPrefs();
+    };
     const sim = new VexSim.Sim(q('canvas'), opts.field);
     const scr = q('.brain-screen'), hud = q('.hud'), msg = q('[data-m]');
     sim.on('screen', () => { scr.textContent = sim.screen.lines.join('\n'); scr.scrollTop = scr.scrollHeight; });
@@ -344,6 +391,8 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     }
     host.addEventListener('click', e => {
       const a = e.target.closest('[data-a]')?.dataset.a;
+      if (a === 'settings') { settings.hidden = !settings.hidden; q('[data-a=settings]').setAttribute('aria-expanded', String(!settings.hidden)); }
+      if (a === 'settings-reset') { prefs = { ...EDITOR_DEFAULTS }; try { localStorage.removeItem(editorKey()); } catch (e) {} syncSettingsForm(); applyPrefs(); }
       if (a === 'run') doRun(false);
       if (a === 'check') doRun(true);
       if (a === 'stop') sim.halt();
@@ -383,13 +432,64 @@ int main() {
   return 0;
 }
 `;
+  const ROBOT_COLORS = ['#f2f2f2', '#c0c0c0', '#222222', '#e5484d', '#f76b15', '#f5d90a', '#30a46c', '#008080', '#0b5cad', '#3e63dd', '#8e4ec6', '#ff69b4'];
+  function robotWorkshop(host, ide) {
+    const key = 'robot:' + ME.id;
+    let look; try { look = VexSim.normalizeLook(JSON.parse(localStorage.getItem(key))); } catch (e) { look = VexSim.normalizeLook(); }
+    const O = VexSim.LOOK_OPTIONS;
+    const color = (name, label) => `<label class="f">${label}<input type="color" name="${name}" value="${look[name]}"></label>`;
+    host.innerHTML = `<div class="sec-kind">🤖 Robot Workshop<span class="spacer"></span><button class="ctl close" type="button" id="rw-close" title="Close" aria-label="Close Robot Workshop">✕</button></div>
+      <div class="workshop">
+        <div><canvas class="robot-preview" width="400" height="400" aria-label="Preview of your robot"></canvas>
+          <div class="row" style="margin-top:8px"><button class="btn sm" type="button" id="rw-random">🎲 Surprise me</button><button class="btn sm" type="button" id="rw-reset">Reset</button></div></div>
+        <form id="rw-form">
+          <div class="workshop-fields">
+            <label class="f">Robot name<input name="name" maxlength="12" placeholder="Name tag (optional)"></label>
+            <label class="f">Body shape<select name="shape">${options(Object.keys(O.shape), look.shape, v => O.shape[v])}</select></label>
+            <label class="f">Wheels<select name="wheels">${options(Object.keys(O.wheels), look.wheels, v => O.wheels[v])}</select></label>
+            <label class="f">Decoration<select name="deco">${options(Object.keys(O.deco), look.deco, v => O.deco[v])}</select></label>
+            ${color('body', 'Body color')}${color('brain', 'Brain color')}${color('decoColor', 'Decoration color')}${color('trail', 'Trail color')}
+          </div>
+          <p class="small muted" style="margin:0">Looks only! Your robot's size, speed and sensors stay the same, so your code behaves the same way. Your design is saved in this browser.</p>
+        </form>
+      </div>`;
+    const form = host.querySelector('#rw-form'), cv = host.querySelector('canvas'), ctx = cv.getContext('2d');
+    form.elements.name.value = look.name;
+    function preview() {
+      const k = cv.width / 17, S = cv.width;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#d9dde3'; ctx.fillRect(0, 0, S, S);
+      ctx.strokeStyle = '#c2c8d0'; ctx.lineWidth = 1; for (let i = k * 2; i < S; i += k * 3) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, S); ctx.moveTo(0, i); ctx.lineTo(S, i); ctx.stroke(); }
+      ctx.translate(S / 2, S / 2 + k); VexSim.drawRobot(ctx, k, look); 
+    }
+    function commit() {
+      try { localStorage.setItem(key, JSON.stringify(look)); } catch (e) {}
+      ide.sim.setLook(look); preview();
+    }
+    function fill() { for (const el of form.elements) if (el.name) el.value = look[el.name]; }
+    form.onsubmit = e => e.preventDefault();
+    form.oninput = () => { look = VexSim.normalizeLook(Object.fromEntries(new FormData(form))); commit(); };
+    host.querySelector('#rw-random').onclick = () => {
+      const pick = a => a[Math.floor(Math.random() * a.length)];
+      look = VexSim.normalizeLook({ name: look.name, shape: pick(Object.keys(O.shape)), wheels: pick(Object.keys(O.wheels)), deco: pick(Object.keys(O.deco).slice(1)), body: pick(ROBOT_COLORS), brain: pick(ROBOT_COLORS), decoColor: pick(ROBOT_COLORS), trail: pick(ROBOT_COLORS) });
+      fill(); commit();
+    };
+    host.querySelector('#rw-reset').onclick = () => { look = VexSim.normalizeLook(); try { localStorage.removeItem(key); } catch (e) {} fill(); ide.sim.setLook(look); preview(); };
+    ide.sim.setLook(look); preview();
+  }
   function playground() {
     let code = PLAY_CODE; try { code = localStorage.getItem('playground:' + ME.id) || PLAY_CODE; } catch (e) {}
     $app.innerHTML = `<div class="row"><div><h1>🧪 Code Lab</h1><p class="muted" style="margin-top:0">A free sandbox to try ideas. Your code is saved in this browser.</p></div><div class="spacer"></div>
-      <label class="small">Field: <select class="input" id="fsel" style="display:inline-block;width:auto">${Object.keys(FIELDS).map(k => `<option>${k}</option>`).join('')}</select></label></div>
+      <label class="small">Field: <select class="input" id="fsel" style="display:inline-block;width:auto">${Object.keys(FIELDS).map(k => `<option>${k}</option>`).join('')}</select></label>
+      <button class="btn" id="rw-open" aria-expanded="false">🤖 Customize robot</button></div>
+      <div class="panel sec" id="workshop" hidden></div>
       <div class="panel" id="ide"></div>`;
     const ide = createIDE(document.getElementById('ide'), { code, starter: PLAY_CODE, field: FIELDS['Open field'], onChange: c => { try { localStorage.setItem('playground:' + ME.id, c); } catch (e) {} } });
     document.getElementById('fsel').onchange = e => ide.setField(FIELDS[e.target.value]);
+    const shop = document.getElementById('workshop'), shopBtn = document.getElementById('rw-open');
+    robotWorkshop(shop, ide);
+    const toggleShop = open => { shop.hidden = !open; shopBtn.setAttribute('aria-expanded', String(open)); };
+    shopBtn.onclick = () => toggleShop(shop.hidden);
+    document.getElementById('rw-close').onclick = () => { toggleShop(false); shopBtn.focus(); };
     cleanup = () => ide.destroy();
   }
 
