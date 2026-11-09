@@ -49,7 +49,9 @@
     start() {
       let started = false;
       const begin = hash => { if (started) return; started = true; if (hash) Nav.hash = '#' + hash; boot(); };
-      try { google.script.url.getLocation(l => begin(l.hash)); } catch (e) { begin(''); }
+      // A Classroom assignment links to ?lesson=<id>, which opens that lesson.
+      const fromLink = l => l.hash || (l.parameter && /^[\w-]+$/.test(l.parameter.lesson || '') ? '/lesson/' + l.parameter.lesson : '');
+      try { google.script.url.getLocation(l => begin(fromLink(l))); } catch (e) { begin(''); }
       setTimeout(() => begin(''), 2000);
     }
   };
@@ -774,10 +776,12 @@ int main() {
         ${classes.map(c => `<a class="lcard class-card" href="#/teacher/class/${c.id}"><span class="num">CLASS</span><h3>${esc(c.name)}</h3>
           <span class="muted small">Join code</span><span class="joincode">${esc(c.code)}</span><span class="small muted">${c.studentCount} student${c.studentCount === 1 ? '' : 's'} enrolled${c.closed ? ' · enrollment closed' : ''}</span></a>`).join('')}
         <form class="lcard" id="newc" style="justify-content:center"><h3>➕ New class</h3><input class="input" name="name" placeholder="e.g. Period 3 — Robotics" required><select class="input" name="plan" aria-label="Term length">${PLAN_OPTIONS('15')}</select><select class="input" name="kit" aria-label="Robot kit">${KIT_OPTIONS('1')}</select><button class="btn primary">Create class</button></form>
+        <div class="lcard" style="justify-content:center"><h3>🎓 From Google Classroom</h3><p>Import a Classroom class and its roster. Students on the roster are enrolled automatically, with no join code.</p><button class="btn primary" id="importgc" type="button">Import a class</button></div>
       </div>
       <div class="panel" style="margin-top:22px"><h3>How students enroll</h3>
-        <ol><li>Create a class above to get a 6-letter <b>join code</b>.</li><li>Students open this website while signed in to their school Google account, then type the code and their name.</li><li>Open the class to watch progress live, read submitted code, and leave feedback & grades.</li></ol>
+        <ol><li>Create a class above to get a 6-letter <b>join code</b>, or import one from Google Classroom so rostered students are enrolled automatically.</li><li>Students open this website while signed in to their school Google account, then type the code and their name.</li><li>Open the class to watch progress live, read submitted code, and leave feedback & grades.</li></ol>
         <p class="muted small">Lessons unlock in order: a student finishes a lesson by submitting its exit ticket and code challenge. You can unlock lessons for a class at any time.</p></div>`;
+    document.getElementById('importgc').onclick = () => importClassroomModal().catch(err => toast(err.message));
     document.getElementById('newc').onsubmit = async e => { e.preventDefault(); try { await api('/api/teacher/classes', { body: Object.fromEntries(new FormData(e.target)) }); teacherHome(); } catch (err) { toast(err.message); } };
   }
 
@@ -959,31 +963,110 @@ int main() {
   }
 
   // ---------------------------------------------------------------- Google Classroom
-  async function classroomModal(C) {
+  const COURSE_OPTIONS = (courses, current) => courses.map(c => `<option value="${esc(c.id)}" ${c.id === current ? 'selected' : ''}>${esc(c.name)}${c.section ? ' · ' + esc(c.section) : ''}</option>`).join('');
+  const isoDate = d => d.toLocaleDateString('en-CA');
+  async function importClassroomModal() {
     const { courses } = await api('/api/teacher/classroom/courses');
-    const today = new Date().toLocaleDateString('en-CA');
-    const m = modal(`<h2 style="margin-top:0">🎓 Send grades to Google Classroom</h2>
-      <label class="f">Google Classroom class<select id="course">${courses.map(c => `<option value="${esc(c.id)}" ${c.id === C.courseId ? 'selected' : ''}>${esc(c.name)}${c.section ? ' · ' + esc(c.section) : ''}</option>`).join('')}</select></label>
-      <label class="f">Due date for new assignments <span class="muted small">(must be inside your PowerSchool grading period)</span><input id="due" type="date" value="${today}"></label>
-      <p class="small">Sends one assignment per main-path lesson, out of 100. Each grade is yours if you entered one. Otherwise it's the student's exit ticket and code challenge score once they've tried both. Lessons not yet tried and Go Further lessons aren't sent.</p>
-      ${C.lastSync ? `<p class="small muted">Last sent: ${new Date(C.lastSync).toLocaleString()}</p>` : ''}
-      <div class="err" id="gc-err"></div><div id="gc-result" role="status"></div>
-      <div class="row"><button class="btn primary" id="go" ${courses.length ? '' : 'disabled'}>Send grades</button><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
+    const m = modal(`<h2 style="margin-top:0">🎓 Import from Google Classroom</h2>
+      ${courses.length ? `<label class="f">Google Classroom class<select id="course">${COURSE_OPTIONS(courses)}</select></label>
+      <label class="f">Term length<select id="plan">${PLAN_OPTIONS('15')}</select></label>
+      <label class="f">Robot kit<select id="kit">${KIT_OPTIONS('1')}</select></label>
+      <p class="small">Students on this Classroom roster are put in the class the first time they open the RoboCode link, signed in to their school account. Students who join Classroom later are added when you press <b>Refresh roster</b>. The join code still works too.</p>` : '<p>No active Google Classroom classes were found where you are a teacher.</p>'}
+      <div class="err" id="ic-err"></div>
+      <div class="row"><button class="btn primary" id="go" ${courses.length ? '' : 'disabled'}>Import class</button><div class="spacer"></div><button class="btn" id="cx">Cancel</button></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelector('#go').onclick = async e => {
-      const out = m.querySelector('#gc-result'), err = m.querySelector('#gc-err');
-      e.target.disabled = true; err.textContent = ''; out.textContent = 'Sending grades. This can take a few minutes…';
+      e.target.disabled = true; m.querySelector('#ic-err').textContent = '';
       try {
-        await api(`/api/teacher/classes/${C.id}/classroom/link`, { body: { courseId: m.querySelector('#course').value } });
-        const r = await api(`/api/teacher/classes/${C.id}/classroom/sync`, { body: { dueDate: m.querySelector('#due').value } });
-        out.innerHTML = `<div class="msg ${r.errors.length ? 'bad' : 'good'}"><b>${r.sent} grades sent</b>, ${r.unchanged} already up to date, ${r.assignments} new assignments.</div>
-          ${r.partial ? '<p class="small"><b>Not finished.</b> Press Send grades again to continue.</p>' : ''}
-          ${r.notOnRoster.length ? `<p class="small"><b>Not on the Classroom roster:</b> ${r.notOnRoster.map(esc).join(', ')}</p>` : ''}
-          ${r.errors.length ? `<ul class="small">${r.errors.slice(0, 10).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
-          <p class="small"><b>Next:</b> in Google Classroom, open <b>Grades</b> and choose <b>SIS export</b> to send them to PowerSchool.</p>`;
-      } catch (ex) { out.textContent = ''; err.textContent = ex.message; }
-      e.target.disabled = false;
+        const r = await api('/api/teacher/classroom/import', { body: { courseId: m.querySelector('#course').value, plan: m.querySelector('#plan').value, kit: m.querySelector('#kit').value } });
+        m.remove(); toast(`Imported ${r.class.name} with ${r.rosterCount} student${r.rosterCount === 1 ? '' : 's'} on the roster`);
+        Nav.go('#/teacher/class/' + r.class.id);
+      } catch (ex) { m.querySelector('#ic-err').textContent = ex.message; e.target.disabled = false; }
     };
+  }
+  async function classroomModal(C, startTab) {
+    const [{ courses }, status] = await Promise.all([api('/api/teacher/classroom/courses'), api(`/api/teacher/classes/${C.id}/classroom/status`)]);
+    let st = status, tab = startTab || (st.courseId ? 'assign' : 'link');
+    const today = new Date(), inAWeek = new Date(Date.now() + 7 * 864e5);
+    const m = modal(`<h2 style="margin-top:0">🎓 Google Classroom</h2>
+      <div class="tabs" role="tablist"><button data-tab="link">Class & roster</button><button data-tab="assign">Post assignments</button><button data-tab="grades">Send grades</button></div>
+      <div id="gc-body"></div><div class="err" id="gc-err"></div><div id="gc-result" role="status"></div>
+      <div class="row" style="margin-top:12px"><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
+    const body = m.querySelector('#gc-body'), err = m.querySelector('#gc-err'), out = m.querySelector('#gc-result');
+    const linked = () => st.courseId ? `<p>Linked to <b>${esc(st.courseName || 'a Classroom class')}</b>.</p>` : '<p class="msg bad">This class is not linked to Google Classroom yet. Choose its Classroom class on the <b>Class & roster</b> tab.</p>';
+    const busy = (btn, text) => { btn.disabled = true; err.textContent = ''; out.textContent = text; };
+    const draw = () => {
+      m.querySelectorAll('[data-tab]').forEach(b => { b.classList.toggle('on', b.dataset.tab === tab); b.setAttribute('aria-selected', b.dataset.tab === tab); });
+      out.textContent = ''; err.textContent = '';
+      if (tab === 'link') {
+        body.innerHTML = `${linked()}
+          <label class="f">Google Classroom class<select id="course">${COURSE_OPTIONS(courses, st.courseId)}</select></label>
+          <div class="row"><button class="btn primary" id="link" ${courses.length ? '' : 'disabled'}>${st.courseId ? 'Save & refresh roster' : 'Link class & load roster'}</button></div>
+          ${st.courseId ? `<p class="small" style="margin-top:12px"><b>${st.rosterCount}</b> student${st.rosterCount === 1 ? '' : 's'} on the Classroom roster. They join this class automatically when they first open the RoboCode link.</p>
+            ${st.notJoined.length ? `<p class="small"><b>Haven't opened RoboCode yet (${st.notJoined.length}):</b> ${st.notJoined.map(esc).join(', ')}</p>` : '<p class="small">Everyone on the roster has joined. ✅</p>'}` : ''}`;
+        body.querySelector('#link').onclick = async e => {
+          busy(e.target, 'Loading the roster…');
+          try {
+            await api(`/api/teacher/classes/${C.id}/classroom/link`, { body: { courseId: body.querySelector('#course').value } });
+            st = await api(`/api/teacher/classes/${C.id}/classroom/status`); C.courseId = st.courseId; draw(); toast('Roster updated');
+          } catch (ex) { out.textContent = ''; err.textContent = ex.message; e.target.disabled = false; }
+        };
+      } else if (tab === 'assign') {
+        const next = st.lessons.find(l => !l.posted);
+        body.innerHTML = `${linked()}
+          <p class="small">Each lesson becomes a Classroom assignment out of 100, with a link that opens the lesson in RoboCode. <b>Send grades</b> fills in the scores later.</p>
+          <div class="row small"><button class="btn sm" type="button" id="pick-next">Select next lesson</button><button class="btn sm" type="button" id="pick-none">Clear</button></div>
+          <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px;margin:8px 0;max-height:260px;overflow:auto">
+            ${st.lessons.map(l => `<label class="small row"><input type="checkbox" value="${esc(l.id)}" ${l.posted ? 'disabled' : ''} ${next && l.id === next.id ? 'checked' : ''}> ${l.num}. ${esc(l.title)}${l.posted ? ` <span class="muted">· ${{ publish: 'posted', schedule: 'scheduled', draft: 'draft in Classroom' }[l.mode] || 'in Classroom'}${l.due ? ', due ' + esc(l.due) : ''}</span>` : ''}</label>`).join('')}
+          </div>
+          <label class="f">Due date<input id="due" type="date" value="${isoDate(inAWeek)}" min="${isoDate(today)}"></label>
+          <fieldset class="f" style="border:0;padding:0"><legend>When should students see it?</legend>
+            <label class="row small"><input type="radio" name="mode" value="publish" checked> Post now</label>
+            <label class="row small"><input type="radio" name="mode" value="schedule"> Schedule for <input id="at" type="datetime-local" value="${isoDate(new Date(Date.now() + 864e5))}T07:30" style="width:auto;display:inline-block;margin:0 0 0 6px"></label>
+            <label class="row small"><input type="radio" name="mode" value="draft"> Save as a draft in Classroom (I'll post it there)</label>
+          </fieldset>
+          <div class="row"><button class="btn primary" id="post" ${st.courseId ? '' : 'disabled'}>Post to Classroom</button></div>`;
+        const boxes = () => [...body.querySelectorAll('input[type=checkbox]:not(:disabled)')];
+        body.querySelector('#pick-next').onclick = () => boxes().forEach((b, i) => { b.checked = i === 0; });
+        body.querySelector('#pick-none').onclick = () => boxes().forEach(b => { b.checked = false; });
+        body.querySelector('#post').onclick = async e => {
+          const lessonIds = boxes().filter(b => b.checked).map(b => b.value);
+          if (!lessonIds.length) { err.textContent = 'Choose at least one lesson.'; return; }
+          const mode = body.querySelector('input[name=mode]:checked').value, at = body.querySelector('#at').value;
+          busy(e.target, `Posting ${lessonIds.length} assignment${lessonIds.length === 1 ? '' : 's'}…`);
+          try {
+            const r = await api(`/api/teacher/classes/${C.id}/classroom/assign`, { body: { lessonIds, dueDate: body.querySelector('#due').value, mode, scheduleAt: mode === 'schedule' && at ? new Date(at).toISOString() : '' } });
+            st = await api(`/api/teacher/classes/${C.id}/classroom/status`); draw();
+            out.innerHTML = `<div class="msg ${r.errors.length ? 'bad' : 'good'}"><b>${r.posted} assignment${r.posted === 1 ? '' : 's'} ${mode === 'publish' ? 'posted' : mode === 'schedule' ? 'scheduled' : 'saved as drafts'}</b>${r.skipped ? `, ${r.skipped} already in Classroom` : ''}.</div>
+              ${r.partial ? '<p class="small"><b>Not finished.</b> Press Post again to continue.</p>' : ''}
+              ${r.noLink ? '<p class="small">The assignments have no link to the lesson, because the app\'s address could not be read. Students can open RoboCode from your usual link.</p>' : ''}
+              ${r.errors.length ? `<ul class="small">${r.errors.slice(0, 10).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}`;
+          } catch (ex) { out.textContent = ''; err.textContent = ex.message; e.target.disabled = false; }
+        };
+      } else {
+        body.innerHTML = `${linked()}
+          <label class="f">Due date for lessons not yet posted <span class="muted small">(must be inside your PowerSchool grading period)</span><input id="due" type="date" value="${isoDate(today)}"></label>
+          <p class="small">Sends a grade out of 100 for each main-path lesson a student has tried. Each grade is yours if you entered one. Otherwise it's the student's exit ticket and code challenge score once they've tried both. Lessons you posted use their existing assignment. Others get a new one. Go Further lessons aren't sent.</p>
+          ${st.lastSync ? `<p class="small muted">Last sent: ${new Date(st.lastSync).toLocaleString()}</p>` : ''}
+          <div class="row"><button class="btn primary" id="go" ${st.courseId ? '' : 'disabled'}>Send grades</button></div>`;
+        body.querySelector('#go').onclick = async e => {
+          busy(e.target, 'Sending grades. This can take a few minutes…');
+          try {
+            const r = await api(`/api/teacher/classes/${C.id}/classroom/sync`, { body: { dueDate: body.querySelector('#due').value } });
+            st = await api(`/api/teacher/classes/${C.id}/classroom/status`);
+            out.innerHTML = `<div class="msg ${r.errors.length ? 'bad' : 'good'}"><b>${r.sent} grades sent</b>, ${r.unchanged} already up to date, ${r.assignments} new assignments.</div>
+              ${r.partial ? '<p class="small"><b>Not finished.</b> Press Send grades again to continue.</p>' : ''}
+              ${r.notOnRoster.length ? `<p class="small"><b>Not on the Classroom roster:</b> ${r.notOnRoster.map(esc).join(', ')}</p>` : ''}
+              ${r.errors.length ? `<ul class="small">${r.errors.slice(0, 10).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+              <p class="small"><b>Next:</b> in Google Classroom, open <b>Grades</b> and choose <b>SIS export</b> to send them to PowerSchool.</p>`;
+          } catch (ex) { out.textContent = ''; err.textContent = ex.message; }
+          e.target.disabled = false;
+        };
+      }
+    };
+    m.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { tab = b.dataset.tab; draw(); });
+    m.querySelector('#cx').onclick = () => m.remove();
+    draw();
   }
 
   // ---------------------------------------------------------------- class events

@@ -54,7 +54,13 @@ const previewFolder = {
 // Mimics the rules that matter: students' submissions exist only once work is created, and only returned grades count.
 function classroomStandIn() {
   const c = () => { store.classroom = store.classroom || { work: {} }; return store.classroom; };
-  const students = () => Object.values(store.books).flatMap(b => (b.tabs.Users || []).slice(1)).map(r => JSON.parse(r[2])).filter(u => u.role === 'student' && !u.email.startsWith('notinclassroom')).map(u => ({ userId: 'g' + u.id, profile: { emailAddress: u.email } }));
+  // Everyone who has joined, plus two rostered students who haven't opened the app yet.
+  const extra = [['jordan@school.test', 'Jordan', 'Lee'], ['sam@school.test', 'Sam', 'Ortiz']].map(([e, f, l]) => ({ userId: 'g' + e, profile: { emailAddress: e, name: { givenName: f, familyName: l, fullName: f + ' ' + l } } }));
+  const students = () => {
+    const joined = Object.values(store.books).flatMap(b => (b.tabs.Users || []).slice(1)).map(r => JSON.parse(r[2])).filter(u => u.role === 'student' && !u.email.startsWith('notinclassroom'));
+    const out = joined.map(u => ({ userId: 'g' + u.email, profile: { emailAddress: u.email, name: { givenName: u.name.split(' ')[0], familyName: u.name.split(' ').slice(1).join(' '), fullName: u.name } } }));
+    return out.concat(extra.filter(x => !joined.some(u => u.email === x.profile.emailAddress)));
+  };
   return {
     Courses: {
       list: () => ({ courses: [{ id: 'course1', name: 'Robotics P3', section: 'Period 3' }] }),
@@ -63,6 +69,7 @@ function classroomStandIn() {
       CourseWork: {
         create(res) {
           if (!res.dueDate || res.maxPoints !== 100) throw new Error('bad coursework');
+          if (res.scheduledTime && res.state !== 'DRAFT') throw new Error('scheduledTime needs a DRAFT');
           const id = 'cw' + Object.keys(c().work).length;
           c().work[id] = { res, subs: Object.fromEntries(students().map(s => ['sub' + s.userId, { id: 'sub' + s.userId, userId: s.userId }])) };
           return { id };
@@ -92,6 +99,7 @@ const sandbox = vm.createContext({
     getFileById: id => ({ setTrashed() { delete store.files[id]; }, getBlob: () => ({ getBytes: () => [...Buffer.from(store.files[id], 'base64')] }) })
   },
   Classroom: classroomStandIn(),
+  ScriptApp: { getService: () => ({ getUrl: () => `http://localhost:${PORT}/` }) },
   Logger: { log: console.log },
   LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }) },
   PropertiesService: { getScriptProperties: () => ({ getProperty: k => store.props[k] ?? null, setProperty: (k, v) => { store.props[k] = v; } }) },
@@ -106,7 +114,7 @@ for (const f of ['Lessons.gs', 'Code.gs']) vm.runInContext(fs.readFileSync(path.
 // ---- what google.script.run does in the real thing
 const shim = `<script>
 window.google = { script: {
-  history: { push() {}, setChangeHandler() {} }, url: { getLocation(cb) { cb({ hash: '' }); } },
+  history: { push() {}, setChangeHandler() {} }, url: { getLocation(cb) { cb({ hash: '', parameter: Object.fromEntries(new URLSearchParams(location.search)) }); } },
   run: (function make(ok, bad) { return new Proxy({}, { get(_, fn) {
     if (fn === 'withSuccessHandler') return h => make(h, bad);
     if (fn === 'withFailureHandler') return h => make(ok, h);

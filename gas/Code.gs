@@ -127,6 +127,10 @@ function routes_() {
     R('GET', P('teacher/classroom/courses'), 'teacher', false, classroomCourses_),
     R('POST', P('teacher/classes/:id/classroom/link'), 'teacher', true, linkClassroom_),
     R('POST', P('teacher/classes/:id/classroom/sync'), 'teacher', false, syncClassroom_),
+    R('POST', P('teacher/classroom/import'), 'teacher', true, importClassroom_),
+    R('POST', P('teacher/classes/:id/classroom/roster'), 'teacher', true, refreshRoster_),
+    R('GET', P('teacher/classes/:id/classroom/status'), 'teacher', false, classroomStatus_),
+    R('POST', P('teacher/classes/:id/classroom/assign'), 'teacher', false, assignClassroom_),
     R('GET', P('teacher/standards'), 'teacher', false, function () {
       return { standards: STANDARDS, plans: PLANS, lessons: LESSONS.map(function (l) { return { id: l.id, unit: l.unit, order: l.order, title: l.title, anchor: l.standards.anchor, supporting: l.standards.supporting }; }) };
     }),
@@ -320,6 +324,7 @@ function me_() {
     u = userByEmail_(email);
     if (!u) { u = { id: uid_('u_'), role: 'teacher', email: email, name: email.split('@')[0], created: now_() }; saveUser_(u); }
   }
+  if (!u) u = enrollFromRoster_(email);
   if (!u) return { user: null, email: email };
   if (!u.lastLogin || Date.now() - new Date(u.lastLogin).getTime() > 3600000) {
     lock_();
@@ -988,6 +993,7 @@ function linkClassroom_(c) {
   var course = Classroom.Courses.get(courseId);
   if (k.courseId !== courseId) k.sync = {};
   k.courseId = courseId; k.courseName = course.name;
+  k.roster = classroomRoster_(courseId);
   saveClass_(k);
   return { courseName: course.name };
 }
@@ -1010,6 +1016,116 @@ function allPages_(fetch, field) {
     token = res.nextPageToken;
   } while (token);
   return out;
+}
+/** A Classroom course's students as { email: [first, last] }. Kept on the class so students can be enrolled when they first open the app. */
+function classroomRoster_(courseId) {
+  var roster = {};
+  allPages_(function (token) { return Classroom.Courses.Students.list(courseId, pageOptions_(token)); }, 'students').forEach(function (s) {
+    var p = s.profile || {}, email = String(p.emailAddress || '').toLowerCase();
+    if (!email) return;
+    var n = p.name || {}, first = clean_(n.givenName, 30), last = clean_(n.familyName, 30);
+    if (!first && !last) { var full = clean_(n.fullName, 60).split(/\s+/); first = full[0] || email.split('@')[0]; last = full.slice(1).join(' '); }
+    roster[email] = [first, last];
+  });
+  return roster;
+}
+/** Students on an imported Classroom roster join their class the first time they open the app. */
+function enrollFromRoster_(email) {
+  var match = function () { return classes_().filter(function (k) { return k.roster && k.roster[email]; })[0]; };
+  if (!match()) return null;
+  lock_();
+  var u = userByEmail_(email);
+  if (u) return u;
+  var k = match();
+  if (!k) return null;
+  var n = k.roster[email];
+  u = { id: uid_('u_'), role: 'student', email: email, name: clean_((n[0] + ' ' + n[1]).trim(), 60) || email.split('@')[0], classId: k.id, created: now_(), lastLogin: now_(), fromClassroom: true };
+  saveUser_(u);
+  return u;
+}
+function importClassroom_(c) {
+  needClassroom_();
+  var courseId = clean_(c.body.courseId, 40);
+  if (!courseId) throw fail_(400, 'Choose a Google Classroom class.');
+  if (classes_().some(function (k) { return k.courseId === courseId && k.teacherId === c.user.id; })) throw fail_(400, 'You already imported that Google Classroom class.');
+  var course = Classroom.Courses.get(courseId);
+  var name = clean_(course.name + (course.section ? ' · ' + course.section : ''));
+  var k = {
+    id: uid_('c_'), teacherId: c.user.id, name: name, code: joinCode_(), created: now_(), unlockAll: false, unlocked: [], showPeers: true,
+    plan: planChoice_(c.body.plan) || '15', kit: c.body.kit === '2' ? '2' : '1',
+    courseId: courseId, courseName: course.name, roster: classroomRoster_(courseId), sync: {}
+  };
+  saveClass_(k);
+  return { 'class': k, rosterCount: Object.keys(k.roster).length };
+}
+function refreshRoster_(c) {
+  needClassroom_();
+  var k = ownClass_(c.user, c.params[0]);
+  if (!k.courseId) throw fail_(400, 'Link this class to a Google Classroom class first.');
+  k.roster = classroomRoster_(k.courseId);
+  saveClass_(k);
+  return classroomStatus_(c);
+}
+/** Who on the roster has started, and which lessons are already posted as assignments. */
+function classroomStatus_(c) {
+  var k = ownClass_(c.user, c.params[0]), roster = k.roster || {}, joined = {};
+  studentsIn_(k).forEach(function (s) { joined[s.email] = true; });
+  var path = pathOfClass_(k), sync = k.sync || {};
+  return {
+    courseId: k.courseId || null, courseName: k.courseName || null, lastSync: k.lastSync || null,
+    rosterCount: Object.keys(roster).length,
+    notJoined: Object.keys(roster).filter(function (e) { return !joined[e]; }).map(function (e) { return (roster[e][0] + ' ' + roster[e][1]).trim(); }).sort(),
+    lessons: path.main.map(function (l, i) { var e = sync[l.id] || {}; return { id: l.id, num: i + 1, title: l.title, posted: !!e.courseWorkId, mode: e.mode || 'publish', postedAt: e.postedAt || null, due: e.due || null }; })
+  };
+}
+/** The web app's address, so a Classroom assignment can open its lesson directly. */
+function appUrl_() {
+  var url = '';
+  try { url = ScriptApp.getService().getUrl() || ''; } catch (e) {}
+  return url.replace(/\/dev$/, '/exec');
+}
+function assignClassroom_(c) {
+  needClassroom_();
+  var k = ownClass_(c.user, c.params[0]), courseId = k.courseId;
+  if (!courseId) throw fail_(400, 'Link this class to a Google Classroom class first.');
+  var due = String(c.body.dueDate || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!due) throw fail_(400, 'Choose a due date.');
+  var mode = c.body.mode === 'draft' || c.body.mode === 'schedule' ? c.body.mode : 'publish';
+  var when = null;
+  if (mode === 'schedule') {
+    when = new Date(String(c.body.scheduleAt || ''));
+    if (isNaN(when.getTime()) || when.getTime() < Date.now()) throw fail_(400, 'Choose a time in the future to post the assignments.');
+  }
+  var ids = Array.isArray(c.body.lessonIds) ? c.body.lessonIds : [];
+  var path = pathOfClass_(k), url = appUrl_(), started = Date.now();
+  var picked = path.main.map(function (l, i) { return { l: l, num: i + 1 }; }).filter(function (x) { return ids.indexOf(x.l.id) >= 0; });
+  if (!picked.length) throw fail_(400, 'Choose at least one lesson.');
+  var state = k.sync || {}, report = { posted: 0, skipped: 0, errors: [], partial: false, noLink: !url };
+  picked.some(function (x) {
+    if (Date.now() - started > 270000) { report.partial = true; return true; }
+    var entry = state[x.l.id] || { grades: {} };
+    if (entry.courseWorkId) { report.skipped++; return false; }
+    var work = {
+      title: 'RoboCode ' + x.num + ': ' + x.l.title, workType: 'ASSIGNMENT', maxPoints: 100,
+      description: x.l.summary + (url ? '\n\nOpen the lesson in RoboCode Academy with the link below, signed in to your school Google account.' : ''),
+      dueDate: { year: +due[1], month: +due[2], day: +due[3] }, dueTime: { hours: 23, minutes: 59 },
+      state: mode === 'publish' ? 'PUBLISHED' : 'DRAFT'
+    };
+    if (url) work.materials = [{ link: { url: url + '?lesson=' + encodeURIComponent(x.l.id) } }];
+    if (when) work.scheduledTime = when.toISOString();
+    try {
+      entry.courseWorkId = Classroom.Courses.CourseWork.create(work, courseId).id;
+      entry.postedAt = now_(); entry.due = due[0]; entry.mode = mode;
+      state[x.l.id] = entry;
+      report.posted++;
+    } catch (e) { report.errors.push(x.l.title + ': ' + e.message); }
+    return false;
+  });
+  lock_();
+  var fresh = ownClass_(c.user, c.params[0]);
+  fresh.sync = Object.assign(fresh.sync || {}, state);
+  saveClass_(fresh);
+  return report;
 }
 function syncClassroom_(c) {
   needClassroom_();

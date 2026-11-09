@@ -30,12 +30,26 @@ This creates a private spreadsheet in your Drive called **RoboCode Academy Data*
 ## 4. Try it
 Open the link yourself. You'll land on the Teacher Dashboard. Create a class, choose its term length and robot kit, then have one student open the link and enter the join code.
 
+## Importing a Google Classroom class
+1. On the Teacher Dashboard, choose **🎓 From Google Classroom → Import a class**, pick the Classroom class, the term length and the robot kit.
+2. Share the web app link with students, for example as a Classroom announcement or in the first assignment. Students on the roster are put in the class the first time they open the link while signed in to their school account. They don't need the join code.
+3. If students join the Classroom class later, open the class, choose **🎓 Google Classroom → Class & roster** and press **Save & refresh roster**. The same tab lists who on the roster hasn't opened RoboCode yet.
+
+You can also link a class you made with a join code: open it, choose **🎓 Google Classroom → Class & roster**, pick the Classroom class and press **Link class & load roster**.
+
+## Posting lessons as Classroom assignments
+1. Open the class and choose **🎓 Google Classroom → Post assignments**.
+2. Tick the lessons to post (**Select next lesson** picks the first one not yet posted), choose a due date, then **Post now**, **Schedule** for a date and time, or **Save as a draft in Classroom**.
+3. Each assignment is out of 100 and has a link that opens that lesson in RoboCode. **Send grades** later fills in the scores on these same assignments.
+
+A lesson is only posted once, so pressing Post again never makes duplicates. If an assignment is deleted in Classroom, the next **Send grades** creates a new one.
+
 ## Sending grades to PowerSchool
 1. Link your Google Classroom class to its PowerSchool section once, using **SIS export** in Classroom. Only the primary teacher listed in PowerSchool can do this.
-2. In RoboCode, open a class and choose **🎓 Google Classroom**. Pick the Classroom class and a due date inside the grading period, then press **Send grades**.
+2. In RoboCode, open a class and choose **🎓 Google Classroom → Send grades**. Pick a due date inside the grading period (it's used for any lesson you haven't posted yet), then press **Send grades**.
 3. In Google Classroom, open **Grades** and choose **SIS export**.
 
-RoboCode creates its own assignments, because Google only lets an app grade assignments that app made. Don't delete them or re-create them by hand. Your district may also require a grade category on each assignment, which you can set in Classroom. Only the teacher who deployed the app can send grades.
+RoboCode creates its own assignments, because Google only lets an app grade assignments that app made. That's also why RoboCode can't put grades on assignments you made yourself in Classroom. Don't delete RoboCode's assignments or re-create them by hand. Your district may also require a grade category on each assignment, which you can set in Classroom. Only the teacher who deployed the app can send grades.
 
 ## Updating later
 Paste in the changed files, then **Deploy → Manage deployments → pencil icon → Version: New version → Deploy**. The link stays the same. Saving alone doesn't change what students see.

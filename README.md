@@ -24,7 +24,7 @@ Each lesson has an Engineer's Brief written for grades 7-8, with a guiding quest
 - **Teams:** 2 to 4 students join with a team code and share one robot's design, Robot Setup, photos and events. Exit tickets and code stay individual.
 - **Build photos:** build lessons and class events need a team photo of the robot before they count as complete.
 - **Class events:** Robot Sumo (bracket) and the Maze Race (timed leaderboard) use real robots. The main path pauses at each event until the teacher finishes it.
-- **Grades:** teachers can send grades to Google Classroom, then use Classroom's SIS export to reach PowerSchool. See [docs/DEPLOY.md](docs/DEPLOY.md).
+- **Google Classroom:** import a Classroom class so rostered students are enrolled automatically, post lessons as Classroom assignments that link straight to the lesson (now, scheduled or as drafts), and send grades back, then use Classroom's SIS export to reach PowerSchool. See [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Term plans
 Each class has a **term length** of 10, 12 or 15 lessons, or the full 28. Every plan includes an algorithms lesson and ends with the rescue capstone, the 12- and 15-lesson terms add AI, and each shorter plan is contained in the next, so you can change a class's plan without losing work. The lists are in [`lessons/plans.js`](lessons/plans.js).
