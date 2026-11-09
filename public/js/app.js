@@ -252,7 +252,7 @@
     if ((m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([\w-]{11})/))) src = `https://www.youtube-nocookie.com/embed/${m[1]}`;
     else if ((m = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/))) src = `https://drive.google.com/file/d/${m[1]}/preview`;
     else if ((m = url.match(/vimeo\.com\/(\d+)/))) src = `https://player.vimeo.com/video/${m[1]}`;
-    else if (!/^https:\/\//.test(url)) return '';
+    else if (!/^https:[\/]{2}/.test(url)) return '';
     return `<div class="video-wrap"><iframe src="${esc(src)}" allowfullscreen allow="encrypted-media; picture-in-picture"></iframe></div>`;
   }
 
