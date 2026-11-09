@@ -116,7 +116,7 @@ fs.writeFileSync(path.join(root, 'docs/STANDARDS_MAP.md'), standardsMap(lessons,
 const source = url => url.startsWith('/vendor/codemirror/') ? `node_modules/codemirror/${url.slice('/vendor/codemirror/'.length)}` : `public${url}`;
 const html = read('public/index.html')
   .replace(/<link rel="stylesheet" href="(\/[^"]+)">/g, (_, url) => `<style>\n${read(source(url))}\n</style>`)
-  .replace(/<script src="(\/[^"]+)"><\/script>/g, (_, url) => `<script>\n${read(source(url)).replace(/<\/script/gi, '<\\/script')}\n</script>`);
+  .replace(/<script src="(\/[^"]+)"><\/script>/g, (_, url) => `<script>\n${read(source(url)).replace(/<\/script/gi, '<\\/script')}\n;(window.__loaded = window.__loaded || []).push(${JSON.stringify(url.split('/').pop())});\n</script>`);
 fs.writeFileSync(path.join(out, 'Index.html'), html);
 
 for (const f of fs.readdirSync(out)) console.log(`${f.padEnd(18)} ${Math.round(fs.statSync(path.join(out, f)).size / 1024)} KB`);

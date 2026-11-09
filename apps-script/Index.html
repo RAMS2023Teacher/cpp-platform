@@ -2,6 +2,11 @@
 <html lang="en" data-theme="eco">
 <head>
 <meta charset="utf-8">
+<script>
+  // Collect script errors so they can be shown on the page (many school devices block developer tools).
+  window.__loadErrors = []; window.__loaded = [];
+  window.addEventListener('error', function (e) { window.__loadErrors.push((e.message || 'Unknown error') + (e.lineno ? ' (page line ' + e.lineno + ', column ' + e.colno + ')' : '')); });
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RoboCode Academy</title>
 <meta name="description" content="Learn C++, algorithms and AI with VEX IQ robots — a course for 8th graders.">
@@ -10788,6 +10793,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 
 })));
 
+;(window.__loaded = window.__loaded || []).push("codemirror.js");
 </script>
 <script>
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -11733,6 +11739,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 
 });
 
+;(window.__loaded = window.__loaded || []).push("clike.js");
 </script>
 <script>
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -11896,6 +11903,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   });
 });
 
+;(window.__loaded = window.__loaded || []).push("matchbrackets.js");
 </script>
 <script>
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -12100,6 +12108,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   }
 });
 
+;(window.__loaded = window.__loaded || []).push("closebrackets.js");
 </script>
 <script>
 /* RoboCode Academy – VEX IQ C++ simulator
@@ -12840,6 +12849,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   window.VexSim = { Sim, run, translate, evaluate, FIELD_W, FIELD_H, drawRobot, normalizeLook, LOOK_OPTIONS, DEFAULT_LOOK, SETUP_JOBS, normalizeSetup, validateSetup, generatedConfig, adaptText, canonicalize };
 })();
 
+;(window.__loaded = window.__loaded || []).push("sim.js");
 </script>
 <script>
 /* Interactive lesson widgets: <div data-widget="name"></div> */
@@ -12986,6 +12996,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   });
 })();
 
+;(window.__loaded = window.__loaded || []).push("widgets.js");
 </script>
 <script>
 /* Lesson diagrams, drawn from short descriptions in lessons/supports.js. Every diagram carries alt text. */
@@ -13076,6 +13087,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   };
 })();
 
+;(window.__loaded = window.__loaded || []).push("visuals.js");
 </script>
 <script>
 /* The Rescue Robot quest: which lesson earns which part, how the partly built
@@ -13270,6 +13282,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   window.Quest = { part, drawBuild, renderMap, ZONES, EVENT_STORY, MOON_KM };
 })();
 
+;(window.__loaded = window.__loaded || []).push("quest.js");
 </script>
 <script>
 /* RoboCode Academy – single page app */
@@ -14438,6 +14451,7 @@ int main() {
   Nav.start();
 })();
 
+;(window.__loaded = window.__loaded || []).push("app.js");
 </script>
 <script>
 /* Desktop chrome: taskbar clock and the main window's title. */
@@ -14480,6 +14494,27 @@ int main() {
   new MutationObserver(setTitle).observe(app, { childList: true });
 })();
 
+;(window.__loaded = window.__loaded || []).push("desktop.js");
+</script>
+<script>
+  // If a part of the site failed to start, say so on screen with the browser's own error message.
+  (function () {
+    var parts = ['codemirror', 'sim.js', 'widgets.js', 'visuals.js', 'quest.js', 'app.js', 'desktop.js'];
+    var missing = parts.filter(function (p) { return p === 'codemirror' ? !window.CodeMirror : (p === 'sim.js' ? !window.VexSim : false); });
+    if (!missing.length && !window.__loadErrors.length) return;
+    var box = document.createElement('div');
+    box.setAttribute('role', 'alert');
+    box.style.cssText = 'position:fixed;left:12px;right:12px;bottom:60px;z-index:9999;background:#fde8e8;color:#5c1015;border:2px solid #d1343b;border-radius:12px;padding:12px 14px;font:14px/1.45 system-ui,sans-serif;max-height:40vh;overflow:auto';
+    var esc = function (t) { return String(t).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); };
+    box.innerHTML = '<b>Part of RoboCode Academy did not start.</b> Please send this whole message to your teacher.' +
+      (missing.length ? '<br>Not loaded: ' + esc(missing.join(', ')) : '') +
+      '<br>Started: ' + esc((window.__loaded || []).join(', ') || 'none recorded') +
+      '<br>Browser: ' + esc(navigator.userAgent) +
+      (window.__loadErrors.length ? '<br>Errors:<br>• ' + window.__loadErrors.map(esc).join('<br>• ') : '<br>No error was reported.') +
+      ' <button type="button" style="margin-left:8px">Hide</button>';
+    box.querySelector('button').onclick = function () { box.remove(); };
+    document.body.appendChild(box);
+  })();
 </script>
 </body>
 </html>
