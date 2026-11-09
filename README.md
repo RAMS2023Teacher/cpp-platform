@@ -15,6 +15,11 @@ To put it online, follow **[docs/DEPLOY.md](docs/DEPLOY.md)**.
 
 Each lesson has a warm-up, direct instruction, a hands-on activity, a simulator code challenge with auto-checks, and a graded exit ticket with a reflection. Lessons unlock in order. Some lessons are build-only and have no code challenge. The algorithm and AI lessons also have interactive widgets.
 
+## Standards and student supports
+Every lesson is mapped to the Massachusetts grades 6-8 DLCS standards. See **[docs/STANDARDS_MAP.md](docs/STANDARDS_MAP.md)** or the **Standards** page in the teacher view. The build stops if a lesson has no assessed standard or cites a code that isn't on the state list.
+
+Each lesson has an Engineer's Brief written for grades 7-8, with a guiding question and a diagram with alt text. Lessons also have sentence starters for reflections, and code lessons have a worked example and a "Stuck?" routine. Students can have sections read aloud and change the text size, spacing and font with **Aa Reading**. To edit these supports, see [`lessons/supports.js`](lessons/supports.js).
+
 ## Term plans
 Each class has a **term length** of 10, 12 or 15 lessons, or the full 28. Every plan ends with the rescue capstone, and each shorter plan is contained in the next, so you can change a class's plan without losing work. The lists are in [`lessons/plans.js`](lessons/plans.js).
 

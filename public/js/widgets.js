@@ -62,11 +62,19 @@
     const S = [8, 1], G = [1, 12]; const cells = {};
     const grid = h('div', { class: 'mgrid', style: `grid-template-columns:repeat(${C},1fr)` }); const info = h('p', { class: 'small muted' }, 'Click squares to add/remove walls, then press Find Path.');
     for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
-      const d = h('div', { title: `${r},${c}` }); cells[r + ',' + c] = d;
-      d.addEventListener('click', () => { const k = r + ',' + c; if (k === S.join() || k === G.join()) return; walls.has(k) ? walls.delete(k) : walls.add(k); paint(); });
+      const d = h('div', { title: `${r},${c}`, role: 'button', tabindex: '0' }); cells[r + ',' + c] = d;
+      const toggle = () => { const k = r + ',' + c; if (k === S.join() || k === G.join()) return; walls.has(k) ? walls.delete(k) : walls.add(k); paint(); };
+      d.addEventListener('click', toggle);
+      d.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
       grid.append(d);
     }
-    function paint() { for (const k in cells) cells[k].className = walls.has(k) ? 'w' : k === S.join() ? 's' : k === G.join() ? 'g' : ''; }
+    function paint() {
+      for (const k in cells) {
+        cells[k].className = walls.has(k) ? 'w' : k === S.join() ? 's' : k === G.join() ? 'g' : '';
+        const [r, c] = k.split(',').map(Number);
+        cells[k].setAttribute('aria-label', `Row ${r + 1}, column ${c + 1}: ${walls.has(k) ? 'wall' : k === S.join() ? 'robot start' : k === G.join() ? 'goal' : 'open'}`);
+      }
+    }
     async function bfs() {
       paint(); const q = [S], prev = { [S.join()]: null }; let order = 0;
       while (q.length) {
@@ -90,9 +98,9 @@
   };
 
   W['perceptron'] = el => {
-    const cv = h('canvas', { width: 420, height: 300, style: 'width:100%;max-width:420px;background:#fff;border:1px solid #e2e5ee;cursor:crosshair' });
+    const cv = h('canvas', { width: 420, height: 300, role: 'img', 'aria-label': 'Training points and the line the model has learned. The accuracy is written below.', style: 'width:100%;max-width:420px;background:#fff;border:1px solid #e2e5ee;cursor:crosshair' });
     const ctx = cv.getContext('2d'); let pts = [], w = [0.2, -0.3, 0.05], label = 1, epochs = 0;
-    const info = h('p', { class: 'small muted' });
+    const info = h('p', { class: 'small muted', role: 'status' });
     const pred = (x, y) => (w[0] * x + w[1] * y + w[2] >= 0 ? 1 : -1);
     function draw() {
       ctx.clearRect(0, 0, 420, 300);
@@ -107,6 +115,7 @@
     const lbl = h('span', { class: 'tag' }, 'Adding: RED');
     el.append(h('h4', {}, '🧠 Train a Perceptron (a tiny neural network)'), h('p', { class: 'small' }, 'Each dot is a training example (think: Optical sensor readings). The line is the AI\'s decision boundary. Train it and watch it learn!'), cv,
       h('div', { class: 'row', style: 'margin-top:8px' }, h('button', { class: 'btn sm', onclick: () => { label = 1; lbl.textContent = 'Adding: RED'; } }, '🔴 Red'), h('button', { class: 'btn sm', onclick: () => { label = -1; lbl.textContent = 'Adding: BLUE'; } }, '🔵 Blue'), lbl,
+        h('button', { class: 'btn sm', onclick: () => { pts.push({ x: Math.random(), y: Math.random(), l: label }); draw(); } }, 'Add a point for me'),
         h('button', { class: 'btn primary sm', onclick: () => train(1) }, 'Train 1 round'), h('button', { class: 'btn sm', onclick: () => train(25) }, 'Train ×25'),
         h('button', { class: 'btn sm', onclick: () => { w = [Math.random() - .5, Math.random() - .5, Math.random() - .5]; epochs = 0; draw(); } }, 'Forget (reset weights)'),
         h('button', { class: 'btn sm', onclick: () => { pts = []; epochs = 0; draw(); } }, 'Clear points')), info);

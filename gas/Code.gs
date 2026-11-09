@@ -99,6 +99,9 @@ function routes_() {
     R('POST', P('teacher/students/:id/move'), 'teacher', true, moveStudent_),
     R('DELETE', P('teacher/students/:id'), 'teacher', true, removeStudent_),
     R('GET', P('teacher/lessons-full'), 'teacher', false, function () { return { lessons: LESSONS.map(function (l) { return lessonForClient_(l, true, true); }) }; }),
+    R('GET', P('teacher/standards'), 'teacher', false, function () {
+      return { standards: STANDARDS, plans: PLANS, lessons: LESSONS.map(function (l) { return { id: l.id, unit: l.unit, order: l.order, title: l.title, anchor: l.standards.anchor, supporting: l.standards.supporting }; }) };
+    }),
     R('PUT', P('teacher/lessons/:id'), 'teacher', true, updateLessonExtras_)
   ];
 }
@@ -358,6 +361,8 @@ function lessonForClient_(l, revealAnswers, isTeacher) {
   if (o.teacherNote) copy.teacherNote = o.teacherNote;
   if (!revealAnswers) copy.quiz = (copy.quiz || []).map(function (q) { return { q: q.q, choices: q.choices }; });
   if (!isTeacher && copy.challenge) delete copy.challenge.solution;
+  var withText = function (code) { return STANDARDS.filter(function (s) { return s.code === code; })[0]; };
+  copy.standards = { anchor: l.standards.anchor.map(withText), supporting: l.standards.supporting.map(withText) };
   return copy;
 }
 function listLessons_(c) {

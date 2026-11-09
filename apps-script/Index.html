@@ -500,7 +500,7 @@ a.lcard:hover h3 { color: var(--title); text-decoration: underline; }
 .lcard.complete { background: var(--ok-soft); }
 .badges { display: flex; gap: 8px; flex-wrap: wrap; }
 .badge { display: flex; align-items: center; gap: 8px; padding: 5px 10px; background: var(--face); box-shadow: var(--raised); font-size: .86rem; }
-.badge.off { color: var(--shade); box-shadow: var(--groove); }
+.badge.off { color: var(--muted); box-shadow: var(--groove); }
 .badge.off > * { filter: grayscale(1); }
 
 /* lesson page */
@@ -717,7 +717,7 @@ a.chip { color: var(--ink); text-decoration: none; }
 :root[data-theme="future"] {
   --desk: #15103a; --face: #f6ead2; --hi: #fffaf0; --light: #ecdcbc; --shade: #c2a679; --dark: #2a1f58;
   --ink: #1e1645; --muted: #5d5176; --paper: #fffaf0; --line: #c2a679;
-  --title: #0e7c86; --title-end: #ff7a3d; --brand: #0e7c86; --link: #b23c12;
+  --title: #0e7c86; --title-end: #b8430f; --brand: #0e7c86; --link: #b23c12;
   --build: #b23c12; --code: #0e5f8a; --algo: #7a2f9e; --ai: #0e7c86;
   --ok: #17794a; --ok-soft: #c9efd2; --warn: #7a5a00; --warn-soft: #ffe9a8; --bad: #b3261e; --bad-soft: #ffd5cd; --tip: #fff1b8;
   --raised: inset 0 0 0 2px var(--dark), 3px 3px 0 rgba(42, 31, 88, .28);
@@ -769,20 +769,52 @@ a.chip { color: var(--ink); text-decoration: none; }
 .setup-tbl select, .setup-tbl input:not([type=checkbox]) { padding: 3px 5px; border: 0; background: var(--paper); box-shadow: var(--sunken); font: inherit; max-width: 100%; }
 .setup-tbl td { vertical-align: middle; }
 
+/* ---------- Lesson supports ---------- */
+.think { padding: 8px 12px; background: var(--tip); box-shadow: var(--groove); }
+.brief-text { font-size: 1.08rem; line-height: 1.65; max-width: 72ch; margin-bottom: 0; }
+.viz { margin: 10px 0; padding: 8px; background: #fff; box-shadow: var(--sunken); }
+.viz svg { display: block; width: 100%; max-width: 720px; height: auto; margin: 0 auto; }
+.standards { margin-top: 12px; }
+.read-btn { margin-left: auto; padding: 1px 8px; border: 0; background: var(--face); box-shadow: var(--raised); color: var(--ink); font: inherit; font-size: .78rem; cursor: pointer; }
+.read-btn[aria-pressed="true"] { box-shadow: var(--pressed); }
+.tbl.std td, .tbl.std th { font-size: .9rem; }
+.tbl.std tr.gap td { color: var(--muted); background: var(--light); }
+
+/* ---------- Accessibility ---------- */
+.skip { position: fixed; top: -60px; left: 8px; z-index: 100; padding: 8px 14px; background: #000; color: #fff; }
+.skip:focus { top: 8px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#app:focus { outline: none; }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [role="button"]:focus-visible { outline: 3px solid #d10000 !important; outline-offset: 1px !important; }
+.reading-panel { position: fixed; right: 8px; bottom: calc(var(--taskbar-h) + 8px); z-index: 45; width: 250px; padding: 12px; background: var(--face); box-shadow: var(--raised), 0 2px 10px rgba(0,0,0,.4); }
+.reading-panel[hidden] { display: none; }
+[data-text="1"] main { zoom: 1.15; }
+[data-text="2"] main { zoom: 1.3; }
+[data-spacing="1"] main p, [data-spacing="1"] main li, [data-spacing="1"] main td { line-height: 1.9; letter-spacing: .03em; word-spacing: .12em; }
+[data-font="plain"] body, [data-font="plain"] h1, [data-font="plain"] h2, [data-font="plain"] h3, [data-font="plain"] .sec-kind, [data-font="plain"] #wintitle { font-family: Verdana, Arial, sans-serif !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
 </style>
 </head>
 <body>
+<a class="skip" href="#app">Skip to main content</a>
 <header class="topbar">
   <a class="brand" href="#/"><span class="logo">🤖</span><span><b>RoboCode</b><span class="brand-more"> Academy</span></span></a>
   <nav id="nav"></nav>
+  <button class="theme-btn" id="reading" type="button" aria-expanded="false" aria-controls="reading-panel">Aa Reading</button>
   <button class="theme-btn" id="theme" type="button"></button>
   <div class="clock" id="clock"></div>
 </header>
 <main>
   <div class="win-title"><span id="wintitle">RoboCode Academy</span><span class="ctl off" aria-hidden="true">_</span><span class="ctl off" aria-hidden="true">□</span><a class="ctl close" href="#/" title="Back to home" aria-label="Back to home">✕</a></div>
-  <div id="app"><div class="loading">Loading…</div></div>
+  <div id="app" tabindex="-1"><div class="loading">Loading…</div></div>
 </main>
-<div id="toast"></div>
+<form id="reading-panel" class="reading-panel" hidden aria-label="Reading options">
+  <label class="f">Text size<select name="text"><option value="">Normal</option><option value="1">Large</option><option value="2">Extra large</option></select></label>
+  <label class="row small"><input type="checkbox" name="spacing"> Extra space between lines and letters</label>
+  <label class="row small"><input type="checkbox" name="font"> Simple, plain font</label>
+</form>
+<div id="toast" role="status" aria-live="polite"></div>
 <script>
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: https://codemirror.net/5/LICENSE
@@ -12765,11 +12797,19 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     const S = [8, 1], G = [1, 12]; const cells = {};
     const grid = h('div', { class: 'mgrid', style: `grid-template-columns:repeat(${C},1fr)` }); const info = h('p', { class: 'small muted' }, 'Click squares to add/remove walls, then press Find Path.');
     for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
-      const d = h('div', { title: `${r},${c}` }); cells[r + ',' + c] = d;
-      d.addEventListener('click', () => { const k = r + ',' + c; if (k === S.join() || k === G.join()) return; walls.has(k) ? walls.delete(k) : walls.add(k); paint(); });
+      const d = h('div', { title: `${r},${c}`, role: 'button', tabindex: '0' }); cells[r + ',' + c] = d;
+      const toggle = () => { const k = r + ',' + c; if (k === S.join() || k === G.join()) return; walls.has(k) ? walls.delete(k) : walls.add(k); paint(); };
+      d.addEventListener('click', toggle);
+      d.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
       grid.append(d);
     }
-    function paint() { for (const k in cells) cells[k].className = walls.has(k) ? 'w' : k === S.join() ? 's' : k === G.join() ? 'g' : ''; }
+    function paint() {
+      for (const k in cells) {
+        cells[k].className = walls.has(k) ? 'w' : k === S.join() ? 's' : k === G.join() ? 'g' : '';
+        const [r, c] = k.split(',').map(Number);
+        cells[k].setAttribute('aria-label', `Row ${r + 1}, column ${c + 1}: ${walls.has(k) ? 'wall' : k === S.join() ? 'robot start' : k === G.join() ? 'goal' : 'open'}`);
+      }
+    }
     async function bfs() {
       paint(); const q = [S], prev = { [S.join()]: null }; let order = 0;
       while (q.length) {
@@ -12793,9 +12833,9 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   };
 
   W['perceptron'] = el => {
-    const cv = h('canvas', { width: 420, height: 300, style: 'width:100%;max-width:420px;background:#fff;border:1px solid #e2e5ee;cursor:crosshair' });
+    const cv = h('canvas', { width: 420, height: 300, role: 'img', 'aria-label': 'Training points and the line the model has learned. The accuracy is written below.', style: 'width:100%;max-width:420px;background:#fff;border:1px solid #e2e5ee;cursor:crosshair' });
     const ctx = cv.getContext('2d'); let pts = [], w = [0.2, -0.3, 0.05], label = 1, epochs = 0;
-    const info = h('p', { class: 'small muted' });
+    const info = h('p', { class: 'small muted', role: 'status' });
     const pred = (x, y) => (w[0] * x + w[1] * y + w[2] >= 0 ? 1 : -1);
     function draw() {
       ctx.clearRect(0, 0, 420, 300);
@@ -12810,6 +12850,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     const lbl = h('span', { class: 'tag' }, 'Adding: RED');
     el.append(h('h4', {}, '🧠 Train a Perceptron (a tiny neural network)'), h('p', { class: 'small' }, 'Each dot is a training example (think: Optical sensor readings). The line is the AI\'s decision boundary. Train it and watch it learn!'), cv,
       h('div', { class: 'row', style: 'margin-top:8px' }, h('button', { class: 'btn sm', onclick: () => { label = 1; lbl.textContent = 'Adding: RED'; } }, '🔴 Red'), h('button', { class: 'btn sm', onclick: () => { label = -1; lbl.textContent = 'Adding: BLUE'; } }, '🔵 Blue'), lbl,
+        h('button', { class: 'btn sm', onclick: () => { pts.push({ x: Math.random(), y: Math.random(), l: label }); draw(); } }, 'Add a point for me'),
         h('button', { class: 'btn primary sm', onclick: () => train(1) }, 'Train 1 round'), h('button', { class: 'btn sm', onclick: () => train(25) }, 'Train ×25'),
         h('button', { class: 'btn sm', onclick: () => { w = [Math.random() - .5, Math.random() - .5, Math.random() - .5]; epochs = 0; draw(); } }, 'Forget (reset weights)'),
         h('button', { class: 'btn sm', onclick: () => { pts = []; epochs = 0; draw(); } }, 'Clear points')), info);
@@ -12834,6 +12875,96 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     if (el.dataset.mounted) return; el.dataset.mounted = 1; el.classList.add('widget');
     const f = W[el.dataset.widget]; if (f) f(el); else el.textContent = 'Unknown widget: ' + el.dataset.widget;
   });
+})();
+
+</script>
+<script>
+/* Lesson diagrams, drawn from short descriptions in lessons/supports.js. Every diagram carries alt text. */
+(function () {
+  const INK = '#1b1b3a', BOX = '#d8e4fb', YES = '#cdeed6', NO = '#fde2c8', LINE = '#3b3b5c';
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const wrap = (text, max) => {
+    const lines = []; let line = '';
+    for (const word of String(text).split(' ')) {
+      if (line && (line + ' ' + word).length > max) { lines.push(line); line = word; } else line = line ? line + ' ' + word : word;
+    }
+    return line ? [...lines, line] : lines;
+  };
+  const label = (x, y, text, max, opts = {}) => {
+    const lines = wrap(text, max), size = opts.size || 15, lead = size + 4, top = y - (lines.length - 1) * lead / 2 + size / 3;
+    return lines.map((l, i) => `<text x="${x}" y="${top + i * lead}" text-anchor="${opts.anchor || 'middle'}" font-size="${size}" font-weight="${opts.bold ? 700 : 400}" fill="${INK}"${opts.mono ? ' font-family="monospace"' : ''}>${esc(l)}</text>`).join('');
+  };
+  const box = (x, y, w, h, fill = BOX) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${fill}" stroke="${LINE}" stroke-width="2"/>`;
+  const MARKER = `<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="${LINE}"/></marker></defs>`;
+  const arrow = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${LINE}" stroke-width="2.5" marker-end="url(#arw)"/>`;
+
+  const DRAW = {
+    flow(v) {
+      const n = v.items.length, gap = 30, w = (700 - gap * (n - 1)) / n, h = 104, y = 12;
+      const parts = v.items.map((t, i) => { const x = 10 + i * (w + gap); return box(x, y, w, h) + label(x + w / 2, y + h / 2, t, Math.floor(w / 8.2)) + (i < n - 1 ? arrow(x + w, y + h / 2, x + w + gap, y + h / 2) : ''); }).join('');
+      if (!v.loop) return { h: 128, body: parts };
+      const left = 10 + w / 2, right = 10 + (n - 1) * (w + gap) + w / 2, bot = y + h + 34;
+      return { h: 186, body: parts + `<path d="M${right} ${y + h} V${bot} H${left} V${y + h + 2}" fill="none" stroke="${LINE}" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#arw)"/>` + label(360, bot + 18, v.loop, 70, { size: 14 }) };
+    },
+    tree(v) {
+      const bw = 210, bh = 66, yes = v.yesLabel || 'yes', no = v.noLabel || 'no', nested = typeof v.no === 'object';
+      const rootX = 360 - bw / 2;
+      let body = box(rootX, 8, bw, bh, BOX) + label(360, 41, v.q, 24, { bold: true });
+      const branch = (fromX, fromY, toX, toY, text) => arrow(fromX, fromY, toX, toY) + label((fromX + toX) / 2 + (toX < fromX ? -22 : 22), (fromY + toY) / 2, text, 12, { size: 14, bold: true });
+      const leftX = nested ? 130 : 180, rightX = nested ? 470 : 540, ly = 124;
+      body += branch(320, 74, leftX, ly, yes) + box(leftX - bw / 2, ly, bw, bh, YES) + label(leftX, ly + 33, v.yes, 24);
+      if (!nested) return { h: 200, body: body + branch(400, 74, rightX, ly, no) + box(rightX - bw / 2, ly, bw, bh, NO) + label(rightX, ly + 33, v.no, 24) };
+      body += branch(400, 74, rightX, ly, no) + box(rightX - bw / 2, ly, bw, bh, BOX) + label(rightX, ly + 33, v.no.q, 24, { bold: true });
+      const y2 = 240, a = rightX - 120, b = rightX + 120, w2 = 200;
+      body += branch(rightX - 40, ly + bh, a, y2, 'yes') + box(a - w2 / 2, y2, w2, bh, YES) + label(a, y2 + 33, v.no.yes, 22);
+      body += branch(rightX + 40, ly + bh, b - 40, y2, 'no') + box(b - w2 / 2 - 40 + 40 - 10, y2, w2 - 10, bh, NO) + label(b - 5, y2 + 33, v.no.no, 20);
+      return { h: 316, body };
+    },
+    compare(v) {
+      const col = (s, x, fill) => box(x, 8, 340, 200, fill) + label(x + 170, 34, s.title, 34, { bold: true, size: 17 }) + s.items.map((t, i) => label(x + 170, 80 + i * 48, t, 38, { size: 15 })).join('');
+      return { h: 220, body: col(v.left, 10, YES) + col(v.right, 370, NO) };
+    },
+    parts(v) {
+      return { h: 222, body: v.items.map(([code, note], i) => { const x = 10 + (i % 2) * 355, y = 8 + Math.floor(i / 2) * 106; return box(x, y, 345, 96) + label(x + 172, y + 36, code, 34, { mono: true, bold: true }) + label(x + 172, y + 70, note, 40, { size: 14 }); }).join('') };
+    },
+    array(v) {
+      const n = v.values.length, size = Math.min(84, 660 / n), x0 = 360 - n * size / 2;
+      const row = (vals, y, hi = [], fade = []) => vals.map((val, i) => `<rect x="${x0 + i * size}" y="${y}" width="${size}" height="62" fill="${hi.includes(i) ? YES : fade.includes(i) ? '#e4e4e4' : BOX}" stroke="${LINE}" stroke-width="2"/>` + label(x0 + i * size + size / 2, y + 31, String(val), 8, { size: 20, bold: !fade.includes(i) })).join('');
+      let body = row(v.values, 12, v.highlight, v.fade), h = 112;
+      if (v.after) { body += arrow(360, 80, 360, 112) + row(v.after, 118, v.highlight); h = 218; }
+      body += label(360, h - 18, v.caption, 80, { size: 15 });
+      return { h, body };
+    },
+    beam() {
+      let beam = `<rect x="30" y="30" width="400" height="100" rx="24" fill="${BOX}" stroke="${LINE}" stroke-width="2"/>`;
+      for (let r = 0; r < 2; r++) for (let c = 0; c < 8; c++) beam += `<circle cx="${62 + c * 48}" cy="${56 + r * 48}" r="14" fill="#fff" stroke="${LINE}" stroke-width="2"/>`;
+      const mark = `<line x1="62" y1="14" x2="110" y2="14" stroke="${LINE}" stroke-width="2.5" marker-start="url(#arw)" marker-end="url(#arw)"/>` + label(210, 14, '12.7 mm between holes', 30, { size: 14 }) + label(230, 152, '2 holes wide, 8 holes long: a 2x8 beam', 50, { size: 15, bold: true });
+      const joint = (x, pins, text) => { let s = `<rect x="${x}" y="50" width="96" height="30" rx="8" fill="${YES}" stroke="${LINE}" stroke-width="2"/><rect x="${x + 28}" y="${pins === 1 ? 20 : 50}" width="${pins === 1 ? 30 : 96}" height="${pins === 1 ? 92 : 30}" rx="8" fill="${NO}" stroke="${LINE}" stroke-width="2" ${pins === 1 ? `transform="rotate(25 ${x + 43} 65)"` : `transform="translate(0 26)"`}/>`; s += pins === 1 ? `<circle cx="${x + 43}" cy="65" r="7" fill="${INK}"/>` : `<circle cx="${x + 42}" cy="72" r="7" fill="${INK}"/><circle cx="${x + 80}" cy="72" r="7" fill="${INK}"/>`; return s + label(x + 48, 152, text, 18, { size: 14 }); };
+      return { h: 176, body: beam + mark + joint(462, 1, '1 pin: swings') + joint(590, 2, '2 pins: locked') };
+    },
+    shapes() {
+      const force = x => `<line x1="${x}" y1="56" x2="${x + 44}" y2="56" stroke="#b3261e" stroke-width="4" marker-end="url(#arw)"/>`;
+      const square = `<rect x="80" y="30" width="110" height="110" fill="none" stroke="#9a9ab0" stroke-width="3" stroke-dasharray="7 6"/><path d="M110 30 L220 30 L190 140 L80 140 Z" fill="${NO}" fill-opacity=".7" stroke="${LINE}" stroke-width="4"/>`;
+      const tri = `<path d="M520 26 L590 140 L450 140 Z" fill="${YES}" stroke="${LINE}" stroke-width="4"/>`;
+      const joints = [[110, 30], [220, 30], [190, 140], [80, 140], [520, 26], [590, 140], [450, 140]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="${INK}"/>`).join('');
+      return { h: 190, body: force(20) + force(392) + square + tri + joints + label(150, 166, 'A square leans into a diamond', 40) + label(520, 166, 'A triangle keeps its shape', 40) };
+    },
+    gears() {
+      const gear = (cx, cy, r, teeth, fill) => {
+        let d = '';
+        for (let i = 0; i < teeth * 2; i++) { const a = i / (teeth * 2) * Math.PI * 2, R = i % 2 ? r : r + 9; for (const da of [-.42, .42]) { const b = a + da * Math.PI / teeth; d += `${d ? 'L' : 'M'}${(cx + R * Math.cos(b)).toFixed(1)} ${(cy + R * Math.sin(b)).toFixed(1)}`; } }
+        return `<path d="${d}Z" fill="${fill}" stroke="${LINE}" stroke-width="2"/><rect x="${cx - 7}" y="${cy - 7}" width="14" height="14" fill="#fff" stroke="${LINE}" stroke-width="2"/>`;
+      };
+      return { h: 238, body: gear(150, 100, 38, 12, YES) + gear(308, 100, 108, 36, BOX) + label(150, 172, '12 teeth: driving gear', 18, { bold: true }) + label(308, 226, '36 teeth: driven gear', 30, { bold: true }) + box(452, 26, 250, 152, '#fff') + label(577, 60, '36 ÷ 12 = 3:1 ratio', 28, { bold: true, size: 17 }) + label(577, 104, '3 times the torque', 28) + label(577, 134, '1/3 of the speed', 28) + label(577, 162, 'opposite direction', 28, { size: 14 }) };
+    }
+  };
+
+  window.Visuals = {
+    render(v) {
+      const d = DRAW[v.type](v);
+      return `<figure class="viz"><svg viewBox="0 0 720 ${d.h}" role="img" aria-label="${esc(v.alt)}">${MARKER}${d.body}</svg></figure>`;
+    }
+  };
 })();
 
 </script>
@@ -13043,6 +13174,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       document.addEventListener('click', e => {
         const a = e.target.closest && e.target.closest('a[href]'); if (!a) return;
         const h = a.getAttribute('href');
+        if (a.classList.contains('skip')) { e.preventDefault(); $app.focus(); return; }
         if (h.startsWith('#')) { e.preventDefault(); if (h !== '#') Nav.go(h); }
         else if (/^https?:/.test(h)) a.target = '_blank';
       });
@@ -13057,10 +13189,24 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   };
   function toast(t) { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 2600); }
   function modal(html) {
+    const opener = document.activeElement;
     const bg = document.createElement('div'); bg.className = 'modal-bg';
-    bg.innerHTML = `<div class="modal">${html}</div>`;
+    bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true" tabindex="-1">${html}</div>`;
+    const box = bg.firstChild, heading = box.querySelector('h2');
+    if (heading) { heading.id = 'modal-title'; box.setAttribute('aria-labelledby', 'modal-title'); }
+    const focusable = () => [...box.querySelectorAll('a[href],button:not(:disabled),input:not(:disabled),select,textarea,summary')];
+    const originalRemove = bg.remove.bind(bg);
+    bg.remove = () => { originalRemove(); if (opener && opener.isConnected) opener.focus(); };
     bg.addEventListener('click', e => { if (e.target === bg) bg.remove(); });
-    document.body.append(bg); return bg;
+    bg.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { e.stopPropagation(); bg.remove(); return; }
+      if (e.key !== 'Tab') return;
+      const items = focusable(); if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+    document.body.append(bg); box.focus(); return bg;
   }
   const tags = t => (t || []).map(x => `<span class="tag ${esc(x)}">${esc(x)}</span>`).join(' ');
 
@@ -13068,12 +13214,32 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   function renderNav() {
     if (!ME) { $nav.innerHTML = ''; return; }
     const links = ME.role === 'teacher'
-      ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/playground">Code Lab</a>`
+      ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/teacher/standards">Standards</a><a href="#/playground">Code Lab</a>`
       : `<a href="#/">My Course</a><a href="#/robot">My Robot</a><a href="#/map">Map</a><a href="#/playground">Code Lab</a>`;
     $nav.innerHTML = `${links}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
     $nav.querySelectorAll('a').forEach(a => a.classList.toggle('active', Nav.hash === a.getAttribute('href')));
   }
   let cleanup = null;
+  // Read aloud, using the voices built into the browser.
+  const canSpeak = 'speechSynthesis' in window;
+  let readingBtn = null;
+  function stopReading() { if (!canSpeak) return; speechSynthesis.cancel(); if (readingBtn) { readingBtn.textContent = '🔊 Read aloud'; readingBtn.setAttribute('aria-pressed', 'false'); readingBtn = null; } }
+  function addReadAloud(root) {
+    if (!canSpeak) return;
+    root.querySelectorAll('.panel.sec > .sec-kind').forEach(head => {
+      const panel = head.parentElement, source = panel.querySelector('[data-read]') || panel.querySelector('.body');
+      if (!source) return;
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'read-btn'; btn.textContent = '🔊 Read aloud'; btn.setAttribute('aria-pressed', 'false');
+      btn.onclick = () => {
+        const wasMe = readingBtn === btn; stopReading(); if (wasMe) return;
+        const copy = source.cloneNode(true); copy.querySelectorAll('pre,[data-widget],svg').forEach(x => x.remove());
+        const say = new SpeechSynthesisUtterance(copy.textContent.replace(/\s+/g, ' ').trim());
+        say.onend = () => { if (readingBtn === btn) stopReading(); };
+        readingBtn = btn; btn.textContent = '⏹ Stop reading'; btn.setAttribute('aria-pressed', 'true'); speechSynthesis.speak(say);
+      };
+      head.append(btn);
+    });
+  }
   function dispatch(parts) {
     if (!ME) return joinPage();
     if (parts[0] === 'lesson') return lessonPage(parts[1]);
@@ -13082,6 +13248,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     if (ME.role === 'teacher') {
       if (parts[0] === 'teacher' && parts[1] === 'class') return classPage(parts[2]);
       if (parts[0] === 'teacher' && parts[1] === 'lessons') return lessonsAdmin();
+      if (parts[0] === 'teacher' && parts[1] === 'standards') return standardsPage();
       return teacherHome();
     }
     if (parts[0] === 'robot') return robotPage();
@@ -13089,11 +13256,13 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   }
   async function route() {
     if (cleanup) { cleanup(); cleanup = null; }
+    stopReading();
     routeSeq++;
     const parts = Nav.hash.slice(1).split('/').filter(Boolean);
     renderNav(); window.scrollTo(0, 0);
     $app.innerHTML = '<div class="loading">⏳ Loading…</div>';
-    try { await dispatch(parts); }
+    const firstPage = !route.ran; route.ran = true;
+    try { await dispatch(parts); if (!firstPage) $app.focus({ preventScroll: true }); }
     catch (e) { $app.innerHTML = `<div class="panel"><h2>Oops</h2><p>${esc(e.message)}</p><a class="btn" href="#/">Back home</a></div>`; }
   }
   async function boot() {
@@ -13195,7 +13364,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   function card(l) {
     const icon = !l.unlocked ? '🔒' : l.status === 'complete' ? '✅' : l.status === 'started' ? '🟡' : '';
     return `<a class="lcard ${l.unlocked ? '' : 'locked'} ${l.status}" href="#/lesson/${l.id}">
-      <span class="status">${icon}</span><span class="num">${l.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + l.num} · ${l.minutes} MIN</span>
+      <span class="status" role="img" aria-label="${!l.unlocked ? 'Locked' : l.status === 'complete' ? 'Complete' : l.status === 'started' ? 'In progress' : 'Not started'}">${icon}</span><span class="num">${l.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + l.num} · ${l.minutes} MIN</span>
       <h3>${esc(l.title)}</h3><p>${esc(l.summary)}</p><div>${tags(l.tags)}</div>
       ${l.requires?.length ? `<span class="small muted">Opens after: ${l.requires.map(esc).join(', ')}</span>` : ''}
       ${l.quizScore ? `<span class="small muted">Quiz: ${l.quizScore}</span>` : ''}</a>`;
@@ -13230,6 +13399,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       <div class="lesson-layout">
         <aside class="toc">
           <a href="#" data-jump="goals"><span>🎯 Goals</span></a>
+          <a href="#" data-jump="brief"><span>📖 Engineer's Brief</span></a>
           ${L.video ? `<a href="#" data-jump="video"><span>🎬 Video</span></a>` : ''}
           ${secs.map((s, i) => `<a href="#" data-jump="s${i}"><span>${(KIND[s.kind] || ['•'])[0]} ${esc(s.title)}</span><span class="min">${s.minutes || ''}′</span></a>`).join('')}
           ${L.challenge ? `<a href="#" data-jump="challenge"><span>🤖 Code Challenge</span></a>` : ''}
@@ -13245,10 +13415,21 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
             <h3>🎯 Learning goals</h3><ul>${(L.objectives || []).map(o => `<li>${esc(o)}</li>`).join('')}</ul>
             ${L.materials?.length ? `<h3>🧰 You'll need</h3><p>${L.materials.map(esc).join(' · ')}</p>` : ''}
             ${L.vocab?.length ? `<h3>📖 Vocabulary</h3><div class="vocab">${L.vocab.map(v => `<div><b>${esc(v.term)}</b>${esc(v.def)}</div>`).join('')}</div>` : ''}
+            <details class="standards"><summary class="small"><b>MA DLCS standards for this lesson</b></summary>
+              ${L.standards.anchor.map(s => `<p class="small"><b>${esc(s.code)}</b> ${esc(s.text)}</p>`).join('')}
+              ${L.standards.supporting.length ? `<p class="small muted" style="margin-bottom:2px"><b>Also practiced:</b></p>${L.standards.supporting.map(s => `<p class="small"><b>${esc(s.code)}</b> ${esc(s.text)}</p>`).join('')}` : ''}
+            </details>
+          </div>
+          <div class="panel sec" id="brief"><div class="sec-kind">📖 Engineer's Brief</div>
+            <p class="think"><b>Think about it as you read:</b> ${esc(L.supports.think)}</p>
+            ${Visuals.render(L.supports.visual)}
+            <div data-read><p class="brief-text">${esc(L.supports.brief)}</p></div>
           </div>
           ${L.video ? `<div class="panel sec" id="video"><div class="sec-kind">🎬 Watch</div>${videoEmbed(L.video)}</div>` : ''}
           ${secs.map((s, i) => `<div class="panel sec ${esc(s.kind)}" id="s${i}"><div class="sec-kind">${(KIND[s.kind] || ['•', s.kind]).join(' ')} <span class="m">· ${s.minutes || '?'} min</span></div><h2>${esc(s.title)}</h2><div class="body">${s.html}</div></div>`).join('')}
           ${L.challenge ? `<div class="panel sec code" id="challenge"><div class="sec-kind">🤖 Code Challenge</div><h2>${esc(L.challenge.title)}</h2><div class="body">${L.challenge.prompt}</div>
+              ${L.supports.worked ? `<details class="callout tip"><summary><b>👀 See a worked example</b></summary><p class="small">This solves a similar problem, not your challenge.</p><pre class="code">${esc(L.supports.worked.code)}</pre><ol class="small">${L.supports.worked.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ol></details>` : ''}
+              <details class="callout think"><summary><b>🧗 Stuck? Try these in order</b></summary><ol class="small"><li>Read the error message and go to the line it names.</li><li>Read your code out loud, one line at a time. What does the robot do on each line?</li><li>Compare your code with the worked example.</li><li>Open one hint below.</li><li>Explain the problem to a partner, then ask your teacher.</li></ol></details>
               <div class="hints">${(L.challenge.hints || []).map((h, i) => `<details><summary>💡 Hint ${i + 1}</summary>${esc(h)}</details>`).join('')}</div>
               ${teacher && L.challenge.solution ? `<details class="callout warn"><summary><b>👩‍🏫 Reference solution (teachers only)</b></summary><pre class="code">${esc(L.challenge.solution)}</pre></details>` : ''}
               <div id="ide"></div></div>` : ''}
@@ -13256,8 +13437,9 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
           <div class="row">${prev ? `<a class="btn" href="#/lesson/${prev}">← Previous lesson</a>` : ''}<div class="spacer"></div>${next ? `<a class="btn primary" href="#/lesson/${next}">Next lesson →</a>` : ''}</div>
         </div>
       </div>`;
-    $app.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById(a.dataset.jump).scrollIntoView({ behavior: 'smooth' }); });
+    $app.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById(a.dataset.jump).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
     window.mountWidgets($app);
+    addReadAloud($app);
     // class timer
     let left = L.minutes * 60, int = null; const tm = document.getElementById('tmr'), tb = document.getElementById('tmrb');
     tb.onclick = () => {
@@ -13298,7 +13480,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     const part = Quest.part(L.id); if (!part) return;
     const heading = lessonPlace?.track === 'extra' ? '🚀 Upgrade installed!' : part.mission ? '🚩 Mission stage complete!' : '🔧 New part installed!';
     const m = modal(`<h2 style="margin-top:0">${heading}</h2>
-      <div class="celebrate"><canvas width="220" height="220"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
+      <div class="celebrate"><canvas width="220" height="220" role="img" aria-label="Your robot with its newest part installed"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
       <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Learning map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => m.remove()));
@@ -13312,13 +13494,14 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     box.innerHTML = `
       ${done ? `<div class="msg good" style="margin-bottom:12px">You scored <b>${P.quiz.score}/${P.quiz.total}</b>${P.quizAttempts > 1 ? ` (attempt ${P.quizAttempts})` : ''}. ${P.quiz.score < P.quiz.total ? 'Review the explanations below — you can retake it.' : 'Perfect! 🌟'}</div>` : ''}
       <form id="qf">
-        ${quiz.map((q, i) => `<div class="q"><b>${i + 1}. ${esc(q.q)}</b><div class="opts">
+        ${quiz.map((q, i) => `<div class="q" role="group" aria-labelledby="q${i}-label"><b id="q${i}-label">${i + 1}. ${esc(q.q)}</b><div class="opts">
           ${q.choices.map((c, j) => {
             const picked = done && Number(P.quiz.answers[i]) === j; const cls = (done || teacher) && q.answer !== undefined ? (j === q.answer ? (done || teacher ? 'right' : '') : picked ? 'wrong' : '') : '';
-            return `<label class="${done || teacher ? cls : ''}"><input type="radio" name="q${i}" value="${j}" ${picked ? 'checked' : ''} required> <span>${esc(c)}</span></label>`;
+            return `<label class="${done || teacher ? cls : ''}"><input type="radio" name="q${i}" value="${j}" ${picked ? 'checked' : ''} required> <span>${esc(c)}</span>${(done || teacher) && j === q.answer ? ' <b>✓ Correct answer</b>' : picked && j !== q.answer ? ' <b>✗ Your answer</b>' : ''}</label>`;
           }).join('')}</div>
           ${(done || teacher) && q.explain ? `<div class="explain">💡 ${esc(q.explain)}</div>` : ''}</div>`).join('')}
-        ${L.reflection ? `<label class="f">✍️ Reflection: ${esc(L.reflection)}<textarea name="reflection" rows="3" required>${esc(P?.reflection || '')}</textarea></label>` : ''}
+        ${L.reflection ? `<label class="f">✍️ Reflection: ${esc(L.reflection)}<textarea name="reflection" rows="3" required>${esc(P?.reflection || '')}</textarea></label>
+          ${L.supports?.frames?.length ? `<p class="small muted" style="margin-top:-6px"><b>Need a start?</b> ${L.supports.frames.map(esc).join(' &nbsp;·&nbsp; ')}</p>` : ''}` : ''}
         ${teacher ? '<p class="muted small">Teacher preview — correct answers are highlighted.</p>' : `<button class="btn primary">${done ? 'Retake & resubmit' : 'Submit exit ticket'}</button>`}
         ${!teacher && L.challenge && !P?.challenge ? '<p class="muted small">Remember to <b>Check & Submit</b> the code challenge too — both are needed to complete the lesson.</p>' : ''}
       </form>`;
@@ -13412,11 +13595,12 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       <div class="ide">
         <div><textarea></textarea><div class="ref" style="margin-top:10px"><b class="small">📚 Quick reference</b>${VexSim.adaptText(API_REF, setup)}${setup.gen === 1 ? '<p class="small muted">1st gen Brain screen: 5 rows, 21 columns.</p>' : ''}</div></div>
         <div class="simbox">
-          <canvas width="960" height="720"></canvas>
+          <canvas width="960" height="720" role="img" aria-label="Robot simulator field. The robot's position, heading and results are written as text beside it."></canvas>
           <div class="hud"></div>
           <div class="brain"><span class="small muted">🧠 Brain screen / output</span><div class="brain-screen"></div></div>
-          <div class="msg" data-m></div>
-          <ul class="checks"></ul>
+          <div class="msg" data-m role="status" aria-live="polite"></div>
+          <ul class="checks" aria-live="polite"></ul>
+          <p class="sr-only" data-summary aria-live="polite"></p>
         </div>
       </div>`;
     const q = s => host.querySelector(s);
@@ -13503,6 +13687,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       q('[data-a=run]').disabled = true; q('[data-a=stop]').disabled = false; q('.checks').innerHTML = ''; setMsg(withChecks ? '🏁 Running your program for the auto-check…' : '');
       const code = cm.getValue();
       const r = await VexSim.run(sim, code, setup);
+      q('[data-summary]').textContent = `Robot is now ${sim.r.x.toFixed(0)} inches across and ${sim.r.y.toFixed(0)} inches down the field, facing ${sim.r.h.toFixed(0)} degrees, with ${sim.collisions} collisions.`;
       if (!r.ok && /Robot Setup/.test(r.error || '')) showSetup(true);
       running = false; q('[data-a=run]').disabled = false; q('[data-a=stop]').disabled = true;
       if (!r.ok) {
@@ -13666,10 +13851,10 @@ int main() {
         <tbody>${students.map(s => `<tr><td class="l"><b>${esc(s.name)}</b><br><span class="small muted">@${esc(s.username)}</span> <button class="btn sm" data-stu="${s.id}" style="padding:2px 6px">⋯</button></td>
           <td><b>${lessons.filter(l => l.track === 'main' && s.progress[l.id]?.status === 'complete').length}</b></td>
           ${lessons.map(l => { const p = s.progress[l.id];
-            if (!p) return `<td><button class="cell none" data-s="${s.id}" data-l="${l.id}">·</button></td>`;
+            if (!p) return `<td><button class="cell none" data-s="${s.id}" data-l="${l.id}" aria-label="${esc(s.name)}, ${esc(l.title)}: not started">·</button></td>`;
             const label = p.grade != null ? p.grade : p.quiz ? `${p.quiz.score}/${p.quiz.total}` : '…';
             const ch = l.hasChallenge ? (p.challenge ? (p.challenge.passed ? '' : '⚠') : '') : '';
-            return `<td><button class="cell ${p.status} ${p.needsReview ? 'review' : ''}" data-s="${s.id}" data-l="${l.id}" title="${p.challenge ? 'Challenge: ' + (p.challenge.passed ? 'passed' : p.challenge.passCount + '/' + p.challenge.total) : 'No code submitted'}">${label}${ch}</button></td>`; }).join('')}
+            return `<td><button class="cell ${p.status} ${p.needsReview ? 'review' : ''}" data-s="${s.id}" data-l="${l.id}" aria-label="${esc(s.name)}, ${esc(l.title)}: ${p.status}, ${label}" title="${p.challenge ? 'Challenge: ' + (p.challenge.passed ? 'passed' : p.challenge.passCount + '/' + p.challenge.total) : 'No code submitted'}">${label}${ch}</button></td>`; }).join('')}
         </tr>`).join('')}</tbody></table></div>` : `<div class="panel"><h3>No students yet</h3><p>Share the join code <span class="joincode">${esc(C.code)}</span> with your class. Students enter it the first time they open this website.</p></div>`}`;
     $app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => reviewModal(b.dataset.s, b.dataset.l, () => classPage(cid)));
     $app.querySelectorAll('[data-stu]').forEach(b => b.onclick = () => studentModal(students.find(s => s.id === b.dataset.stu), cid));
@@ -13774,6 +13959,37 @@ int main() {
     });
   }
 
+  // ---------------------------------------------------------------- standards map
+  async function standardsPage() {
+    const { standards, lessons, plans } = await api('/api/teacher/standards');
+    const short = c => c.replace('6-8.', '');
+    const draw = plan => {
+      const inPlan = lessons.filter(l => plan === 'all' || plans[plan].includes(l.id));
+      const anchorSet = new Set(inPlan.flatMap(l => l.anchor)), anySet = new Set(inPlan.flatMap(l => [...l.anchor, ...l.supporting]));
+      const nums = (code, key) => inPlan.filter(l => l[key].includes(code)).map(l => l.order).join(', ') || '—';
+      const strands = [...new Set(standards.map(s => s.strand))];
+      document.getElementById('std-body').innerHTML = `
+        <div class="stats">
+          <div class="stat"><span class="muted small">Lessons in this term</span><b>${inPlan.length}</b></div>
+          <div class="stat"><span class="muted small">Standards assessed</span><b>${anchorSet.size}</b></div>
+          <div class="stat"><span class="muted small">Standards addressed</span><b>${anySet.size} / ${standards.length}</b></div>
+          <div class="stat"><span class="muted small">Lessons with an assessed standard</span><b>${inPlan.filter(l => l.anchor.length).length} / ${inPlan.length}</b></div>
+        </div>
+        <h2>By lesson</h2>
+        <div class="gridtbl"><table class="tbl std"><thead><tr><th scope="col">#</th><th scope="col">Lesson</th><th scope="col">Assessed</th><th scope="col">Also practiced</th></tr></thead>
+          <tbody>${inPlan.map(l => `<tr><td>${l.order}</td><td class="l">${esc(l.title)}</td><td class="l">${l.anchor.map(short).join(', ')}</td><td class="l">${l.supporting.map(short).join(', ') || '—'}</td></tr>`).join('')}</tbody></table></div>
+        <h2 style="margin-top:20px">By standard</h2>
+        ${strands.map(strand => `<h3>${esc(strand)}</h3><div class="gridtbl"><table class="tbl std"><thead><tr><th scope="col">Code</th><th scope="col">Standard</th><th scope="col">Assessed in lesson</th><th scope="col">Practiced in lesson</th></tr></thead>
+          <tbody>${standards.filter(s => s.strand === strand).map(s => `<tr class="${anySet.has(s.code) ? '' : 'gap'}"><td>${short(s.code)}</td><td class="l">${esc(s.text)}</td><td>${nums(s.code, 'anchor')}</td><td>${nums(s.code, 'supporting')}</td></tr>`).join('')}</tbody></table></div>`).join('')}`;
+    };
+    $app.innerHTML = `<div class="row"><h1 style="margin:0">📋 MA DLCS Standards Map</h1><div class="spacer"></div>
+      <label class="small">Term: <select class="input" id="std-plan" style="display:inline-block;width:auto">${PLAN_OPTIONS('15')}</select></label></div>
+      <p class="muted">Massachusetts Digital Literacy and Computer Science standards, grades 6-8. Lesson numbers are positions in the full course. Rows in gray aren't addressed in this term.</p>
+      <div id="std-body"></div>`;
+    document.getElementById('std-plan').onchange = e => draw(e.target.value);
+    draw('15');
+  }
+
   // ---------------------------------------------------------------- my robot
   async function robotPage() {
     const { lessons } = await api('/api/lessons');
@@ -13874,10 +14090,22 @@ int main() {
   let savedTheme = null; try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
   setTheme(savedTheme === 'future' ? 'future' : 'classic');
 
+  // Reading options, remembered in this browser.
+  const panel = document.getElementById('reading-panel'), readBtn = document.getElementById('reading'), root = document.documentElement;
+  const applyReading = o => { root.dataset.text = o.text || ''; root.dataset.spacing = o.spacing ? '1' : ''; root.dataset.font = o.font ? 'plain' : ''; };
+  let reading = {}; try { reading = JSON.parse(localStorage.getItem('reading')) || {}; } catch (e) {}
+  applyReading(reading);
+  panel.elements.text.value = reading.text || ''; panel.elements.spacing.checked = !!reading.spacing; panel.elements.font.checked = !!reading.font;
+  panel.onsubmit = e => e.preventDefault();
+  panel.onchange = () => { reading = { text: panel.elements.text.value, spacing: panel.elements.spacing.checked, font: panel.elements.font.checked }; applyReading(reading); try { localStorage.setItem('reading', JSON.stringify(reading)); } catch (e) {} };
+  readBtn.onclick = () => { panel.hidden = !panel.hidden; readBtn.setAttribute('aria-expanded', String(!panel.hidden)); };
+  panel.addEventListener('keydown', e => { if (e.key === 'Escape') { panel.hidden = true; readBtn.setAttribute('aria-expanded', 'false'); readBtn.focus(); } });
+
   const app = document.getElementById('app'), title = document.getElementById('wintitle');
   const setTitle = () => {
     const h1 = app.querySelector('.hero') ? null : app.querySelector('h1');
     title.textContent = h1 ? `${h1.textContent.trim()} - RoboCode Academy` : 'Welcome - RoboCode Academy';
+    document.title = title.textContent;
   };
   new MutationObserver(setTitle).observe(app, { childList: true });
 })();

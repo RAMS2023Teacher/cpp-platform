@@ -40,6 +40,7 @@
       document.addEventListener('click', e => {
         const a = e.target.closest && e.target.closest('a[href]'); if (!a) return;
         const h = a.getAttribute('href');
+        if (a.classList.contains('skip')) { e.preventDefault(); $app.focus(); return; }
         if (h.startsWith('#')) { e.preventDefault(); if (h !== '#') Nav.go(h); }
         else if (/^https?:/.test(h)) a.target = '_blank';
       });
@@ -54,10 +55,24 @@
   };
   function toast(t) { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 2600); }
   function modal(html) {
+    const opener = document.activeElement;
     const bg = document.createElement('div'); bg.className = 'modal-bg';
-    bg.innerHTML = `<div class="modal">${html}</div>`;
+    bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true" tabindex="-1">${html}</div>`;
+    const box = bg.firstChild, heading = box.querySelector('h2');
+    if (heading) { heading.id = 'modal-title'; box.setAttribute('aria-labelledby', 'modal-title'); }
+    const focusable = () => [...box.querySelectorAll('a[href],button:not(:disabled),input:not(:disabled),select,textarea,summary')];
+    const originalRemove = bg.remove.bind(bg);
+    bg.remove = () => { originalRemove(); if (opener && opener.isConnected) opener.focus(); };
     bg.addEventListener('click', e => { if (e.target === bg) bg.remove(); });
-    document.body.append(bg); return bg;
+    bg.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { e.stopPropagation(); bg.remove(); return; }
+      if (e.key !== 'Tab') return;
+      const items = focusable(); if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+    document.body.append(bg); box.focus(); return bg;
   }
   const tags = t => (t || []).map(x => `<span class="tag ${esc(x)}">${esc(x)}</span>`).join(' ');
 
@@ -65,12 +80,32 @@
   function renderNav() {
     if (!ME) { $nav.innerHTML = ''; return; }
     const links = ME.role === 'teacher'
-      ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/playground">Code Lab</a>`
+      ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/teacher/standards">Standards</a><a href="#/playground">Code Lab</a>`
       : `<a href="#/">My Course</a><a href="#/robot">My Robot</a><a href="#/map">Map</a><a href="#/playground">Code Lab</a>`;
     $nav.innerHTML = `${links}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
     $nav.querySelectorAll('a').forEach(a => a.classList.toggle('active', Nav.hash === a.getAttribute('href')));
   }
   let cleanup = null;
+  // Read aloud, using the voices built into the browser.
+  const canSpeak = 'speechSynthesis' in window;
+  let readingBtn = null;
+  function stopReading() { if (!canSpeak) return; speechSynthesis.cancel(); if (readingBtn) { readingBtn.textContent = '🔊 Read aloud'; readingBtn.setAttribute('aria-pressed', 'false'); readingBtn = null; } }
+  function addReadAloud(root) {
+    if (!canSpeak) return;
+    root.querySelectorAll('.panel.sec > .sec-kind').forEach(head => {
+      const panel = head.parentElement, source = panel.querySelector('[data-read]') || panel.querySelector('.body');
+      if (!source) return;
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'read-btn'; btn.textContent = '🔊 Read aloud'; btn.setAttribute('aria-pressed', 'false');
+      btn.onclick = () => {
+        const wasMe = readingBtn === btn; stopReading(); if (wasMe) return;
+        const copy = source.cloneNode(true); copy.querySelectorAll('pre,[data-widget],svg').forEach(x => x.remove());
+        const say = new SpeechSynthesisUtterance(copy.textContent.replace(/\s+/g, ' ').trim());
+        say.onend = () => { if (readingBtn === btn) stopReading(); };
+        readingBtn = btn; btn.textContent = '⏹ Stop reading'; btn.setAttribute('aria-pressed', 'true'); speechSynthesis.speak(say);
+      };
+      head.append(btn);
+    });
+  }
   function dispatch(parts) {
     if (!ME) return joinPage();
     if (parts[0] === 'lesson') return lessonPage(parts[1]);
@@ -79,6 +114,7 @@
     if (ME.role === 'teacher') {
       if (parts[0] === 'teacher' && parts[1] === 'class') return classPage(parts[2]);
       if (parts[0] === 'teacher' && parts[1] === 'lessons') return lessonsAdmin();
+      if (parts[0] === 'teacher' && parts[1] === 'standards') return standardsPage();
       return teacherHome();
     }
     if (parts[0] === 'robot') return robotPage();
@@ -86,11 +122,13 @@
   }
   async function route() {
     if (cleanup) { cleanup(); cleanup = null; }
+    stopReading();
     routeSeq++;
     const parts = Nav.hash.slice(1).split('/').filter(Boolean);
     renderNav(); window.scrollTo(0, 0);
     $app.innerHTML = '<div class="loading">⏳ Loading…</div>';
-    try { await dispatch(parts); }
+    const firstPage = !route.ran; route.ran = true;
+    try { await dispatch(parts); if (!firstPage) $app.focus({ preventScroll: true }); }
     catch (e) { $app.innerHTML = `<div class="panel"><h2>Oops</h2><p>${esc(e.message)}</p><a class="btn" href="#/">Back home</a></div>`; }
   }
   async function boot() {
@@ -192,7 +230,7 @@
   function card(l) {
     const icon = !l.unlocked ? '🔒' : l.status === 'complete' ? '✅' : l.status === 'started' ? '🟡' : '';
     return `<a class="lcard ${l.unlocked ? '' : 'locked'} ${l.status}" href="#/lesson/${l.id}">
-      <span class="status">${icon}</span><span class="num">${l.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + l.num} · ${l.minutes} MIN</span>
+      <span class="status" role="img" aria-label="${!l.unlocked ? 'Locked' : l.status === 'complete' ? 'Complete' : l.status === 'started' ? 'In progress' : 'Not started'}">${icon}</span><span class="num">${l.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + l.num} · ${l.minutes} MIN</span>
       <h3>${esc(l.title)}</h3><p>${esc(l.summary)}</p><div>${tags(l.tags)}</div>
       ${l.requires?.length ? `<span class="small muted">Opens after: ${l.requires.map(esc).join(', ')}</span>` : ''}
       ${l.quizScore ? `<span class="small muted">Quiz: ${l.quizScore}</span>` : ''}</a>`;
@@ -227,6 +265,7 @@
       <div class="lesson-layout">
         <aside class="toc">
           <a href="#" data-jump="goals"><span>🎯 Goals</span></a>
+          <a href="#" data-jump="brief"><span>📖 Engineer's Brief</span></a>
           ${L.video ? `<a href="#" data-jump="video"><span>🎬 Video</span></a>` : ''}
           ${secs.map((s, i) => `<a href="#" data-jump="s${i}"><span>${(KIND[s.kind] || ['•'])[0]} ${esc(s.title)}</span><span class="min">${s.minutes || ''}′</span></a>`).join('')}
           ${L.challenge ? `<a href="#" data-jump="challenge"><span>🤖 Code Challenge</span></a>` : ''}
@@ -242,10 +281,21 @@
             <h3>🎯 Learning goals</h3><ul>${(L.objectives || []).map(o => `<li>${esc(o)}</li>`).join('')}</ul>
             ${L.materials?.length ? `<h3>🧰 You'll need</h3><p>${L.materials.map(esc).join(' · ')}</p>` : ''}
             ${L.vocab?.length ? `<h3>📖 Vocabulary</h3><div class="vocab">${L.vocab.map(v => `<div><b>${esc(v.term)}</b>${esc(v.def)}</div>`).join('')}</div>` : ''}
+            <details class="standards"><summary class="small"><b>MA DLCS standards for this lesson</b></summary>
+              ${L.standards.anchor.map(s => `<p class="small"><b>${esc(s.code)}</b> ${esc(s.text)}</p>`).join('')}
+              ${L.standards.supporting.length ? `<p class="small muted" style="margin-bottom:2px"><b>Also practiced:</b></p>${L.standards.supporting.map(s => `<p class="small"><b>${esc(s.code)}</b> ${esc(s.text)}</p>`).join('')}` : ''}
+            </details>
+          </div>
+          <div class="panel sec" id="brief"><div class="sec-kind">📖 Engineer's Brief</div>
+            <p class="think"><b>Think about it as you read:</b> ${esc(L.supports.think)}</p>
+            ${Visuals.render(L.supports.visual)}
+            <div data-read><p class="brief-text">${esc(L.supports.brief)}</p></div>
           </div>
           ${L.video ? `<div class="panel sec" id="video"><div class="sec-kind">🎬 Watch</div>${videoEmbed(L.video)}</div>` : ''}
           ${secs.map((s, i) => `<div class="panel sec ${esc(s.kind)}" id="s${i}"><div class="sec-kind">${(KIND[s.kind] || ['•', s.kind]).join(' ')} <span class="m">· ${s.minutes || '?'} min</span></div><h2>${esc(s.title)}</h2><div class="body">${s.html}</div></div>`).join('')}
           ${L.challenge ? `<div class="panel sec code" id="challenge"><div class="sec-kind">🤖 Code Challenge</div><h2>${esc(L.challenge.title)}</h2><div class="body">${L.challenge.prompt}</div>
+              ${L.supports.worked ? `<details class="callout tip"><summary><b>👀 See a worked example</b></summary><p class="small">This solves a similar problem, not your challenge.</p><pre class="code">${esc(L.supports.worked.code)}</pre><ol class="small">${L.supports.worked.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ol></details>` : ''}
+              <details class="callout think"><summary><b>🧗 Stuck? Try these in order</b></summary><ol class="small"><li>Read the error message and go to the line it names.</li><li>Read your code out loud, one line at a time. What does the robot do on each line?</li><li>Compare your code with the worked example.</li><li>Open one hint below.</li><li>Explain the problem to a partner, then ask your teacher.</li></ol></details>
               <div class="hints">${(L.challenge.hints || []).map((h, i) => `<details><summary>💡 Hint ${i + 1}</summary>${esc(h)}</details>`).join('')}</div>
               ${teacher && L.challenge.solution ? `<details class="callout warn"><summary><b>👩‍🏫 Reference solution (teachers only)</b></summary><pre class="code">${esc(L.challenge.solution)}</pre></details>` : ''}
               <div id="ide"></div></div>` : ''}
@@ -253,8 +303,9 @@
           <div class="row">${prev ? `<a class="btn" href="#/lesson/${prev}">← Previous lesson</a>` : ''}<div class="spacer"></div>${next ? `<a class="btn primary" href="#/lesson/${next}">Next lesson →</a>` : ''}</div>
         </div>
       </div>`;
-    $app.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById(a.dataset.jump).scrollIntoView({ behavior: 'smooth' }); });
+    $app.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById(a.dataset.jump).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
     window.mountWidgets($app);
+    addReadAloud($app);
     // class timer
     let left = L.minutes * 60, int = null; const tm = document.getElementById('tmr'), tb = document.getElementById('tmrb');
     tb.onclick = () => {
@@ -295,7 +346,7 @@
     const part = Quest.part(L.id); if (!part) return;
     const heading = lessonPlace?.track === 'extra' ? '🚀 Upgrade installed!' : part.mission ? '🚩 Mission stage complete!' : '🔧 New part installed!';
     const m = modal(`<h2 style="margin-top:0">${heading}</h2>
-      <div class="celebrate"><canvas width="220" height="220"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
+      <div class="celebrate"><canvas width="220" height="220" role="img" aria-label="Your robot with its newest part installed"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
       <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Learning map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => m.remove()));
@@ -309,13 +360,14 @@
     box.innerHTML = `
       ${done ? `<div class="msg good" style="margin-bottom:12px">You scored <b>${P.quiz.score}/${P.quiz.total}</b>${P.quizAttempts > 1 ? ` (attempt ${P.quizAttempts})` : ''}. ${P.quiz.score < P.quiz.total ? 'Review the explanations below — you can retake it.' : 'Perfect! 🌟'}</div>` : ''}
       <form id="qf">
-        ${quiz.map((q, i) => `<div class="q"><b>${i + 1}. ${esc(q.q)}</b><div class="opts">
+        ${quiz.map((q, i) => `<div class="q" role="group" aria-labelledby="q${i}-label"><b id="q${i}-label">${i + 1}. ${esc(q.q)}</b><div class="opts">
           ${q.choices.map((c, j) => {
             const picked = done && Number(P.quiz.answers[i]) === j; const cls = (done || teacher) && q.answer !== undefined ? (j === q.answer ? (done || teacher ? 'right' : '') : picked ? 'wrong' : '') : '';
-            return `<label class="${done || teacher ? cls : ''}"><input type="radio" name="q${i}" value="${j}" ${picked ? 'checked' : ''} required> <span>${esc(c)}</span></label>`;
+            return `<label class="${done || teacher ? cls : ''}"><input type="radio" name="q${i}" value="${j}" ${picked ? 'checked' : ''} required> <span>${esc(c)}</span>${(done || teacher) && j === q.answer ? ' <b>✓ Correct answer</b>' : picked && j !== q.answer ? ' <b>✗ Your answer</b>' : ''}</label>`;
           }).join('')}</div>
           ${(done || teacher) && q.explain ? `<div class="explain">💡 ${esc(q.explain)}</div>` : ''}</div>`).join('')}
-        ${L.reflection ? `<label class="f">✍️ Reflection: ${esc(L.reflection)}<textarea name="reflection" rows="3" required>${esc(P?.reflection || '')}</textarea></label>` : ''}
+        ${L.reflection ? `<label class="f">✍️ Reflection: ${esc(L.reflection)}<textarea name="reflection" rows="3" required>${esc(P?.reflection || '')}</textarea></label>
+          ${L.supports?.frames?.length ? `<p class="small muted" style="margin-top:-6px"><b>Need a start?</b> ${L.supports.frames.map(esc).join(' &nbsp;·&nbsp; ')}</p>` : ''}` : ''}
         ${teacher ? '<p class="muted small">Teacher preview — correct answers are highlighted.</p>' : `<button class="btn primary">${done ? 'Retake & resubmit' : 'Submit exit ticket'}</button>`}
         ${!teacher && L.challenge && !P?.challenge ? '<p class="muted small">Remember to <b>Check & Submit</b> the code challenge too — both are needed to complete the lesson.</p>' : ''}
       </form>`;
@@ -409,11 +461,12 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       <div class="ide">
         <div><textarea></textarea><div class="ref" style="margin-top:10px"><b class="small">📚 Quick reference</b>${VexSim.adaptText(API_REF, setup)}${setup.gen === 1 ? '<p class="small muted">1st gen Brain screen: 5 rows, 21 columns.</p>' : ''}</div></div>
         <div class="simbox">
-          <canvas width="960" height="720"></canvas>
+          <canvas width="960" height="720" role="img" aria-label="Robot simulator field. The robot's position, heading and results are written as text beside it."></canvas>
           <div class="hud"></div>
           <div class="brain"><span class="small muted">🧠 Brain screen / output</span><div class="brain-screen"></div></div>
-          <div class="msg" data-m></div>
-          <ul class="checks"></ul>
+          <div class="msg" data-m role="status" aria-live="polite"></div>
+          <ul class="checks" aria-live="polite"></ul>
+          <p class="sr-only" data-summary aria-live="polite"></p>
         </div>
       </div>`;
     const q = s => host.querySelector(s);
@@ -500,6 +553,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       q('[data-a=run]').disabled = true; q('[data-a=stop]').disabled = false; q('.checks').innerHTML = ''; setMsg(withChecks ? '🏁 Running your program for the auto-check…' : '');
       const code = cm.getValue();
       const r = await VexSim.run(sim, code, setup);
+      q('[data-summary]').textContent = `Robot is now ${sim.r.x.toFixed(0)} inches across and ${sim.r.y.toFixed(0)} inches down the field, facing ${sim.r.h.toFixed(0)} degrees, with ${sim.collisions} collisions.`;
       if (!r.ok && /Robot Setup/.test(r.error || '')) showSetup(true);
       running = false; q('[data-a=run]').disabled = false; q('[data-a=stop]').disabled = true;
       if (!r.ok) {
@@ -663,10 +717,10 @@ int main() {
         <tbody>${students.map(s => `<tr><td class="l"><b>${esc(s.name)}</b><br><span class="small muted">@${esc(s.username)}</span> <button class="btn sm" data-stu="${s.id}" style="padding:2px 6px">⋯</button></td>
           <td><b>${lessons.filter(l => l.track === 'main' && s.progress[l.id]?.status === 'complete').length}</b></td>
           ${lessons.map(l => { const p = s.progress[l.id];
-            if (!p) return `<td><button class="cell none" data-s="${s.id}" data-l="${l.id}">·</button></td>`;
+            if (!p) return `<td><button class="cell none" data-s="${s.id}" data-l="${l.id}" aria-label="${esc(s.name)}, ${esc(l.title)}: not started">·</button></td>`;
             const label = p.grade != null ? p.grade : p.quiz ? `${p.quiz.score}/${p.quiz.total}` : '…';
             const ch = l.hasChallenge ? (p.challenge ? (p.challenge.passed ? '' : '⚠') : '') : '';
-            return `<td><button class="cell ${p.status} ${p.needsReview ? 'review' : ''}" data-s="${s.id}" data-l="${l.id}" title="${p.challenge ? 'Challenge: ' + (p.challenge.passed ? 'passed' : p.challenge.passCount + '/' + p.challenge.total) : 'No code submitted'}">${label}${ch}</button></td>`; }).join('')}
+            return `<td><button class="cell ${p.status} ${p.needsReview ? 'review' : ''}" data-s="${s.id}" data-l="${l.id}" aria-label="${esc(s.name)}, ${esc(l.title)}: ${p.status}, ${label}" title="${p.challenge ? 'Challenge: ' + (p.challenge.passed ? 'passed' : p.challenge.passCount + '/' + p.challenge.total) : 'No code submitted'}">${label}${ch}</button></td>`; }).join('')}
         </tr>`).join('')}</tbody></table></div>` : `<div class="panel"><h3>No students yet</h3><p>Share the join code <span class="joincode">${esc(C.code)}</span> with your class. Students enter it the first time they open this website.</p></div>`}`;
     $app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => reviewModal(b.dataset.s, b.dataset.l, () => classPage(cid)));
     $app.querySelectorAll('[data-stu]').forEach(b => b.onclick = () => studentModal(students.find(s => s.id === b.dataset.stu), cid));
@@ -769,6 +823,37 @@ int main() {
       const id = b.dataset.save;
       try { await api('/api/teacher/lessons/' + id, { method: 'PUT', body: { video: $app.querySelector(`[data-v="${id}"]`).value, teacherNote: $app.querySelector(`[data-n="${id}"]`).value } }); toast('Saved ✔'); } catch (e) { toast(e.message); }
     });
+  }
+
+  // ---------------------------------------------------------------- standards map
+  async function standardsPage() {
+    const { standards, lessons, plans } = await api('/api/teacher/standards');
+    const short = c => c.replace('6-8.', '');
+    const draw = plan => {
+      const inPlan = lessons.filter(l => plan === 'all' || plans[plan].includes(l.id));
+      const anchorSet = new Set(inPlan.flatMap(l => l.anchor)), anySet = new Set(inPlan.flatMap(l => [...l.anchor, ...l.supporting]));
+      const nums = (code, key) => inPlan.filter(l => l[key].includes(code)).map(l => l.order).join(', ') || '—';
+      const strands = [...new Set(standards.map(s => s.strand))];
+      document.getElementById('std-body').innerHTML = `
+        <div class="stats">
+          <div class="stat"><span class="muted small">Lessons in this term</span><b>${inPlan.length}</b></div>
+          <div class="stat"><span class="muted small">Standards assessed</span><b>${anchorSet.size}</b></div>
+          <div class="stat"><span class="muted small">Standards addressed</span><b>${anySet.size} / ${standards.length}</b></div>
+          <div class="stat"><span class="muted small">Lessons with an assessed standard</span><b>${inPlan.filter(l => l.anchor.length).length} / ${inPlan.length}</b></div>
+        </div>
+        <h2>By lesson</h2>
+        <div class="gridtbl"><table class="tbl std"><thead><tr><th scope="col">#</th><th scope="col">Lesson</th><th scope="col">Assessed</th><th scope="col">Also practiced</th></tr></thead>
+          <tbody>${inPlan.map(l => `<tr><td>${l.order}</td><td class="l">${esc(l.title)}</td><td class="l">${l.anchor.map(short).join(', ')}</td><td class="l">${l.supporting.map(short).join(', ') || '—'}</td></tr>`).join('')}</tbody></table></div>
+        <h2 style="margin-top:20px">By standard</h2>
+        ${strands.map(strand => `<h3>${esc(strand)}</h3><div class="gridtbl"><table class="tbl std"><thead><tr><th scope="col">Code</th><th scope="col">Standard</th><th scope="col">Assessed in lesson</th><th scope="col">Practiced in lesson</th></tr></thead>
+          <tbody>${standards.filter(s => s.strand === strand).map(s => `<tr class="${anySet.has(s.code) ? '' : 'gap'}"><td>${short(s.code)}</td><td class="l">${esc(s.text)}</td><td>${nums(s.code, 'anchor')}</td><td>${nums(s.code, 'supporting')}</td></tr>`).join('')}</tbody></table></div>`).join('')}`;
+    };
+    $app.innerHTML = `<div class="row"><h1 style="margin:0">📋 MA DLCS Standards Map</h1><div class="spacer"></div>
+      <label class="small">Term: <select class="input" id="std-plan" style="display:inline-block;width:auto">${PLAN_OPTIONS('15')}</select></label></div>
+      <p class="muted">Massachusetts Digital Literacy and Computer Science standards, grades 6-8. Lesson numbers are positions in the full course. Rows in gray aren't addressed in this term.</p>
+      <div id="std-body"></div>`;
+    document.getElementById('std-plan').onchange = e => draw(e.target.value);
+    draw('15');
   }
 
   // ---------------------------------------------------------------- my robot
