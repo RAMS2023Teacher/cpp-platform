@@ -10,10 +10,10 @@ Standards are the Massachusetts Digital Literacy and Computer Science (2016) gra
 
 | Term | Standards assessed (anchor) | Standards addressed (anchor or supporting) |
 |---|---|---|
-| 10 lessons | 12 | 14 |
-| 12 lessons | 13 | 16 |
-| 15 lessons | 13 | 18 |
-| Full course (28 lessons) | 19 | 25 |
+| 11 lessons | 12 | 15 |
+| 13 lessons | 13 | 17 |
+| 16 lessons | 13 | 19 |
+| Full course (29 lessons) | 19 | 26 |
 
 The state list has 67 grades 6-8 standards.
 
@@ -21,64 +21,66 @@ The state list has 67 grades 6-8 standards.
 
 | # | Lesson | In terms | Anchor | Supporting |
 |---|---|---|---|---|
-| 1 | What Is a Robot? | 10, 12, 15 | CS.a.4 | — |
-| 2 | Build Basics: Beams, Plates & Pins | 10, 12, 15 | CS.a.5 | — |
+| 1 | What Is a Robot? | 11, 13, 16 | CS.a.4 | — |
+| 2 | Build Basics: Beams, Plates & Pins | 11, 13, 16 | CS.a.5 | — |
 | 3 | Build Basics: Strong Structures | Go Further | CT.d.6 | CS.a.5 |
 | 4 | Build Basics: Motors, Shafts & Gears | Go Further | CS.a.4 | CT.b.2 |
-| 5 | Build the BaseBot | 10, 12, 15 | CS.a.5, CS.a.7 | CS.a.4, CT.d.3 |
-| 6 | Hello, C++! | 10, 12, 15 | CT.d.5, CT.d.6 | CT.d.3 |
-| 7 | Drive & Turn | 10, 12, 15 | CT.d.3 | CT.b.2 |
-| 8 | Variables & Math | 15 | CT.d.4 | CT.b.2 |
-| 9 | Loops | 10, 12, 15 | CT.b.1, CT.d.5 | CT.d.4 |
-| 10 | Making Decisions | 12, 15 | CT.b.1, CS.a.4 | CT.b.2, CT.d.4 |
-| 11 | While Loops & Sensors | 15 | CT.b.1, CS.a.4 | CT.b.5, CT.d.4 |
-| 12 | Functions | 10, 12, 15 | CT.a.2, CT.d.2 | CT.d.4, CT.b.3 |
-| 13 | What Is an Algorithm? | 10, 12, 15 | CT.b.4, CT.d.1 | CT.d.3 |
-| 14 | Line Following | Go Further | CT.d.3, CS.a.6 | CT.b.5 |
-| 15 | Searching | Go Further | CT.d.1, CT.d.3 | CT.b.4 |
-| 16 | Sorting | Go Further | CT.d.3, CT.d.5 | CT.b.4 |
-| 17 | Cube Sorting Robot | Go Further | CT.b.3, CS.a.5 | CT.a.2, CT.d.2, CT.d.4 |
-| 18 | Pathfinding | Go Further | CT.d.3 | CT.e.1, CT.b.4 |
-| 19 | Smooth Moves: Proportional Control | Go Further | CS.a.4, CT.e.2 | CT.d.6 |
-| 20 | What Is AI? | 12, 15 | CS.a.4, CT.d.4 | CAS.c.1, CS.b.1 |
-| 21 | Decision Trees | Go Further | CT.a.3 | CT.b.2, CT.d.4 |
-| 22 | State Machines | Go Further | CT.d.3, CT.e.1 | CT.b.1 |
-| 23 | Machine Learning: Training Data | Go Further | CT.c.5 | CS.a.6, CS.b.2 |
-| 24 | The Robot Learns: Trial & Error | Go Further | CT.d.6, CT.b.1 | CT.c.5 |
-| 25 | AI Ethics & Bias | Go Further | CAS.c.1 | CAS.c.3, CT.e.2 |
-| 26 | Capstone: Design a Rescue Robot | 10, 12, 15 | CT.b.3, CS.a.5 | CT.d.1, CT.a.2 |
-| 27 | Capstone: Build, Code, Test | 10, 12, 15 | CT.d.6, CS.a.5 | CT.d.4, CS.a.7 |
-| 28 | Capstone Showcase | 15 | CS.a.5 | DTC.b.1, CT.d.2 |
+| 5 | Build the BaseBot | 11, 13, 16 | CS.a.5, CS.a.7 | CS.a.4, CT.d.3 |
+| 6 | Hello, C++! | 11, 13, 16 | CT.d.5, CT.d.6 | CT.d.3 |
+| 7 | From Simulator to Robot: VEXcode IQ | 11, 13, 16 | CS.a.7 | CS.a.2, CT.d.6 |
+| 8 | Drive & Turn | 11, 13, 16 | CT.d.3 | CT.b.2 |
+| 9 | Variables & Math | 16 | CT.d.4 | CT.b.2 |
+| 10 | Loops | 11, 13, 16 | CT.b.1, CT.d.5 | CT.d.4 |
+| 11 | Making Decisions | 13, 16 | CT.b.1, CS.a.4 | CT.b.2, CT.d.4 |
+| 12 | While Loops & Sensors | 16 | CT.b.1, CS.a.4 | CT.b.5, CT.d.4 |
+| 13 | Functions | 11, 13, 16 | CT.a.2, CT.d.2 | CT.d.4, CT.b.3 |
+| 14 | What Is an Algorithm? | 11, 13, 16 | CT.b.4, CT.d.1 | CT.d.3 |
+| 15 | Line Following | Go Further | CT.d.3, CS.a.6 | CT.b.5 |
+| 16 | Searching | Go Further | CT.d.1, CT.d.3 | CT.b.4 |
+| 17 | Sorting | Go Further | CT.d.3, CT.d.5 | CT.b.4 |
+| 18 | Cube Sorting Robot | Go Further | CT.b.3, CS.a.5 | CT.a.2, CT.d.2, CT.d.4 |
+| 19 | Pathfinding | Go Further | CT.d.3 | CT.e.1, CT.b.4 |
+| 20 | Smooth Moves: Proportional Control | Go Further | CS.a.4, CT.e.2 | CT.d.6 |
+| 21 | What Is AI? | 13, 16 | CS.a.4, CT.d.4 | CAS.c.1, CS.b.1 |
+| 22 | Decision Trees | Go Further | CT.a.3 | CT.b.2, CT.d.4 |
+| 23 | State Machines | Go Further | CT.d.3, CT.e.1 | CT.b.1 |
+| 24 | Machine Learning: Training Data | Go Further | CT.c.5 | CS.a.6, CS.b.2 |
+| 25 | The Robot Learns: Trial & Error | Go Further | CT.d.6, CT.b.1 | CT.c.5 |
+| 26 | AI Ethics & Bias | Go Further | CAS.c.1 | CAS.c.3, CT.e.2 |
+| 27 | Capstone: Design a Rescue Robot | 11, 13, 16 | CT.b.3, CS.a.5 | CT.d.1, CT.a.2 |
+| 28 | Capstone: Build, Code, Test | 11, 13, 16 | CT.d.6, CS.a.5 | CT.d.4, CS.a.7 |
+| 29 | Capstone Showcase | 16 | CS.a.5 | DTC.b.1, CT.d.2 |
 
 ## By standard
 
 | Code | Standard | Anchor lessons | Supporting lessons |
 |---|---|---|---|
-| CAS.c.1 | Describe current events and emerging technologies in computing and the effects they may have on education, the workplace, individuals, communities, and global society. | 25 | 20 |
-| CAS.c.3 | Relate the distribution of computing resources in a global society to issues of equity, access, and power. | — | 25 |
-| DTC.b.1 | Communicate and publish key ideas and details individually or collaboratively in a way that informs, persuades, and/or entertains using a variety of digital tools and media-rich resources. | — | 28 |
-| CS.a.4 | Identify and describe the use of sensors, actuators, and control systems in an embodied system (e.g., a robot, an e-textile, installation art, smart room). | 1, 4, 10, 11, 19, 20 | 5 |
-| CS.a.5 | Individually and collaboratively design and demonstrate the use of a device (e.g., robot, e-textile) to accomplish a task. | 2, 5, 17, 26, 27, 28 | 3 |
-| CS.a.6 | Use a variety of computing devices (e.g., probes, sensors, handheld devices, Global Positioning System [GPS]) to individually and collaboratively collect, analyze, and present information for content-related problems. | 14 | 23 |
-| CS.a.7 | Identify steps involved in diagnosing and solving routine hardware and software problems (e.g., power, connections, application window or toolbar, cables, ports, network resources, video, sound) that occur during everyday computer use. | 5 | 27 |
-| CS.b.1 | Explain why some problems can be solved more easily by computers or humans based on a general understanding of types of tasks at which each excels. | — | 20 |
-| CS.b.2 | Describe how humans and machines interact to solve problems that cannot be solved by either alone (e.g., “big data” experiments that involve drawing conclusions by analyzing vast amounts of data). | — | 23 |
-| CT.a.2 | Define a simple function that represents a more complex task/problem and can be reused to solve similar tasks/problems. | 12 | 17, 26 |
-| CT.a.3 | Use decomposition to define and apply a hierarchical classification scheme to a complex system, such as the human body, animal classification, or in computing. | 21 | — |
-| CT.b.1 | Design solutions that use repetition and conditionals. | 9, 10, 11, 24 | 22 |
-| CT.b.2 | Use logical reasoning to predict outputs given varying inputs. | — | 4, 7, 8, 10, 21 |
-| CT.b.3 | Individually and collaboratively decompose a problem and create a sub-solution for each of its parts (e.g., video game, robot obstacle course, making dinner). | 17, 26 | 12 |
-| CT.b.4 | Recognize that more than one algorithm can solve a given problem. | 13 | 15, 16, 18 |
-| CT.b.5 | Recognize that boundaries need to be taken into account for an algorithm to produce correct results. | — | 11, 14 |
-| CT.c.5 | Select and use data-collection technology (e.g., probes, handheld devices, geographic mapping systems) to individually and collaboratively gather, view, organize, analyze, and report results for content-related problems. | 23 | 24 |
-| CT.d.1 | Individually and collaboratively compare algorithms to solve a problem, based on a given criteria (e.g., time, resource, accessibility). | 13, 15 | 26 |
-| CT.d.2 | Use functions to hide the detail in a program. | 12 | 17, 28 |
-| CT.d.3 | Create a program, individually and collaboratively, that implements an algorithm to achieve a given goal. | 7, 14, 15, 16, 18, 22 | 5, 6, 13 |
-| CT.d.4 | Implement problem solutions using a programming language, including all of the following: looping behavior, conditional statements, expressions, variables, and functions. | 8, 20 | 9, 10, 11, 12, 17, 21, 27 |
-| CT.d.5 | Trace programs step-by-step in order to predict their behavior. | 6, 9, 16 | — |
-| CT.d.6 | Use an iterative approach in development and debugging to understand the dimensions of a problem clearly. | 3, 6, 24, 27 | 19 |
-| CT.e.1 | Create a model of a real-world system and explain why some details, features and behaviors were required in the model and why some could be ignored. | 22 | 18 |
-| CT.e.2 | Use and modify simulations to analyze and illustrate a concept in depth (e.g., light rays/mechanical waves interaction with materials, genetic variation). | 19 | 25 |
+| CAS.c.1 | Describe current events and emerging technologies in computing and the effects they may have on education, the workplace, individuals, communities, and global society. | 26 | 21 |
+| CAS.c.3 | Relate the distribution of computing resources in a global society to issues of equity, access, and power. | — | 26 |
+| DTC.b.1 | Communicate and publish key ideas and details individually or collaboratively in a way that informs, persuades, and/or entertains using a variety of digital tools and media-rich resources. | — | 29 |
+| CS.a.2 | Recognize that there is a wide range of application software. | — | 7 |
+| CS.a.4 | Identify and describe the use of sensors, actuators, and control systems in an embodied system (e.g., a robot, an e-textile, installation art, smart room). | 1, 4, 11, 12, 20, 21 | 5 |
+| CS.a.5 | Individually and collaboratively design and demonstrate the use of a device (e.g., robot, e-textile) to accomplish a task. | 2, 5, 18, 27, 28, 29 | 3 |
+| CS.a.6 | Use a variety of computing devices (e.g., probes, sensors, handheld devices, Global Positioning System [GPS]) to individually and collaboratively collect, analyze, and present information for content-related problems. | 15 | 24 |
+| CS.a.7 | Identify steps involved in diagnosing and solving routine hardware and software problems (e.g., power, connections, application window or toolbar, cables, ports, network resources, video, sound) that occur during everyday computer use. | 5, 7 | 28 |
+| CS.b.1 | Explain why some problems can be solved more easily by computers or humans based on a general understanding of types of tasks at which each excels. | — | 21 |
+| CS.b.2 | Describe how humans and machines interact to solve problems that cannot be solved by either alone (e.g., “big data” experiments that involve drawing conclusions by analyzing vast amounts of data). | — | 24 |
+| CT.a.2 | Define a simple function that represents a more complex task/problem and can be reused to solve similar tasks/problems. | 13 | 18, 27 |
+| CT.a.3 | Use decomposition to define and apply a hierarchical classification scheme to a complex system, such as the human body, animal classification, or in computing. | 22 | — |
+| CT.b.1 | Design solutions that use repetition and conditionals. | 10, 11, 12, 25 | 23 |
+| CT.b.2 | Use logical reasoning to predict outputs given varying inputs. | — | 4, 8, 9, 11, 22 |
+| CT.b.3 | Individually and collaboratively decompose a problem and create a sub-solution for each of its parts (e.g., video game, robot obstacle course, making dinner). | 18, 27 | 13 |
+| CT.b.4 | Recognize that more than one algorithm can solve a given problem. | 14 | 16, 17, 19 |
+| CT.b.5 | Recognize that boundaries need to be taken into account for an algorithm to produce correct results. | — | 12, 15 |
+| CT.c.5 | Select and use data-collection technology (e.g., probes, handheld devices, geographic mapping systems) to individually and collaboratively gather, view, organize, analyze, and report results for content-related problems. | 24 | 25 |
+| CT.d.1 | Individually and collaboratively compare algorithms to solve a problem, based on a given criteria (e.g., time, resource, accessibility). | 14, 16 | 27 |
+| CT.d.2 | Use functions to hide the detail in a program. | 13 | 18, 29 |
+| CT.d.3 | Create a program, individually and collaboratively, that implements an algorithm to achieve a given goal. | 8, 15, 16, 17, 19, 23 | 5, 6, 14 |
+| CT.d.4 | Implement problem solutions using a programming language, including all of the following: looping behavior, conditional statements, expressions, variables, and functions. | 9, 21 | 10, 11, 12, 13, 18, 22, 28 |
+| CT.d.5 | Trace programs step-by-step in order to predict their behavior. | 6, 10, 17 | — |
+| CT.d.6 | Use an iterative approach in development and debugging to understand the dimensions of a problem clearly. | 3, 6, 25, 28 | 7, 20 |
+| CT.e.1 | Create a model of a real-world system and explain why some details, features and behaviors were required in the model and why some could be ignored. | 23 | 19 |
+| CT.e.2 | Use and modify simulations to analyze and illustrate a concept in depth (e.g., light rays/mechanical waves interaction with materials, genetic variation). | 20 | 26 |
 
 ## Not addressed by this course
 
@@ -116,7 +118,6 @@ These are outside a robotics and programming course and would need to be taught 
 | DTC.c.4 | Create an artifact, individually and collaboratively, that answers a research question and communicates results and conclusions. |
 | DTC.c.5 | Use digital citation tools to cite sources using a school- or district-adopted format (e.g., Modern Language Association [MLA]), including proper citation for all text and nontext sources (e.g., images, audio, video). |
 | CS.a.1 | Describe the main functions of an operating system. |
-| CS.a.2 | Recognize that there is a wide range of application software. |
 | CS.a.3 | Identify and describe the function of the main internal parts of a basic computing device (e.g., motherboard, hard drive, Central Processing Unit [CPU]). |
 | CS.c.1 | Explain the difference between physical (wired), local and wide area, wireless, and mobile networks. |
 | CS.c.2 | Model the components of a network, including devices, routers, switches, cables, wires, and transponders. |

@@ -36,10 +36,10 @@ Standards are the Massachusetts Digital Literacy and Computer Science (2016) gra
 
 | Term | Standards assessed (anchor) | Standards addressed (anchor or supporting) |
 |---|---|---|
-${row('10 lessons', plans[10])}
-${row('12 lessons', plans[12])}
-${row('15 lessons', plans[15])}
-${row('Full course (28 lessons)', null)}
+${row(`${plans[10].length} lessons`, plans[10])}
+${row(`${plans[12].length} lessons`, plans[12])}
+${row(`${plans[15].length} lessons`, plans[15])}
+${row(`Full course (${lessons.length} lessons)`, null)}
 
 The state list has ${standards.length} grades 6-8 standards.
 
@@ -47,7 +47,7 @@ The state list has ${standards.length} grades 6-8 standards.
 
 | # | Lesson | In terms | Anchor | Supporting |
 |---|---|---|---|---|
-${lessons.map(l => `| ${l.order} | ${cell(l.title)} | ${[10, 12, 15].filter(n => plans[n].includes(l.id)).join(', ') || 'Go Further'} | ${list(l.standards.anchor)} | ${list(l.standards.supporting)} |`).join('\n')}
+${lessons.map(l => `| ${l.order} | ${cell(l.title)} | ${[10, 12, 15].filter(n => plans[n].includes(l.id)).map(n => plans[n].length).join(", ") || "Go Further"} | ${list(l.standards.anchor)} | ${list(l.standards.supporting)} |`).join('\n')}
 
 ## By standard
 
@@ -92,6 +92,27 @@ for (const l of lessons) {
   const { standards, ...rest } = s;
   l.standards = standards; l.supports = rest;
 }
+// "Where to look" screenshots: <figure class="shot" data-shot="NAME"><figcaption>…</figcaption></figure> in lesson HTML
+// becomes the picture in shots/NAME.webp (or .png / .jpg), embedded in Lessons.gs, or a "coming soon" box until it exists.
+const shotDir = path.join(root, 'shots'), shotTypes = { webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg' };
+const shotsUsed = new Set(), shotsMissing = new Set();
+let shotBytes = 0;
+const withShots = html => html.replace(/<figure class="shot" data-shot="([\w-]+)">\s*<figcaption>([\s\S]*?)<\/figcaption>\s*<\/figure>/g, (_, name, caption) => {
+  shotsUsed.add(name);
+  const ext = Object.keys(shotTypes).find(e => fs.existsSync(path.join(shotDir, `${name}.${e}`)));
+  const alt = caption.replace(/<[^>]+>/g, '').replace(/"/g, '&quot;');
+  if (!ext) { shotsMissing.add(name); return `<figure class="shot"><div class="shot-missing">📷 Picture coming soon: ${caption}</div></figure>`; }
+  const bytes = fs.readFileSync(path.join(shotDir, `${name}.${ext}`));
+  shotBytes += bytes.length;
+  return `<figure class="shot"><img src="data:${shotTypes[ext]};base64,${bytes.toString('base64')}" alt="${alt}" loading="lazy"><figcaption>${caption}</figcaption></figure>`;
+});
+for (const l of lessons) {
+  for (const sec of l.sections || []) sec.html = withShots(sec.html);
+  if (l.challenge) l.challenge.prompt = withShots(l.challenge.prompt);
+}
+if (shotsMissing.size) console.log(`Screenshots still to add in shots/ (see docs/SCREENSHOTS.md): ${[...shotsMissing].join(', ')}`);
+if (shotBytes > 400 * 1024) throw new Error(`Screenshots add ${Math.round(shotBytes / 1024)} KB; keep them under 400 KB in total (Google refuses to save very large projects). Use smaller WebP files.`);
+
 const traces = require(path.join(root, 'lessons/traces.js'));
 let turn = 0;
 for (const l of lessons) {

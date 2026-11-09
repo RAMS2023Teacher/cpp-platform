@@ -42,7 +42,7 @@
         const h = a.getAttribute('href');
         if (a.classList.contains('skip')) { e.preventDefault(); $app.focus(); return; }
         if (h.startsWith('#')) { e.preventDefault(); if (h !== '#') Nav.go(h); }
-        else if (/^https?:/.test(h)) a.target = '_blank';
+        else if (/^https?:/.test(h) && !a.target) a.target = '_blank';
       });
       google.script.history.setChangeHandler(e => { Nav.hash = '#' + (e.location.hash || '/'); route(); });
     },
@@ -79,12 +79,23 @@
   const tags = t => (t || []).map(x => `<span class="tag ${esc(x)}">${esc(x)}</span>`).join(' ');
 
   // ---------------------------------------------------------------- nav + router
+  // VEXcode IQ always opens in the same tab (named "vexcode"), so students flip between the two instead of piling up tabs.
+  const VEXCODE_URL = 'https://codeiq.vex.com/';
+  const VEXCODE_LINK = (label, cls = '') => `<a class="${cls}" href="${VEXCODE_URL}" target="vexcode" rel="noopener" title="Open VEXcode IQ in its own tab">${label}</a>`;
+  function sideBySideHelp() {
+    const m = modal(`<h2 style="margin-top:0">⧉ VEXcode IQ + RoboCode, side by side</h2>
+      <div class="split-pic" aria-hidden="true"><div>VEXcode IQ</div><div>RoboCode</div></div>
+      <ol class="steps"><li>Click ${VEXCODE_LINK('VEXcode IQ ↗', 'btn sm')} to open VEXcode IQ.</li><li>In VEXcode, press <kbd>Alt</kbd> + <kbd>[</kbd> to snap it to the <b>left</b>.</li><li>Come back here and press <kbd>Alt</kbd> + <kbd>]</kbd> to snap RoboCode to the <b>right</b>.</li></ol>
+      <p class="small muted">Not on a Chromebook? Windows: <kbd>⊞ Win</kbd> + <kbd>←</kbd> / <kbd>→</kbd>. Mac: drag the windows side by side.</p>
+      <div class="row"><div class="spacer"></div><button class="btn primary" id="cx">Got it!</button></div>`);
+    m.querySelector('#cx').onclick = () => m.remove();
+  }
   function renderNav() {
     if (!ME) { $nav.innerHTML = ''; return; }
     const links = ME.role === 'teacher'
       ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/teacher/standards">Standards</a><a href="#/playground">Code Lab</a>`
       : `<a href="#/">My Course</a><a href="#/robot">My Robot</a><a href="#/team">Team</a><a href="#/map">Map</a><a href="#/playground">Code Lab</a>`;
-    $nav.innerHTML = `${links}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
+    $nav.innerHTML = `${links}${VEXCODE_LINK('VEXcode IQ ↗')}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
     $nav.querySelectorAll('a').forEach(a => a.classList.toggle('active', Nav.hash === a.getAttribute('href')));
   }
   let cleanup = null;
@@ -508,17 +519,20 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
   function copyForVexcode(source, setup) {
     const code = forVexcode(source);
     const m = modal(`<h2 style="margin-top:0">📋 Copy for VEXcode</h2>
-      <ol class="small"><li>In VEXcode IQ, open a new C++ project for your robot's Brain.</li><li>In <b>Devices</b>, add the same devices, ports and names as your Robot Setup.</li><li>Replace everything in <b>main.cpp</b> with the code below, then download it to your robot.</li></ol>
+      <ol class="small"><li>Press <b>Copy code</b>, then open ${VEXCODE_LINK('VEXcode IQ ↗', 'btn sm')} <button class="btn sm" type="button" id="split" title="Put VEXcode IQ and RoboCode side by side">⧉ Side by side</button></li><li>In VEXcode IQ, open a new C++ text project for your robot's Brain.</li><li>In <b>Devices</b>, add the same devices, ports and names as your Robot Setup.</li><li>Replace everything in <b>main.cpp</b> with your code, then download it to your robot.</li></ol>
+      <p class="small muted">First time? The lesson <a href="#/lesson/u1v1">From Simulator to Robot: VEXcode IQ</a> shows every step with pictures.</p>
       <textarea id="vex-code" class="input" rows="12" readonly spellcheck="false" aria-label="Code to paste into VEXcode" style="font-family:var(--mono)">${esc(code)}</textarea>
       <details style="margin-top:8px"><summary class="small">Devices to add in VEXcode</summary><pre class="code">${esc(VexSim.generatedConfig(setup))}</pre></details>
       <div class="row" style="margin-top:12px"><button class="btn primary" id="do-copy">Copy code</button><span class="small" role="status" id="copy-state"></span><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
     const area = m.querySelector('#vex-code'), state = m.querySelector('#copy-state');
     m.querySelector('#cx').onclick = () => m.remove();
+    m.querySelector('#split').onclick = sideBySideHelp;
+    m.querySelectorAll('a[href^="#"]').forEach(x => x.addEventListener('click', () => m.remove()));
     m.querySelector('#do-copy').onclick = async () => {
       area.focus(); area.select();
       let ok = false;
       try { await navigator.clipboard.writeText(code); ok = true; } catch (e) { try { ok = document.execCommand('copy'); } catch (e2) {} } // Apps Script pages may block the newer clipboard
-      state.textContent = ok ? 'Copied ✔' : 'Press Ctrl+C to copy.';
+      state.textContent = ok ? 'Copied ✔ Now paste it into VEXcode IQ.' : 'Press Ctrl+C to copy.';
     };
   }
 
@@ -530,7 +544,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
         <button class="btn" data-a="reset">↺ Reset robot</button>
         <select class="input" data-a="speed" style="width:auto;margin:0"><option value="1">1× speed</option><option value="2">2×</option><option value="4">4×</option><option value="10">10×</option></select>
         <button class="btn" data-a="setup" aria-expanded="false">🔌 Robot Setup</button>
-        ${opts.setup ? '' : '<button class="btn" data-a="copy">📋 Copy for VEXcode</button>'}
+        ${opts.setup ? '' : `<button class="btn" data-a="copy">📋 Copy for VEXcode</button>${VEXCODE_LINK('VEXcode IQ ↗', 'btn')}<button class="btn" data-a="split" title="Put VEXcode IQ and RoboCode side by side" aria-label="Put VEXcode IQ and RoboCode side by side">⧉</button>`}
         <button class="btn" data-a="settings" aria-expanded="false">⚙ Editor settings</button>
         <div class="spacer"></div>
         ${opts.starter ? '<button class="btn sm" data-a="restore">Restore starter code</button>' : ''}
@@ -664,6 +678,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       const a = e.target.closest('[data-a]')?.dataset.a;
       if (a === 'setup') showSetup(setupBox.hidden);
       if (a === 'copy') copyForVexcode(cm.getValue(), setup);
+      if (a === 'split') sideBySideHelp();
       if (a === 'settings') { settings.hidden = !settings.hidden; q('[data-a=settings]').setAttribute('aria-expanded', String(!settings.hidden)); }
       if (a === 'settings-reset') { prefs = { ...EDITOR_DEFAULTS }; try { localStorage.removeItem(editorKey()); } catch (e) {} syncSettingsForm(); applyPrefs(); }
       if (a === 'run') doRun(false);
@@ -764,7 +779,7 @@ int main() {
   }
 
   // ---------------------------------------------------------------- teacher
-  const PLANS = { 10: '10-lesson term', 12: '12-lesson term', 15: '15-lesson term', all: 'Full course (28 lessons)' };
+  const PLANS = { 10: '11-lesson term', 12: '13-lesson term', 15: '16-lesson term', all: 'Full course (29 lessons)' }; // keys are stored on classes, so they keep their original names
   const KITS = { 1: 'VEX IQ 1st gen', 2: 'VEX IQ 2nd gen' };
   const PLAN_OPTIONS = current => options(Object.keys(PLANS), current, v => PLANS[v]);
   const KIT_OPTIONS = current => options(Object.keys(KITS), current, v => KITS[v]);

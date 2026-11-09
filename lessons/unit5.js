@@ -22,7 +22,7 @@ module.exports = [
   {
     id: "u5l1",
     unit: 5,
-    order: 26,
+    order: 27,
     title: "Capstone: Design a Rescue Robot",
     minutes: 40,
     tags: ["build", "code", "algorithms", "ai"],
@@ -296,7 +296,7 @@ int main() {
   {
     id: "u5l2",
     unit: 5,
-    order: 27,
+    order: 28,
     title: "Capstone: Build, Code, Test",
     minutes: 40,
     tags: ["build", "code", "algorithms"],
@@ -576,7 +576,7 @@ int main() {
   {
     id: "u5l3",
     unit: 5,
-    order: 28,
+    order: 29,
     title: "Capstone Showcase",
     minutes: 40,
     tags: ["code", "build", "ai"],

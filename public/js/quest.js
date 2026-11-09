@@ -8,6 +8,7 @@
     { id: 'u1b3', icon: '⚙️', name: 'Gearbox', does: 'Trades speed for the strength to climb rubble.' },
     { id: 'u1l2', icon: '🛞', name: 'Drive wheels', does: 'Four wheels to cross rough ground.' },
     { id: 'u1l3', icon: '🖥️', name: 'Robot Brain', does: 'Runs every line of code you write.' },
+    { id: 'u1v1', icon: '📶', name: 'Data link', does: 'Carries your code from the computer to the Brain.' },
     { id: 'u1l4', icon: '🔌', name: 'Drive motors', does: 'Turn your commands into movement.' },
     { id: 'u2l1', icon: '💾', name: 'Memory bank', does: 'Stores the values your robot keeps track of.' },
     { id: 'u2l2', icon: '🔋', name: 'Battery pack', does: 'Keeps the loops running through a long search.' },
@@ -48,6 +49,7 @@
     if (has('u1b2')) { box(-3.35, -4.4, .35, 8.8, '#9aa3ad'); box(3, -4.4, .35, 8.8, '#9aa3ad'); }
     if (has('u1b1')) [[-3.8, -4.9], [3.1, -4.9], [-3.8, 4.2], [3.1, 4.2]].forEach(([x, y]) => box(x, y, .7, .7, '#6c7580'));
     if (has('u1b3')) { dot(-3.1, .4, .6, '#c0c0c0'); dot(3.1, .4, .6, '#c0c0c0'); }
+    if (has('u1v1')) { box(-.35, 2.9, .7, 1.3, '#1c7ed6'); dot(0, 2.75, .3, '#74c0fc'); }
     if (has('u1l4')) { box(-4.5, -2.8, 1.1, 1.7, '#555'); box(3.4, -2.8, 1.1, 1.7, '#555'); box(-4.5, 1.6, 1.1, 1.7, '#555'); box(3.4, 1.6, 1.1, 1.7, '#555'); }
     if (has('u2l1')) box(-3.2, -4.2, 1.5, 1, '#2e8b57');
     if (has('u2l2')) box(-2.2, 4.2, 4.4, 1.4, '#e0a500');

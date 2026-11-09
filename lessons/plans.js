@@ -1,7 +1,7 @@
 // Which lessons make up a term, and what each extra lesson needs first.
 // Every plan includes an algorithms lesson and ends with the rescue capstone. The 12- and 15-lesson terms add AI.
 // Each shorter plan is contained in the next, so a class can change plans without losing anyone's progress.
-const ten = ['u1l1', 'u1b1', 'u1l2', 'u1l3', 'u1l4', 'u2l2', 'u2l5', 'u3l1', 'u5l1', 'u5l2'];
+const ten = ['u1l1', 'u1b1', 'u1l2', 'u1l3', 'u1v1', 'u1l4', 'u2l2', 'u2l5', 'u3l1', 'u5l1', 'u5l2'];
 const twelve = [...ten, 'u2l3', 'u4l1'];
 const fifteen = [...twelve, 'u2l1', 'u2l4', 'u5l3'];
 

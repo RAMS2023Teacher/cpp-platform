@@ -7,6 +7,7 @@ module.exports = {
   u1l1: [main(P('Go'), P('Bot')), 'GoBot', ['BotGo', 'Go', 'Bot']],
   u1l2: [main(P('Port '), P('1')), 'Port 1', ['1 Port', 'Port', '1']],
   u1l3: [main('// ' + P('A'), P('B')), 'B', ['A', 'AB', 'BA']],
+  u1v1: [main(P('Save'), 'wait(1, seconds);', P('Run')), 'SaveRun', ['RunSave', 'Save', 'Run']],
   u1l4: [main(P('1'), 'Drivetrain.driveFor(forward, 5, inches);', P('2')), '12', ['21', '1', '2']],
   u2l1: [main('int a = 7;', 'int b = 2;', N('a / b')), '3', ['3.5', '4', '9']],
   u2l2: [main('int total = 0;', 'for (int i = 0; i < 4; i++) {', '  total = total + 2;', '}', N('total')), '8', ['2', '4', '6']],

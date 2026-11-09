@@ -886,6 +886,16 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 
 .cell.stuck { outline: 3px solid #c0261b; outline-offset: -2px; }
 
+/* VEXcode IQ side-by-side helper and "where to look" screenshots */
+.split-pic { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0 12px; }
+.split-pic div { display: grid; place-items: center; height: 70px; border-radius: 8px; font-weight: 700; color: #fff; background: #3451d1; }
+.split-pic div + div { background: #1f9d5a; }
+kbd { display: inline-block; padding: 1px 6px; border: 1px solid #b8bfcc; border-bottom-width: 2px; border-radius: 5px; background: #fff; color: #1b1f2a; font: 600 .82em/1.4 ui-monospace, Consolas, monospace; }
+figure.shot { margin: 10px 0 14px; }
+figure.shot img { display: block; max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #c9cfdb; box-shadow: 0 2px 8px rgba(20,25,40,.12); }
+figure.shot figcaption { font-size: .85rem; color: var(--muted); margin-top: 6px; }
+figure.shot .shot-missing { display: grid; place-items: center; min-height: 90px; padding: 12px; border: 2px dashed #c9cfdb; border-radius: 10px; color: var(--muted); font-size: .88rem; text-align: center; }
+
 </style>
 </head>
 <body>
@@ -13100,6 +13110,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     { id: 'u1b3', icon: '⚙️', name: 'Gearbox', does: 'Trades speed for the strength to climb rubble.' },
     { id: 'u1l2', icon: '🛞', name: 'Drive wheels', does: 'Four wheels to cross rough ground.' },
     { id: 'u1l3', icon: '🖥️', name: 'Robot Brain', does: 'Runs every line of code you write.' },
+    { id: 'u1v1', icon: '📶', name: 'Data link', does: 'Carries your code from the computer to the Brain.' },
     { id: 'u1l4', icon: '🔌', name: 'Drive motors', does: 'Turn your commands into movement.' },
     { id: 'u2l1', icon: '💾', name: 'Memory bank', does: 'Stores the values your robot keeps track of.' },
     { id: 'u2l2', icon: '🔋', name: 'Battery pack', does: 'Keeps the loops running through a long search.' },
@@ -13140,6 +13151,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     if (has('u1b2')) { box(-3.35, -4.4, .35, 8.8, '#9aa3ad'); box(3, -4.4, .35, 8.8, '#9aa3ad'); }
     if (has('u1b1')) [[-3.8, -4.9], [3.1, -4.9], [-3.8, 4.2], [3.1, 4.2]].forEach(([x, y]) => box(x, y, .7, .7, '#6c7580'));
     if (has('u1b3')) { dot(-3.1, .4, .6, '#c0c0c0'); dot(3.1, .4, .6, '#c0c0c0'); }
+    if (has('u1v1')) { box(-.35, 2.9, .7, 1.3, '#1c7ed6'); dot(0, 2.75, .3, '#74c0fc'); }
     if (has('u1l4')) { box(-4.5, -2.8, 1.1, 1.7, '#555'); box(3.4, -2.8, 1.1, 1.7, '#555'); box(-4.5, 1.6, 1.1, 1.7, '#555'); box(3.4, 1.6, 1.1, 1.7, '#555'); }
     if (has('u2l1')) box(-3.2, -4.2, 1.5, 1, '#2e8b57');
     if (has('u2l2')) box(-2.2, 4.2, 4.4, 1.4, '#e0a500');
@@ -13329,7 +13341,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
         const h = a.getAttribute('href');
         if (a.classList.contains('skip')) { e.preventDefault(); $app.focus(); return; }
         if (h.startsWith('#')) { e.preventDefault(); if (h !== '#') Nav.go(h); }
-        else if (/^https?:/.test(h)) a.target = '_blank';
+        else if (/^https?:/.test(h) && !a.target) a.target = '_blank';
       });
       google.script.history.setChangeHandler(e => { Nav.hash = '#' + (e.location.hash || '/'); route(); });
     },
@@ -13366,12 +13378,23 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   const tags = t => (t || []).map(x => `<span class="tag ${esc(x)}">${esc(x)}</span>`).join(' ');
 
   // ---------------------------------------------------------------- nav + router
+  // VEXcode IQ always opens in the same tab (named "vexcode"), so students flip between the two instead of piling up tabs.
+  const VEXCODE_URL = 'https://codeiq.vex.com/';
+  const VEXCODE_LINK = (label, cls = '') => `<a class="${cls}" href="${VEXCODE_URL}" target="vexcode" rel="noopener" title="Open VEXcode IQ in its own tab">${label}</a>`;
+  function sideBySideHelp() {
+    const m = modal(`<h2 style="margin-top:0">⧉ VEXcode IQ + RoboCode, side by side</h2>
+      <div class="split-pic" aria-hidden="true"><div>VEXcode IQ</div><div>RoboCode</div></div>
+      <ol class="steps"><li>Click ${VEXCODE_LINK('VEXcode IQ ↗', 'btn sm')} to open VEXcode IQ.</li><li>In VEXcode, press <kbd>Alt</kbd> + <kbd>[</kbd> to snap it to the <b>left</b>.</li><li>Come back here and press <kbd>Alt</kbd> + <kbd>]</kbd> to snap RoboCode to the <b>right</b>.</li></ol>
+      <p class="small muted">Not on a Chromebook? Windows: <kbd>⊞ Win</kbd> + <kbd>←</kbd> / <kbd>→</kbd>. Mac: drag the windows side by side.</p>
+      <div class="row"><div class="spacer"></div><button class="btn primary" id="cx">Got it!</button></div>`);
+    m.querySelector('#cx').onclick = () => m.remove();
+  }
   function renderNav() {
     if (!ME) { $nav.innerHTML = ''; return; }
     const links = ME.role === 'teacher'
       ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/teacher/standards">Standards</a><a href="#/playground">Code Lab</a>`
       : `<a href="#/">My Course</a><a href="#/robot">My Robot</a><a href="#/team">Team</a><a href="#/map">Map</a><a href="#/playground">Code Lab</a>`;
-    $nav.innerHTML = `${links}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
+    $nav.innerHTML = `${links}${VEXCODE_LINK('VEXcode IQ ↗')}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
     $nav.querySelectorAll('a').forEach(a => a.classList.toggle('active', Nav.hash === a.getAttribute('href')));
   }
   let cleanup = null;
@@ -13795,17 +13818,20 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
   function copyForVexcode(source, setup) {
     const code = forVexcode(source);
     const m = modal(`<h2 style="margin-top:0">📋 Copy for VEXcode</h2>
-      <ol class="small"><li>In VEXcode IQ, open a new C++ project for your robot's Brain.</li><li>In <b>Devices</b>, add the same devices, ports and names as your Robot Setup.</li><li>Replace everything in <b>main.cpp</b> with the code below, then download it to your robot.</li></ol>
+      <ol class="small"><li>Press <b>Copy code</b>, then open ${VEXCODE_LINK('VEXcode IQ ↗', 'btn sm')} <button class="btn sm" type="button" id="split" title="Put VEXcode IQ and RoboCode side by side">⧉ Side by side</button></li><li>In VEXcode IQ, open a new C++ text project for your robot's Brain.</li><li>In <b>Devices</b>, add the same devices, ports and names as your Robot Setup.</li><li>Replace everything in <b>main.cpp</b> with your code, then download it to your robot.</li></ol>
+      <p class="small muted">First time? The lesson <a href="#/lesson/u1v1">From Simulator to Robot: VEXcode IQ</a> shows every step with pictures.</p>
       <textarea id="vex-code" class="input" rows="12" readonly spellcheck="false" aria-label="Code to paste into VEXcode" style="font-family:var(--mono)">${esc(code)}</textarea>
       <details style="margin-top:8px"><summary class="small">Devices to add in VEXcode</summary><pre class="code">${esc(VexSim.generatedConfig(setup))}</pre></details>
       <div class="row" style="margin-top:12px"><button class="btn primary" id="do-copy">Copy code</button><span class="small" role="status" id="copy-state"></span><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
     const area = m.querySelector('#vex-code'), state = m.querySelector('#copy-state');
     m.querySelector('#cx').onclick = () => m.remove();
+    m.querySelector('#split').onclick = sideBySideHelp;
+    m.querySelectorAll('a[href^="#"]').forEach(x => x.addEventListener('click', () => m.remove()));
     m.querySelector('#do-copy').onclick = async () => {
       area.focus(); area.select();
       let ok = false;
       try { await navigator.clipboard.writeText(code); ok = true; } catch (e) { try { ok = document.execCommand('copy'); } catch (e2) {} } // Apps Script pages may block the newer clipboard
-      state.textContent = ok ? 'Copied ✔' : 'Press Ctrl+C to copy.';
+      state.textContent = ok ? 'Copied ✔ Now paste it into VEXcode IQ.' : 'Press Ctrl+C to copy.';
     };
   }
 
@@ -13817,7 +13843,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
         <button class="btn" data-a="reset">↺ Reset robot</button>
         <select class="input" data-a="speed" style="width:auto;margin:0"><option value="1">1× speed</option><option value="2">2×</option><option value="4">4×</option><option value="10">10×</option></select>
         <button class="btn" data-a="setup" aria-expanded="false">🔌 Robot Setup</button>
-        ${opts.setup ? '' : '<button class="btn" data-a="copy">📋 Copy for VEXcode</button>'}
+        ${opts.setup ? '' : `<button class="btn" data-a="copy">📋 Copy for VEXcode</button>${VEXCODE_LINK('VEXcode IQ ↗', 'btn')}<button class="btn" data-a="split" title="Put VEXcode IQ and RoboCode side by side" aria-label="Put VEXcode IQ and RoboCode side by side">⧉</button>`}
         <button class="btn" data-a="settings" aria-expanded="false">⚙ Editor settings</button>
         <div class="spacer"></div>
         ${opts.starter ? '<button class="btn sm" data-a="restore">Restore starter code</button>' : ''}
@@ -13951,6 +13977,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       const a = e.target.closest('[data-a]')?.dataset.a;
       if (a === 'setup') showSetup(setupBox.hidden);
       if (a === 'copy') copyForVexcode(cm.getValue(), setup);
+      if (a === 'split') sideBySideHelp();
       if (a === 'settings') { settings.hidden = !settings.hidden; q('[data-a=settings]').setAttribute('aria-expanded', String(!settings.hidden)); }
       if (a === 'settings-reset') { prefs = { ...EDITOR_DEFAULTS }; try { localStorage.removeItem(editorKey()); } catch (e) {} syncSettingsForm(); applyPrefs(); }
       if (a === 'run') doRun(false);
@@ -14051,7 +14078,7 @@ int main() {
   }
 
   // ---------------------------------------------------------------- teacher
-  const PLANS = { 10: '10-lesson term', 12: '12-lesson term', 15: '15-lesson term', all: 'Full course (28 lessons)' };
+  const PLANS = { 10: '11-lesson term', 12: '13-lesson term', 15: '16-lesson term', all: 'Full course (29 lessons)' }; // keys are stored on classes, so they keep their original names
   const KITS = { 1: 'VEX IQ 1st gen', 2: 'VEX IQ 2nd gen' };
   const PLAN_OPTIONS = current => options(Object.keys(PLANS), current, v => PLANS[v]);
   const KIT_OPTIONS = current => options(Object.keys(KITS), current, v => KITS[v]);

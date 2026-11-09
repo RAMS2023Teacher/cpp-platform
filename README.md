@@ -1,13 +1,13 @@
 # RoboCode Academy — C++, Algorithms & AI with VEX IQ
 
-A course website for 8th graders that runs on **Google Apps Script**, so it needs no server and lives inside your school's Google Workspace. Students sign in with their school Google account and work through a **10-, 12- or 15-lesson term (30–40 min each)** drawn from 28 lessons, writing VEX IQ C++ in a built-in editor with a robot simulator. Teachers watch progress, read submitted code, and leave grades and feedback.
+A course website for 8th graders that runs on **Google Apps Script**, so it needs no server and lives inside your school's Google Workspace. Students sign in with their school Google account and work through a **11-, 13- or 16-lesson term (30–40 min each)** drawn from 29 lessons, writing VEX IQ C++ in a built-in editor with a robot simulator. Teachers watch progress, read submitted code, and leave grades and feedback.
 
 To put it online, follow **[docs/DEPLOY.md](docs/DEPLOY.md)**.
 
 ## Course map
 | Unit | Lessons |
 |---|---|
-| 1 · Meet Your Robot | What Is a Robot? · Build Basics: Beams, Plates & Pins · Build Basics: Strong Structures · Build Basics: Motors, Shafts & Gears · Build the BaseBot · Hello, C++! · Drive & Turn |
+| 1 · Meet Your Robot | What Is a Robot? · Build Basics: Beams, Plates & Pins · Build Basics: Strong Structures · Build Basics: Motors, Shafts & Gears · Build the BaseBot · Hello, C++! · From Simulator to Robot: VEXcode IQ · Drive & Turn |
 | 2 · C++ Foundations | Variables & Math · Loops · Making Decisions · While Loops & Sensors · Functions |
 | 3 · Algorithms | What Is an Algorithm? · Line Following · Searching · Sorting · Cube Sorting Robot · Pathfinding (BFS) · Proportional Control |
 | 4 · Artificial Intelligence | What Is AI? · Decision Trees · State Machines · Machine Learning: Training Data · The Robot Learns (trial & error) · AI Ethics & Bias |
@@ -27,9 +27,12 @@ Each lesson has an Engineer's Brief written for grades 7-8, with a guiding quest
 - **Google Classroom:** import a Classroom class so rostered students are enrolled automatically, post lessons as Classroom assignments that link straight to the lesson (now, scheduled or as drafts), and send grades back, then use Classroom's SIS export to reach PowerSchool. See [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Term plans
-Each class has a **term length** of 10, 12 or 15 lessons, or the full 28. Every plan includes an algorithms lesson and ends with the rescue capstone, the 12- and 15-lesson terms add AI, and each shorter plan is contained in the next, so you can change a class's plan without losing work. The lists are in [`lessons/plans.js`](lessons/plans.js).
+Each class has a **term length** of 11, 13 or 16 lessons, or the full 29. Every plan includes the VEXcode IQ lesson and an algorithms lesson and ends with the rescue capstone, the 13- and 16-lesson terms add AI, and each shorter plan is contained in the next, so you can change a class's plan without losing work. The lists are in [`lessons/plans.js`](lessons/plans.js).
 
 Everything outside the term becomes **Go Further** lessons. Anyone can try them. Each one opens when the lesson it builds on is finished, so a fast student can go deeper mid-term. Classmates can't see how many a student has done, but you can.
+
+## VEXcode IQ
+A **VEXcode IQ ↗** button sits in the top bar and the code editor. It always opens the same tab, so students flip between the two apps instead of piling up tabs. The **⧉** button shows how to snap the two windows side by side on a Chromebook. **📋 Copy for VEXcode** copies a student's code and lists the devices to add. The lesson *From Simulator to Robot: VEXcode IQ* walks through copying, setting up devices, downloading and calibrating, with screenshots (see [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md)).
 
 ## Robot Setup and VEX IQ kits
 Each class is set to a **VEX IQ 1st gen or 2nd gen** kit. Before a program can run, students open **🔌 Robot Setup** in the editor and choose their devices, ports and names, as in the VEXcode Devices window. Code that uses a device the robot doesn't have stops with an error explaining what to add.
