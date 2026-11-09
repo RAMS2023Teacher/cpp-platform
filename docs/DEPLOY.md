@@ -24,7 +24,7 @@ This creates a private spreadsheet in your Drive called **RoboCode Academy Data*
 4. Click **Deploy** and copy the **Web app URL**. That's the link for your students.
 
 ## 4. Try it
-Open the link yourself. You'll land on the Teacher Dashboard. Create a class, then have one student open the link and enter the join code.
+Open the link yourself. You'll land on the Teacher Dashboard. Create a class, choose its term length and robot kit, then have one student open the link and enter the join code.
 
 ## Updating later
 Paste in the changed files, then **Deploy → Manage deployments → pencil icon → Version: New version → Deploy**. The link stays the same. Saving alone doesn't change what students see.

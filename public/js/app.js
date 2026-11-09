@@ -105,7 +105,7 @@
       <div>
         <span class="tag ai">Grade 8 · VEX IQ · C++</span>
         <h1>Code real robots.<br>Think like an engineer.<br>Build smarter machines.</h1>
-        <p class="lead">25 hands-on lessons that take you from your first <code>Brain.Screen.print</code> to robots that search, sort, find paths and <b>learn</b> — in a C++ editor with a built-in robot simulator.</p>
+        <p class="lead">Hands-on lessons that take you from your first <code>Brain.Screen.print</code> to robots that search, sort, find paths and <b>learn</b> — in a C++ editor with a built-in robot simulator.</p>
       </div>
       <div class="hero-art"><span class="c">// Your robot, your rules</span>
 <span class="k">int</span> main() {
@@ -143,24 +143,26 @@
   // ---------------------------------------------------------------- student home
   async function studentHome() {
     const { lessons } = await api('/api/lessons');
-    const done = lessons.filter(l => l.status === 'complete').length;
+    const main = lessons.filter(l => l.track === 'main'), extra = lessons.filter(l => l.track === 'extra');
+    const isDone = l => l.status === 'complete';
+    const done = main.filter(isDone).length, extraDone = extra.filter(isDone).length;
     const quizPts = lessons.reduce((s, l) => s + (l.quizScore ? +l.quizScore.split('/')[0] : 0), 0);
-    const xp = done * 50 + quizPts * 10;
+    const xp = (done + extraDone) * 50 + quizPts * 10;
     const level = Math.floor(xp / 250) + 1;
-    const next = lessons.find(l => l.unlocked && l.status !== 'complete');
-    const units = [...new Set(lessons.map(l => l.unit))];
-    const orders = completedOrders(lessons);
-    const partsDone = Quest.PARTS.filter(p => orders.has(p.n)).length, nextPart = Quest.PARTS.find(p => !orders.has(p.n));
-    const unitDone = u => lessons.filter(l => l.unit === u).every(l => l.status === 'complete');
+    const next = main.find(l => l.unlocked && !isDone(l));
+    const units = [...new Set(main.map(l => l.unit))];
+    const built = completedIds(lessons);
+    const parts = buildParts(lessons), partsDone = parts.filter(isDone).length, nextPart = Quest.part(parts.find(l => !isDone(l))?.id);
+    const allIn = (list, u) => { const inUnit = list.filter(l => l.unit === u); return inUnit.length > 0 && inUnit.every(isDone); };
     const BADGES = [
-      ['🔧', 'Robot Builder', unitDone(1)], ['💻', 'C++ Coder', unitDone(2)], ['🧩', 'Algorithm Ace', unitDone(3)],
-      ['🧠', 'AI Engineer', unitDone(4)], ['🏆', 'Capstone Champion', unitDone(5)], ['⭐', 'First Lesson', done >= 1], ['🔥', '10 Lessons', done >= 10]
+      ['🔧', 'Robot Builder', allIn(main, 1)], ['💻', 'C++ Coder', allIn(main, 2)], ['🏆', 'Rescue Certified', allIn(main, 5)],
+      ['🧩', 'Algorithm Ace', allIn(lessons, 3)], ['🧠', 'AI Engineer', allIn(lessons, 4)], ['⭐', 'First Lesson', done + extraDone >= 1], ['🚀', 'Went Further', extraDone >= 1]
     ];
     $app.innerHTML = `
       <div class="row" style="margin-bottom:16px"><div><h1>Hi, ${esc(ME.name.split(' ')[0])}! 👋</h1><p class="muted" style="margin:0">${esc(MYCLASS?.name || '')}</p></div><div class="spacer"></div>
         ${next ? `<a class="btn primary" href="#/lesson/${next.id}">${next.status === 'started' ? 'Continue' : 'Start'}: ${esc(next.title)} →</a>` : ''}</div>
       <div class="stats">
-        <div class="stat"><span class="muted small">Lessons complete</span><b>${done} / ${lessons.length}</b><div class="bar"><i style="width:${100 * done / lessons.length}%"></i></div></div>
+        <div class="stat"><span class="muted small">Lessons complete</span><b>${done} / ${main.length}</b><div class="bar"><i style="width:${100 * done / main.length}%"></i></div>${extraDone ? `<span class="small muted">+ ${extraDone} Go Further</span>` : ''}</div>
         <div class="stat"><span class="muted small">Robot XP</span><b>${xp} XP</b><span class="small muted">Level ${level} · ${250 - (xp % 250)} XP to next level</span></div>
         <div class="stat"><span class="muted small">Quiz points</span><b>${quizPts}</b></div>
         <div class="stat"><span class="muted small">Badges</span><b>${BADGES.filter(b => b[2]).length} / ${BADGES.length}</b></div>
@@ -168,24 +170,31 @@
       <div class="quest-strip panel">
         <canvas id="home-robot" width="132" height="132" aria-label="Your Rescue Robot so far"></canvas>
         <div style="flex:1;min-width:200px"><b>🤖 Your Rescue Robot</b>
-          <div class="bar" style="margin:6px 0"><i style="width:${100 * partsDone / Quest.PARTS.length}%"></i></div>
-          <span class="small muted">${partsDone} of ${Quest.PARTS.length} parts installed${nextPart ? ` · Next: ${nextPart.icon} ${esc(nextPart.name)}` : ' · Ready for the rescue mission!'}</span></div>
+          <div class="bar" style="margin:6px 0"><i style="width:${100 * partsDone / (parts.length || 1)}%"></i></div>
+          <span class="small muted">${partsDone} of ${parts.length} parts installed${nextPart ? ` · Next: ${nextPart.icon} ${esc(nextPart.name)}` : ' · Ready for the rescue mission!'}</span></div>
         <a class="btn" href="#/robot">🔧 My Robot</a><a class="btn" href="#/map">🗺 Learning Map</a>
       </div>
       <div class="badges">${BADGES.map(([i, n, on]) => `<span class="badge ${on ? '' : 'off'}">${i} ${n}</span>`).join('')}</div>
       ${units.map(u => `
         <section class="unit">
-          <div class="unit-head"><h2>${UNIT_ICONS[u] || '📦'} Unit ${u}: ${UNIT_NAMES[u] || ''}</h2><span class="muted small">${lessons.filter(l => l.unit === u && l.status === 'complete').length}/${lessons.filter(l => l.unit === u).length} done</span></div>
-          <div class="cards">${lessons.filter(l => l.unit === u).map(card).join('')}</div>
-        </section>`).join('')}`;
-    Quest.drawBuild(document.getElementById('home-robot'), ME.robot, orders, true);
+          <div class="unit-head"><h2>${UNIT_ICONS[u] || '📦'} Unit ${u}: ${UNIT_NAMES[u] || ''}</h2><span class="muted small">${main.filter(l => l.unit === u && isDone(l)).length}/${main.filter(l => l.unit === u).length} done</span></div>
+          <div class="cards">${main.filter(l => l.unit === u).map(card).join('')}</div>
+        </section>`).join('')}
+      ${extra.length ? `<section class="unit">
+        <div class="unit-head"><h2>🚀 Go Further</h2><span class="muted small">${extraDone}/${extra.length} done</span></div>
+        <p class="muted" style="margin-top:0">Extra lessons for anyone who wants more. They open as you finish the lessons they build on, and each one adds an upgrade to your robot.</p>
+        <div class="cards">${extra.map(card).join('')}</div></section>` : ''}`;
+    Quest.drawBuild(document.getElementById('home-robot'), ME.robot, built, true);
   }
-  const completedOrders = lessons => new Set(lessons.filter(l => l.status === 'complete').map(l => l.order));
+  const completedIds = lessons => new Set(lessons.filter(l => l.status === 'complete').map(l => l.id));
+  // The parts that make up this term's robot: the main path before the rescue mission.
+  const buildParts = lessons => lessons.filter(l => l.track === 'main' && !Quest.part(l.id)?.mission);
   function card(l) {
     const icon = !l.unlocked ? '🔒' : l.status === 'complete' ? '✅' : l.status === 'started' ? '🟡' : '';
     return `<a class="lcard ${l.unlocked ? '' : 'locked'} ${l.status}" href="#/lesson/${l.id}">
-      <span class="status">${icon}</span><span class="num">LESSON ${l.order} · ${l.minutes} MIN</span>
+      <span class="status">${icon}</span><span class="num">${l.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + l.num} · ${l.minutes} MIN</span>
       <h3>${esc(l.title)}</h3><p>${esc(l.summary)}</p><div>${tags(l.tags)}</div>
+      ${l.requires?.length ? `<span class="small muted">Opens after: ${l.requires.map(esc).join(', ')}</span>` : ''}
       ${l.quizScore ? `<span class="small muted">Quiz: ${l.quizScore}</span>` : ''}</a>`;
   }
 
@@ -201,15 +210,16 @@
   }
 
   async function lessonPage(id) {
-    const { lesson: L, progress: P, prev, next } = await api('/api/lessons/' + id);
+    const { lesson: raw, progress: P, prev, next, place } = await api('/api/lessons/' + id);
+    const L = adaptLesson(raw, mySetup());
     const teacher = ME.role === 'teacher';
     const secs = L.sections || [];
-    celebrated = P?.completed ? L.id : null;
+    celebrated = P?.completed ? L.id : null; lessonPlace = place;
     $app.innerHTML = `
       <div class="lesson-head">
         <div style="flex:1;min-width:260px">
           <a href="${teacher ? '#/teacher/lessons' : '#/'}" class="small">← ${teacher ? 'All lessons' : 'My course'}</a>
-          <div class="muted small" style="margin-top:8px">UNIT ${L.unit} · ${esc(UNIT_NAMES[L.unit] || '')} · LESSON ${L.order} · ⏱ ${L.minutes} min</div>
+          <div class="muted small" style="margin-top:8px">UNIT ${L.unit} · ${esc(UNIT_NAMES[L.unit] || '')} · ${place.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + place.num} · ⏱ ${L.minutes} min</div>
           <h1>${esc(L.title)}</h1><div>${tags(L.tags)}</div>
         </div>
         <div class="row">${prev ? `<a class="btn sm" href="#/lesson/${prev}">← Prev</a>` : ''}${next ? `<a class="btn sm" href="#/lesson/${next}">Next →</a>` : ''}</div>
@@ -262,6 +272,7 @@
       ide = createIDE(document.getElementById('ide'), {
         code: saved || L.challenge.starterCode, starter: L.challenge.starterCode, field: L.challenge.field, checks: L.challenge.checks,
         submitLabel: teacher ? 'Check (preview)' : 'Check & Submit',
+        onNewNames: () => route(),
         onChange: teacher ? null : code => { try { localStorage.setItem(ck, code); localStorage.setItem(ck + ':at', new Date().toISOString()); } catch (e) {} unsaved = code; clearTimeout(ide._d); ide._d = setTimeout(saveDraft, 20000); },
         onSubmit: teacher ? null : async (code, checks, output) => {
           unsaved = null; clearTimeout(ide._d);
@@ -277,19 +288,19 @@
     renderQuiz(L, P, teacher);
   }
 
-  let celebrated = null;
+  let celebrated = null, lessonPlace = null;
   async function celebrate(L, progress) {
     if (!progress.completed || celebrated === L.id) return;
     celebrated = L.id;
-    const part = Quest.part(L.order); if (!part) return;
-    const isPart = Quest.PARTS.includes(part);
-    const m = modal(`<h2 style="margin-top:0">${isPart ? '🔧 New part installed!' : '🚩 Mission stage complete!'}</h2>
+    const part = Quest.part(L.id); if (!part) return;
+    const heading = lessonPlace?.track === 'extra' ? '🚀 Upgrade installed!' : part.mission ? '🚩 Mission stage complete!' : '🔧 New part installed!';
+    const m = modal(`<h2 style="margin-top:0">${heading}</h2>
       <div class="celebrate"><canvas width="220" height="220"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
       <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Learning map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => m.remove()));
     const { lessons } = await api('/api/lessons');
-    Quest.drawBuild(m.querySelector('canvas'), ME.robot, completedOrders(lessons), true);
+    Quest.drawBuild(m.querySelector('canvas'), ME.robot, completedIds(lessons), true);
   }
 
   function renderQuiz(L, P, teacher) {
@@ -314,7 +325,7 @@
       const answers = quiz.map((_, i) => Number(fd.get('q' + i)));
       try {
         const r = await api(`/api/lessons/${L.id}/quiz`, { body: { answers, reflection: fd.get('reflection') || '' } });
-        toast(`Exit ticket: ${r.progress.quiz.score}/${r.progress.quiz.total}`); renderQuiz(r.lesson, r.progress, false); celebrate(L, r.progress);
+        toast(`Exit ticket: ${r.progress.quiz.score}/${r.progress.quiz.total}`); renderQuiz(adaptLesson(r.lesson, mySetup()), r.progress, false); celebrate(L, r.progress);
       } catch (err) { toast(err.message); }
     };
   }
@@ -345,6 +356,7 @@ std::vector&lt;int&gt; v;  v.push_back(4);  v.size();
 if / else if / else · while · for · do-while · switch · functions
 abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
 
+  const ADAPT_SAMPLE = 'Optical.color() DistanceSensor. BumperA. TouchLED. ClawMotor. ArmMotor. BrainInertial 2nd gen';
   // Saved per user in this browser and shared by every editor on the site.
   const EDITOR_DEFAULTS = { fontSize: 14, theme: 'retro', indent: 2, lineNumbers: true, wrap: false, closeBrackets: true, matchBrackets: true };
   const EDITOR_THEMES = { retro: 'Retro blue', paper: 'Notepad white', terminal: 'Terminal green', night: 'Night' };
@@ -361,18 +373,29 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
   }
   const options = (values, current, label = v => v) => values.map(v => `<option value="${v}" ${String(v) === String(current) ? 'selected' : ''}>${esc(label(v))}</option>`).join('');
 
+  // Students use their class's kit; teachers pick theirs in Robot Setup.
+  const myGen = () => MYCLASS ? +MYCLASS.kit : (ME.setup?.gen || 1);
+  const mySetup = () => VexSim.normalizeSetup(ME.setup, myGen());
+  function adaptLesson(lesson, setup) {
+    const checks = lesson.challenge?.checks, out = JSON.parse(VexSim.adaptText(JSON.stringify(lesson), setup));
+    if (checks) out.challenge.checks = checks; // always written in lesson names; student code is mapped to them when checked
+    return out;
+  }
+
   function createIDE(host, opts) {
-    let prefs = loadEditorPrefs();
+    let prefs = loadEditorPrefs(), setup = opts.setup || mySetup();
     host.innerHTML = `
       <div class="ide-bar">
         <button class="btn go" data-a="run">▶ Run</button><button class="btn stop" data-a="stop" disabled>■ Stop</button>
         <button class="btn" data-a="reset">↺ Reset robot</button>
         <select class="input" data-a="speed" style="width:auto;margin:0"><option value="1">1× speed</option><option value="2">2×</option><option value="4">4×</option><option value="10">10×</option></select>
+        <button class="btn" data-a="setup" aria-expanded="false">🔌 Robot Setup</button>
         <button class="btn" data-a="settings" aria-expanded="false">⚙ Editor settings</button>
         <div class="spacer"></div>
         ${opts.starter ? '<button class="btn sm" data-a="restore">Restore starter code</button>' : ''}
         ${opts.checks?.length ? `<button class="btn primary" data-a="check">✔ ${esc(opts.submitLabel || 'Check')}</button>` : ''}
       </div>
+      <form class="ide-setup" hidden></form>
       <form class="ide-settings" hidden>
         <label class="f">Text size<select name="fontSize">${options(EDITOR_FONT_SIZES, prefs.fontSize, v => v + ' pt')}</select></label>
         <label class="f">Colors<select name="theme">${options(Object.keys(EDITOR_THEMES), prefs.theme, v => EDITOR_THEMES[v])}</select></label>
@@ -384,7 +407,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
         <button class="btn sm" type="button" data-a="settings-reset">Reset to defaults</button>
       </form>
       <div class="ide">
-        <div><textarea></textarea><div class="ref" style="margin-top:10px"><b class="small">📚 Quick reference</b>${API_REF}</div></div>
+        <div><textarea></textarea><div class="ref" style="margin-top:10px"><b class="small">📚 Quick reference</b>${VexSim.adaptText(API_REF, setup)}${setup.gen === 1 ? '<p class="small muted">1st gen Brain screen: 5 rows, 21 columns.</p>' : ''}</div></div>
         <div class="simbox">
           <canvas width="960" height="720"></canvas>
           <div class="hud"></div>
@@ -414,6 +437,51 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       try { localStorage.setItem(editorKey(), JSON.stringify(prefs)); } catch (e) {}
       applyPrefs();
     };
+    const setupBox = q('.ide-setup'), setupBtn = q('[data-a=setup]');
+    const showSetup = open => { setupBox.hidden = !open; setupBtn.setAttribute('aria-expanded', String(open)); };
+    const PORTS = Array.from({ length: 12 }, (_, i) => i + 1);
+    const portSelect = (name, current) => `<select name="${name}" aria-label="${name} port">${options(PORTS, current, v => 'Port ' + v)}</select>`;
+    function renderSetup() {
+      const readOnly = !!opts.setup, s = setup;
+      const jobs = Object.keys(VexSim.SETUP_JOBS).filter(job => job !== 'gyro' || s.gen === 1);
+      const row = job => { const d = s.devices[job], J = VexSim.SETUP_JOBS[job]; return `<tr>
+        <td><label class="row"><input type="checkbox" name="${job}.on" ${d.on ? 'checked' : ''}> ${job === 'color' ? `<select name="color.kind" aria-label="Color sensor type">${options(['color', 'optical'], d.kind, v => v === 'color' ? 'Color Sensor' : 'Optical Sensor')}</select>` : J.label}</label></td>
+        <td>${portSelect(job + '.port', d.port)}</td>
+        <td><input name="${job}.name" value="${esc(d.name)}" maxlength="20" spellcheck="false" aria-label="${J.label} name"></td></tr>`; };
+      setupBox.innerHTML = `<p style="margin-top:0"><b>🔌 Robot Setup</b> · Tell your program what's plugged into your robot, just like the Devices window in VEXcode. Only add what your robot has.</p>
+        ${!MYCLASS && !readOnly ? `<label class="f" style="max-width:220px">Brain<select name="gen">${options([1, 2], s.gen, v => `VEX IQ ${v === 1 ? '1st' : '2nd'} gen`)}</select></label>` : `<p class="small muted">Brain: VEX IQ ${s.gen === 1 ? '1st gen (no built-in inertial sensor, so add a Gyro Sensor for accurate turns)' : '2nd gen (inertial sensor built in)'}</p>`}
+        <table class="tbl setup-tbl"><tr><th>Device</th><th>Smart Port</th><th>Name in your code</th></tr>
+          <tr><td><b>Drivetrain</b> (left motor)</td><td>${portSelect('drive.left', s.drive.left)}</td><td rowspan="2"><code>Drivetrain</code></td></tr>
+          <tr><td><b>Drivetrain</b> (right motor)</td><td>${portSelect('drive.right', s.drive.right)}</td></tr>
+          ${jobs.map(row).join('')}</table>
+        <div class="err" data-setup-err></div>
+        ${readOnly ? '' : '<button class="btn primary">Save setup</button>'}
+        <details style="margin-top:8px"><summary class="small">See the C++ this creates</summary><pre class="code">${esc(VexSim.generatedConfig(s))}</pre></details>`;
+      if (readOnly) setupBox.querySelectorAll('input,select').forEach(el => { el.disabled = true; });
+    }
+    function readSetupForm() {
+      const f = setupBox.elements, gen = f.gen ? +f.gen.value : setup.gen, out = VexSim.normalizeSetup({ ...setup, gen }, gen);
+      out.drive = { left: +f['drive.left'].value, right: +f['drive.right'].value };
+      for (const job of Object.keys(out.devices)) {
+        if (!f[job + '.on']) continue;
+        Object.assign(out.devices[job], { on: f[job + '.on'].checked, port: +f[job + '.port'].value, name: f[job + '.name'].value.trim() });
+        if (job === 'color') out.devices.color.kind = f['color.kind'].value;
+      }
+      return out;
+    }
+    setupBox.onsubmit = async e => {
+      e.preventDefault();
+      const next = readSetupForm(), err = setupBox.querySelector('[data-setup-err]'), problem = VexSim.validateSetup(next);
+      if (problem) { err.textContent = problem; return; }
+      const textChanged = VexSim.adaptText(ADAPT_SAMPLE, next) !== VexSim.adaptText(ADAPT_SAMPLE, setup);
+      try {
+        const r = await api('/api/me/setup', { method: 'PUT', body: { setup: next } });
+        ME.setup = r.setup; setup = VexSim.normalizeSetup(r.setup, next.gen);
+        toast('Robot Setup saved 🔌'); renderSetup(); showSetup(false); setMsg('');
+        if (textChanged && opts.onNewNames) opts.onNewNames();
+      } catch (ex) { err.textContent = ex.message; }
+    };
+    renderSetup();
     const sim = new VexSim.Sim(q('canvas'), opts.field);
     const scr = q('.brain-screen'), hud = q('.hud'), msg = q('[data-m]');
     sim.on('screen', () => { scr.textContent = sim.screen.lines.join('\n'); scr.scrollTop = scr.scrollHeight; });
@@ -426,10 +494,13 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     cm.on('change', () => { if (errMark !== null) { cm.removeLineClass(errMark, 'background', 'err-line'); errMark = null; } opts.onChange && opts.onChange(cm.getValue()); });
     let running = false;
     async function doRun(withChecks) {
-      if (running) return; running = true;
+      if (running) return;
+      if (!setup.confirmed) { showSetup(true); setMsg('Set up your robot first: choose its devices in Robot Setup, then press Save setup.', 'bad'); return; }
+      running = true;
       q('[data-a=run]').disabled = true; q('[data-a=stop]').disabled = false; q('.checks').innerHTML = ''; setMsg(withChecks ? '🏁 Running your program for the auto-check…' : '');
       const code = cm.getValue();
-      const r = await VexSim.run(sim, code);
+      const r = await VexSim.run(sim, code, setup);
+      if (!r.ok && /Robot Setup/.test(r.error || '')) showSetup(true);
       running = false; q('[data-a=run]').disabled = false; q('[data-a=stop]').disabled = true;
       if (!r.ok) {
         setMsg((r.line ? `Line ${r.line}: ` : '') + r.error, 'bad');
@@ -438,7 +509,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       } else if (r.stopped) { setMsg('Program stopped.'); if (withChecks) return; }
       else if (!withChecks) setMsg('✅ Program finished.', 'good');
       if (withChecks) {
-        const res = VexSim.evaluate(sim, code, opts.checks);
+        const res = VexSim.evaluate(sim, VexSim.canonicalize(code, setup), opts.checks);
         if (!r.ok) res.unshift({ message: 'Program runs without errors', pass: false });
         q('.checks').innerHTML = res.map(c => `<li>${c.pass ? '✅' : '❌'} ${esc(c.message)}</li>`).join('');
         const all = res.every(c => c.pass);
@@ -448,6 +519,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     }
     host.addEventListener('click', e => {
       const a = e.target.closest('[data-a]')?.dataset.a;
+      if (a === 'setup') showSetup(setupBox.hidden);
       if (a === 'settings') { settings.hidden = !settings.hidden; q('[data-a=settings]').setAttribute('aria-expanded', String(!settings.hidden)); }
       if (a === 'settings-reset') { prefs = { ...EDITOR_DEFAULTS }; try { localStorage.removeItem(editorKey()); } catch (e) {} syncSettingsForm(); applyPrefs(); }
       if (a === 'run') doRun(false);
@@ -548,6 +620,10 @@ int main() {
   }
 
   // ---------------------------------------------------------------- teacher
+  const PLANS = { 10: '10-lesson term', 12: '12-lesson term', 15: '15-lesson term', all: 'Full course (28 lessons)' };
+  const KITS = { 1: 'VEX IQ 1st gen', 2: 'VEX IQ 2nd gen' };
+  const PLAN_OPTIONS = current => options(Object.keys(PLANS), current, v => PLANS[v]);
+  const KIT_OPTIONS = current => options(Object.keys(KITS), current, v => KITS[v]);
   async function teacherHome() {
     const { classes } = await api('/api/teacher/classes');
     $app.innerHTML = `
@@ -555,7 +631,7 @@ int main() {
       <div class="cards" style="margin-top:12px">
         ${classes.map(c => `<a class="lcard class-card" href="#/teacher/class/${c.id}"><span class="num">CLASS</span><h3>${esc(c.name)}</h3>
           <span class="muted small">Join code</span><span class="joincode">${esc(c.code)}</span><span class="small muted">${c.studentCount} student${c.studentCount === 1 ? '' : 's'} enrolled${c.closed ? ' · enrollment closed' : ''}</span></a>`).join('')}
-        <form class="lcard" id="newc" style="justify-content:center"><h3>➕ New class</h3><input class="input" name="name" placeholder="e.g. Period 3 — Robotics" required><button class="btn primary">Create class</button></form>
+        <form class="lcard" id="newc" style="justify-content:center"><h3>➕ New class</h3><input class="input" name="name" placeholder="e.g. Period 3 — Robotics" required><select class="input" name="plan" aria-label="Term length">${PLAN_OPTIONS('15')}</select><select class="input" name="kit" aria-label="Robot kit">${KIT_OPTIONS('1')}</select><button class="btn primary">Create class</button></form>
       </div>
       <div class="panel" style="margin-top:22px"><h3>How students enroll</h3>
         <ol><li>Create a class above to get a 6-letter <b>join code</b>.</li><li>Students open this website while signed in to their school Google account, then type the code and their name.</li><li>Open the class to watch progress live, read submitted code, and leave feedback & grades.</li></ol>
@@ -577,15 +653,15 @@ int main() {
         <div class="stat"><span class="muted small">Students</span><b>${students.length}</b></div>
         <div class="stat"><span class="muted small">Lessons completed (all students)</span><b>${students.reduce((n, s) => n + Object.values(s.progress).filter(p => p.status === 'complete').length, 0)}</b></div>
         <div class="stat"><span class="muted small">Waiting for your review</span><b>${toReview}</b></div>
-        <div class="stat"><span class="muted small">Progression</span><b style="font-size:1.1rem">${C.unlockAll ? '🔓 All unlocked' : '🔒 In order'}</b></div>
+        <div class="stat"><span class="muted small">Progression</span><b style="font-size:1.1rem">${esc(PLANS[C.plan])} · ${esc(KITS[C.kit])}</b></div>
       </div>
       ${students.length ? `
-      <div class="legend"><span><span class="cell complete">8/10</span> complete (quiz score)</span><span><span class="cell started">…</span> started</span><span><span class="cell none">·</span> not started</span><span><span class="cell complete review">✓</span> blue outline = new work to review</span><span>Click any cell to view the student's work.</span></div>
+      <div class="legend"><span><span class="cell complete">8/10</span> complete (quiz score)</span><span><span class="cell started">…</span> started</span><span><span class="cell none">·</span> not started</span><span><span class="cell complete review">✓</span> blue outline = new work to review</span><span>★ = Go Further lesson</span><span>Click any cell to view the student's work.</span></div>
       <div class="gridtbl"><table>
-        <thead><tr><th class="l">Student</th><th>Done</th>${lessons.map(l => `<th class="vert" title="${esc(l.title)}">${l.order}. ${esc(l.title)}</th>`).join('')}</tr>
+        <thead><tr><th class="l">Student</th><th>Done</th>${lessons.map(l => `<th class="vert" title="${esc(l.title)}">${l.track === 'extra' ? '★' : l.num + '.'} ${esc(l.title)}</th>`).join('')}</tr>
           <tr><th class="l small muted">Class quiz average</th><th></th>${lessons.map(l => { const a = avg(l); return `<th class="small muted">${a === null ? '' : a + '%'}</th>`; }).join('')}</tr></thead>
         <tbody>${students.map(s => `<tr><td class="l"><b>${esc(s.name)}</b><br><span class="small muted">@${esc(s.username)}</span> <button class="btn sm" data-stu="${s.id}" style="padding:2px 6px">⋯</button></td>
-          <td><b>${Object.values(s.progress).filter(p => p.status === 'complete').length}</b></td>
+          <td><b>${lessons.filter(l => l.track === 'main' && s.progress[l.id]?.status === 'complete').length}</b></td>
           ${lessons.map(l => { const p = s.progress[l.id];
             if (!p) return `<td><button class="cell none" data-s="${s.id}" data-l="${l.id}">·</button></td>`;
             const label = p.grade != null ? p.grade : p.quiz ? `${p.quiz.score}/${p.quiz.total}` : '…';
@@ -609,16 +685,18 @@ int main() {
   function settingsModal(C, lessons) {
     const m = modal(`<h2>⚙ ${esc(C.name)} settings</h2>
       <label class="f">Class name<input name="name" value="${esc(C.name)}"></label>
+      <div class="row" style="margin-bottom:10px"><label class="f" style="flex:1;min-width:180px">Term length<select name="plan">${PLAN_OPTIONS(C.plan)}</select></label><label class="f" style="flex:1;min-width:180px">Robot kit<select name="kit">${KIT_OPTIONS(C.kit)}</select></label></div>
+      <p class="small muted" style="margin:-4px 0 10px">Lessons outside the term stay available as Go Further lessons. Changing the term never removes student work.</p>
       <label class="row"><input type="checkbox" name="unlockAll" ${C.unlockAll ? 'checked' : ''}> Unlock <b>all</b> lessons (students can jump ahead)</label>
       <label class="row" style="margin-top:8px"><input type="checkbox" name="closed" ${C.closed ? 'checked' : ''}> Close enrollment (join code stops working)</label>
       <label class="row" style="margin-top:8px"><input type="checkbox" name="showPeers" ${C.showPeers !== false ? 'checked' : ''}> Show classmates on the learning map (first name + last initial)</label>
       <h3 style="margin-top:18px">Unlock specific lessons</h3><p class="small muted">Useful if you want the whole class on the same lesson today.</p>
-      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px">${lessons.map(l => `<label class="small row"><input type="checkbox" name="u" value="${l.id}" ${(C.unlocked || []).includes(l.id) ? 'checked' : ''}> ${l.order}. ${esc(l.title)}</label>`).join('')}</div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px">${lessons.map(l => `<label class="small row"><input type="checkbox" name="u" value="${l.id}" ${(C.unlocked || []).includes(l.id) ? 'checked' : ''}> ${l.track === 'extra' ? '★' : l.num + '.'} ${esc(l.title)}</label>`).join('')}</div>
       <div class="row" style="margin-top:18px"><button class="btn primary" id="sv">Save</button><button class="btn" id="nc">🔁 New join code</button><button class="btn" id="dl">🗑 Delete class</button><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
     const get = n => m.querySelector(`[name=${n}]`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelector('#sv').onclick = async () => {
-      await api(`/api/teacher/classes/${C.id}`, { method: 'PATCH', body: { name: get('name').value, unlockAll: get('unlockAll').checked, closed: get('closed').checked, showPeers: get('showPeers').checked, unlocked: [...m.querySelectorAll('[name=u]:checked')].map(x => x.value) } });
+      await api(`/api/teacher/classes/${C.id}`, { method: 'PATCH', body: { name: get('name').value, unlockAll: get('unlockAll').checked, closed: get('closed').checked, showPeers: get('showPeers').checked, plan: get('plan').value, kit: get('kit').value, unlocked: [...m.querySelectorAll('[name=u]:checked')].map(x => x.value) } });
       m.remove(); toast('Saved'); classPage(C.id);
     };
     m.querySelector('#nc').onclick = async () => { if (!confirm('Make a new join code? The old one will stop working.')) return; await api(`/api/teacher/classes/${C.id}`, { method: 'PATCH', body: { newCode: true } }); m.remove(); classPage(C.id); };
@@ -644,7 +722,7 @@ int main() {
     const subs = P?.submissions || [];
     const last = subs[subs.length - 1];
     const m = modal(`
-      <div class="row"><div><span class="muted small">LESSON ${L.order}</span><h2 style="margin:0">${esc(S.name)} — ${esc(L.title)}</h2></div><div class="spacer"></div><button class="btn" id="cx">✕</button></div>
+      <div class="row"><div><span class="muted small">UNIT ${L.unit}</span><h2 style="margin:0">${esc(S.name)} — ${esc(L.title)}</h2></div><div class="spacer"></div><button class="btn" id="cx">✕</button></div>
       <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:14px">
         <div class="stat"><span class="muted small">Exit ticket</span><b>${P?.quiz ? `${P.quiz.score}/${P.quiz.total}` : '—'}</b><span class="small muted">${P?.quizAttempts ? P.quizAttempts + ' attempt(s)' : 'not submitted'}</span></div>
         <div class="stat"><span class="muted small">Code challenge</span><b>${L.challenge ? (P?.challenge ? (P.challenge.passed ? '✅ Passed' : `${P.challenge.passCount}/${P.challenge.total} checks`) : '—') : 'n/a'}</b><span class="small muted">${subs.length} submission(s)</span></div>
@@ -666,7 +744,7 @@ int main() {
       m.querySelector('#ver').onchange = e => show(+e.target.value);
       m.querySelector('#runit').onclick = () => {
         const i = +m.querySelector('#ver').value; m.querySelector('#vcode').style.display = 'none';
-        const ide = createIDE(m.querySelector('#vide'), { code: subs[i].code, field: L.challenge.field, checks: L.challenge.checks, submitLabel: 'Re-check', readOnly: false });
+        const ide = createIDE(m.querySelector('#vide'), { setup: S.setup ? VexSim.normalizeSetup(S.setup, S.setup.gen) : undefined, code: subs[i].code, field: L.challenge.field, checks: L.challenge.checks, submitLabel: 'Re-check', readOnly: false });
         setTimeout(() => ide.cm.refresh(), 50);
       };
     }
@@ -696,30 +774,34 @@ int main() {
   // ---------------------------------------------------------------- my robot
   async function robotPage() {
     const { lessons } = await api('/api/lessons');
-    const orders = completedOrders(lessons), lessonAt = n => lessons.find(l => l.order === n);
-    const installed = Quest.PARTS.filter(p => orders.has(p.n)).length, total = Quest.PARTS.length;
-    const nextPart = Quest.PARTS.find(p => !orders.has(p.n));
-    const built = installed === total, certified = built && Quest.MISSION.every(p => orders.has(p.n));
-    const status = certified ? '🏅 Rescue Certified! Your robot finished the mission.' : built ? '🚩 Build complete. Your rescue mission is open!' : `Next part: ${nextPart.icon} ${esc(nextPart.name)}, earned by finishing Lesson ${nextPart.n}.`;
-    const row = (p, unlocked) => { const on = orders.has(p.n); return `<a class="part ${on ? 'on' : ''} ${unlocked ? '' : 'locked'}" href="#/lesson/${lessonAt(p.n)?.id}">
-      <span class="ico">${on ? p.icon : '🔒'}</span><span><b>${esc(p.name)}</b><br><span class="small muted">Lesson ${p.n}: ${esc(lessonAt(p.n)?.title || '')}</span><br><span class="small">${esc(p.does)}</span></span></a>`; };
+    const built = completedIds(lessons), isDone = l => built.has(l.id);
+    const parts = buildParts(lessons), mission = lessons.filter(l => l.track === 'main' && Quest.part(l.id)?.mission), upgrades = lessons.filter(l => l.track === 'extra');
+    const installed = parts.filter(isDone).length, total = parts.length;
+    const nextLesson = parts.find(l => !isDone(l)), nextPart = Quest.part(nextLesson?.id);
+    const finished = installed === total, certified = finished && mission.every(isDone);
+    const status = certified ? '🏅 Rescue Certified! Your robot finished the mission.' : finished ? '🚩 Build complete. Your rescue mission is open!' : `Next part: ${nextPart.icon} ${esc(nextPart.name)}, earned by finishing Lesson ${nextLesson.num}.`;
+    const row = l => { const p = Quest.part(l.id), on = isDone(l); return `<a class="part ${on ? 'on' : ''} ${l.unlocked ? '' : 'locked'}" href="#/lesson/${l.id}">
+      <span class="ico">${on ? p.icon : l.unlocked ? '○' : '🔒'}</span><span><b>${esc(p.name)}</b><br><span class="small muted">${l.track === 'extra' ? '' : `Lesson ${l.num}: `}${esc(l.title)}</span><br><span class="small">${esc(p.does)}</span></span></a>`; };
     $app.innerHTML = `<h1>🔧 My Rescue Robot</h1>
       <div class="hangar">
         <div><canvas class="robot-preview" id="build" width="480" height="480" aria-label="Your robot with ${installed} of ${total} parts"></canvas>
           <button class="btn" id="custom" style="width:100%;margin-top:8px" aria-expanded="false">🎨 Customize colors and style</button></div>
         <div>
-          <div class="panel"><b style="font-size:1.3rem">${installed} / ${total} parts installed</b><div class="bar" style="margin:8px 0"><i style="width:${100 * installed / total}%"></i></div><p style="margin:0">${status}</p>
-            ${nextPart && lessonAt(nextPart.n)?.unlocked ? `<a class="btn primary" style="margin-top:10px" href="#/lesson/${lessonAt(nextPart.n).id}">Go earn it →</a>` : ''}</div>
+          <div class="panel"><b style="font-size:1.3rem">${installed} / ${total} parts installed</b><div class="bar" style="margin:8px 0"><i style="width:${100 * installed / (total || 1)}%"></i></div><p style="margin:0">${status}</p>
+            ${nextLesson?.unlocked ? `<a class="btn primary" style="margin-top:10px" href="#/lesson/${nextLesson.id}">Go earn it →</a>` : ''}</div>
           <div class="panel sec" id="workshop" hidden style="margin-top:12px"></div>
         </div>
       </div>
+      <h2 style="margin-top:20px">🧩 This term's build</h2>
+      <div class="parts">${parts.map(row).join('')}</div>
       <h2 style="margin-top:20px">🚩 The Rescue Mission</h2>
-      <p class="muted" style="margin-top:0">Finish all ${total} parts to open your mission. Your robot then proves itself in the capstone.</p>
-      <div class="parts">${Quest.MISSION.map(p => row(p, built || lessonAt(p.n)?.unlocked)).join('')}</div>
-      <h2 style="margin-top:20px">🧩 Parts</h2>
-      <div class="parts">${Quest.PARTS.map(p => row(p, lessonAt(p.n)?.unlocked)).join('')}</div>`;
+      <p class="muted" style="margin-top:0">Your finished robot proves itself in the capstone.</p>
+      <div class="parts">${mission.map(row).join('')}</div>
+      ${upgrades.length ? `<h2 style="margin-top:20px">🚀 Go Further upgrades</h2>
+      <p class="muted" style="margin-top:0">Optional. Finish a Go Further lesson to add its upgrade to your robot.</p>
+      <div class="parts">${upgrades.map(row).join('')}</div>` : ''}`;
     const canvas = document.getElementById('build'), shop = document.getElementById('workshop'), btn = document.getElementById('custom');
-    const draw = look => Quest.drawBuild(canvas, look, orders, true);
+    const draw = look => Quest.drawBuild(canvas, look, built, true);
     robotWorkshop(shop, draw);
     const toggle = open => { shop.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
     btn.onclick = () => toggle(shop.hidden);
@@ -738,18 +820,20 @@ int main() {
     const data = await api(teacher ? '/api/map/' + cid : '/api/map');
     const { stops, svg } = Quest.renderMap(data);
     const peers = data.class.showPeers;
-    const stopName = i => stops[i]?.finish ? '🏁 Finished' : `Lesson ${stops[i].lesson.order}`;
+    const stopName = i => stops[i]?.finish ? '🏁 Finished' : `Lesson ${stops[i].lesson.num}`;
     $app.innerHTML = `<div class="row" style="margin-bottom:10px"><div><h1 style="margin:0">🗺 Learning Map</h1><p class="muted" style="margin:0">${esc(data.class.name)}${!teacher && !peers ? ' · Your teacher has turned off classmates on this map.' : ''}</p></div><div class="spacer"></div>
       ${teacher ? `<label class="small">Class: <select class="input" id="mapc" style="display:inline-block;width:auto">${classes.map(c => `<option value="${c.id}" ${c.id === cid ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>` : ''}</div>
       <div class="map-wrap">${svg}</div>
       <div class="legend" style="margin-top:8px"><span><i class="key done"></i> finished</span><span><i class="key here"></i> you are here</span><span><i class="key open"></i> open</span><span><i class="key locked"></i> locked</span><span>Click a stop to see who is there.</span></div>
       <h2 style="margin-top:18px">Where everyone is</h2>
-      <div class="roster">${data.students.map(s => `<span class="chip ${s.me ? 'me' : ''}"><b>${esc(s.me ? 'You' : s.name)}</b> · ${stopName(s.at)}</span>`).join('') || '<span class="muted">No students have joined yet.</span>'}</div>`;
+      <div class="roster">${data.students.map(s => `<span class="chip ${s.me ? 'me' : ''}"><b>${esc(s.me ? 'You' : s.name)}</b> · ${stopName(s.at)}${s.extras ? ` · ★${s.extras}` : ''}</span>`).join('') || '<span class="muted">No students have joined yet.</span>'}</div>
+      ${data.extras.length ? `<h2 style="margin-top:18px">🚀 Your Go Further lessons</h2>
+      <div class="roster">${data.extras.map(l => l.unlocked ? `<a class="chip ${l.complete ? 'me' : ''}" href="#/lesson/${l.id}">${l.complete ? '✓' : '○'} ${esc(l.title)}</a>` : `<span class="chip locked">🔒 ${esc(l.title)}</span>`).join('')}</div>` : ''}`;
     if (teacher) document.getElementById('mapc').onchange = e => Nav.go('#/map/' + e.target.value);
     const open = el => {
       const i = +el.dataset.stop, s = stops[i], here = data.students.filter(x => x.at === i);
-      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🏁 Rescue HQ' : `${s.lesson.order}. ${esc(s.lesson.title)}`}</h2>
-        ${s.finish ? '<p>Everyone here has finished the whole course.</p>' : (p => `<p>${p.icon} ${Quest.PARTS.includes(p) ? 'Earns' : 'Mission stage:'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.order))}
+      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🏁 Rescue HQ' : `${s.lesson.num}. ${esc(s.lesson.title)}`}</h2>
+        ${s.finish ? '<p>Everyone here has finished this term\'s path.</p>' : (p => `<p>${p.icon} ${p.mission ? 'Mission stage:' : 'Earns'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.id))}
         <h3>Here now (${here.length})</h3><div class="roster">${here.map(x => `<span class="chip ${x.me ? 'me' : ''}">${esc(x.me ? 'You' : x.name)}</span>`).join('') || '<span class="muted small">Nobody is on this stop right now.</span>'}</div>
         <div class="row" style="margin-top:16px"><div class="spacer"></div>${!s.finish && s.lesson.unlocked ? `<a class="btn primary" href="#/lesson/${s.lesson.id}">Open lesson</a>` : ''}<button class="btn" id="cx">Close</button></div>`);
       m.querySelector('#cx').onclick = () => m.remove();

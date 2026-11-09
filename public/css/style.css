@@ -346,6 +346,8 @@ body.busy, body.busy * { cursor: progress !important; }
 .roster { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { padding: 3px 9px; background: var(--face); box-shadow: var(--raised); font-size: .9rem; }
 .chip.me { background: var(--tip); }
+a.chip { color: var(--ink); text-decoration: none; }
+.chip.locked { color: var(--muted); box-shadow: var(--groove); }
 @media (max-width: 960px) { .hangar { grid-template-columns: minmax(0, 1fr); } .hangar > div:first-child { max-width: 300px; } }
 @media (max-width: 560px) { .celebrate { grid-template-columns: minmax(0, 1fr); } .celebrate canvas { max-width: 180px; } }
 
@@ -402,3 +404,9 @@ body.busy, body.busy * { cursor: progress !important; }
 [data-theme="future"] .map-road { stroke: #2a1f58; }
 [data-theme="future"] .map-lane { stroke: #ffc861; }
 [data-theme="future"] .map-unit { fill: #2a1f58; font-family: Audiowide, var(--font); font-weight: 400; }
+
+/* ---------- Robot Setup ---------- */
+.ide-setup { padding: 12px; margin-bottom: 8px; background: var(--face); box-shadow: var(--groove); }
+.ide-setup[hidden] { display: none; }
+.setup-tbl select, .setup-tbl input:not([type=checkbox]) { padding: 3px 5px; border: 0; background: var(--paper); box-shadow: var(--sunken); font: inherit; max-width: 100%; }
+.setup-tbl td { vertical-align: middle; }

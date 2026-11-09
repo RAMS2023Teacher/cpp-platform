@@ -4,7 +4,7 @@ module.exports = [
   {
     id: "u2l1",
     unit: 2,
-    order: 5,
+    order: 8,
     title: "Variables & Math",
     minutes: 35,
     tags: ["code"],
@@ -203,7 +203,7 @@ int main() {
   {
     id: "u2l2",
     unit: 2,
-    order: 6,
+    order: 9,
     title: "Loops",
     minutes: 35,
     tags: ["code", "algorithms"],
@@ -396,7 +396,7 @@ int main() {
   {
     id: "u2l3",
     unit: 2,
-    order: 7,
+    order: 10,
     title: "Making Decisions",
     minutes: 40,
     tags: ["code", "algorithms"],
@@ -611,7 +611,7 @@ int main() {
   {
     id: "u2l4",
     unit: 2,
-    order: 8,
+    order: 11,
     title: "While Loops & Sensors",
     minutes: 40,
     tags: ["code", "algorithms"],
@@ -794,7 +794,7 @@ int main() {
   {
     id: "u2l5",
     unit: 2,
-    order: 9,
+    order: 12,
     title: "Functions",
     minutes: 40,
     tags: ["code", "algorithms"],

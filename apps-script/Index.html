@@ -704,6 +704,8 @@ body.busy, body.busy * { cursor: progress !important; }
 .roster { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { padding: 3px 9px; background: var(--face); box-shadow: var(--raised); font-size: .9rem; }
 .chip.me { background: var(--tip); }
+a.chip { color: var(--ink); text-decoration: none; }
+.chip.locked { color: var(--muted); box-shadow: var(--groove); }
 @media (max-width: 960px) { .hangar { grid-template-columns: minmax(0, 1fr); } .hangar > div:first-child { max-width: 300px; } }
 @media (max-width: 560px) { .celebrate { grid-template-columns: minmax(0, 1fr); } .celebrate canvas { max-width: 180px; } }
 
@@ -760,6 +762,12 @@ body.busy, body.busy * { cursor: progress !important; }
 [data-theme="future"] .map-road { stroke: #2a1f58; }
 [data-theme="future"] .map-lane { stroke: #ffc861; }
 [data-theme="future"] .map-unit { fill: #2a1f58; font-family: Audiowide, var(--font); font-weight: 400; }
+
+/* ---------- Robot Setup ---------- */
+.ide-setup { padding: 12px; margin-bottom: 8px; background: var(--face); box-shadow: var(--groove); }
+.ide-setup[hidden] { display: none; }
+.setup-tbl select, .setup-tbl input:not([type=checkbox]) { padding: 3px 5px; border: 0; background: var(--paper); box-shadow: var(--sunken); font: inherit; max-width: 100%; }
+.setup-tbl td { vertical-align: middle; }
 
 </style>
 </head>
@@ -12056,9 +12064,106 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   }
 
   const TYPES = '(?:long\\s+long|long\\s+double|long\\s+int|unsigned\\s+int|int|double|float|bool|char|string|auto|long|short|size_t|uint8_t|uint32_t|int32_t|colorType|directionType|turnType)';
-  const DEVICE_NAMES = ['Drivetrain', 'Brain', 'BrainInertial', 'DistanceSensor', 'Distance', 'BumperA', 'Bumper', 'Optical', 'TouchLED', 'ClawMotor', 'ArmMotor', 'LeftMotor', 'RightMotor', 'Inertial'];
+  // ---------- Robot Setup: the devices a robot has, like the Devices window in VEXcode.
+  // `canon` is the name lessons are written with; students can call a device anything.
+  const SETUP_JOBS = {
+    gyro: { label: 'Gyro Sensor', canon: 'BrainInertial', name: 'Gyro', port: 4, known: ['BrainInertial', 'Inertial', 'Gyro'] },
+    distance: { label: 'Distance Sensor', canon: 'DistanceSensor', name: 'DistanceSensor', port: 7, known: ['DistanceSensor', 'Distance'] },
+    color: { label: 'Color Sensor', canon: 'Optical', name: 'ColorSensor', port: 8, known: ['Optical', 'ColorSensor', 'Color'] },
+    bumper: { label: 'Bumper Switch', canon: 'BumperA', name: 'BumperA', port: 9, known: ['BumperA', 'Bumper'] },
+    touchled: { label: 'Touch LED', canon: 'TouchLED', name: 'TouchLED', port: 2, known: ['TouchLED'] },
+    claw: { label: 'Claw motor', canon: 'ClawMotor', name: 'ClawMotor', port: 3, known: ['ClawMotor'] },
+    arm: { label: 'Arm motor', canon: 'ArmMotor', name: 'ArmMotor', port: 10, known: ['ArmMotor'] }
+  };
+  function defaultSetup(gen) {
+    const devices = {};
+    for (const [job, j] of Object.entries(SETUP_JOBS)) devices[job] = { on: false, port: j.port, name: j.name };
+    devices.color.kind = gen === 2 ? 'optical' : 'color';
+    if (gen === 2) devices.color.name = 'Optical';
+    return { gen, confirmed: false, drive: { left: 1, right: 6 }, devices };
+  }
+  function normalizeSetup(raw, gen) {
+    const s = defaultSetup(gen || (raw && raw.gen) || 1);
+    if (!raw) return s;
+    s.confirmed = !!raw.confirmed;
+    if (raw.drive) s.drive = { left: +raw.drive.left || 1, right: +raw.drive.right || 6 };
+    for (const job of Object.keys(SETUP_JOBS)) if (raw.devices && raw.devices[job]) Object.assign(s.devices[job], raw.devices[job]);
+    return s;
+  }
+  // Used when no setup is given: every device present under its lesson name.
+  function fullSetup() { const s = defaultSetup(2); s.confirmed = true; for (const [job, d] of Object.entries(s.devices)) { d.on = job !== 'gyro'; d.name = SETUP_JOBS[job].canon; } return s; }
+  function validateSetup(s) {
+    const ports = [s.drive.left, s.drive.right], names = ['Drivetrain', 'Brain', 'main'];
+    for (const [job, d] of Object.entries(s.devices)) {
+      if (!d.on || (job === 'gyro' && s.gen === 2)) continue;
+      if (!/^[A-Za-z_][A-Za-z0-9_]{0,19}$/.test(d.name)) return `"${d.name}" can't be a device name. Use letters, numbers and _, starting with a letter.`;
+      if (names.includes(d.name)) return `The name ${d.name} is used twice.`;
+      names.push(d.name); ports.push(d.port);
+    }
+    const twice = ports.find((p, i) => ports.indexOf(p) !== i);
+    return twice ? `Port ${twice} is used twice. Each device needs its own Smart Port.` : null;
+  }
+  const activeJobs = s => Object.keys(SETUP_JOBS).filter(job => s.devices[job].on && !(job === 'gyro' && s.gen === 2));
+  /** The C++ a project needs for this setup. VEXcode writes the same thing from its Devices window. */
+  function generatedConfig(s) {
+    const d = s.devices, lines = [`// VEX IQ ${s.gen === 1 ? '1st' : '2nd'} gen`, 'brain Brain;', `motor LeftDriveSmart = motor(PORT${s.drive.left}, false);`, `motor RightDriveSmart = motor(PORT${s.drive.right}, true);`];
+    const gyro = s.gen === 1 ? (activeJobs(s).includes('gyro') ? d.gyro.name : null) : 'BrainInertial';
+    if (s.gen === 2) lines.push('inertial BrainInertial = inertial();');
+    const make = { distance: 'distance', bumper: 'bumper', touchled: 'touchled', gyro: 'gyro', claw: 'motor', arm: 'motor' };
+    for (const job of activeJobs(s)) {
+      const type = job === 'color' ? (d.color.kind === 'optical' ? 'optical' : 'colorsensor') : make[job];
+      lines.push(`${type} ${d[job].name} = ${type}(PORT${d[job].port}${type === 'motor' ? ', false' : ''});`);
+    }
+    lines.push(gyro ? `smartdrive Drivetrain = smartdrive(LeftDriveSmart, RightDriveSmart, ${gyro});` : 'drivetrain Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart);');
+    return lines.join('\n');
+  }
+  const codeOnly = src => src.replace(/\r/g, '').replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' ')).replace(/\/\/.*$/gm, '').replace(/"(?:[^"\\\n]|\\.)*"/g, '""');
+  /** Finds code that uses a device the robot doesn't have, the way a real build would fail. */
+  function checkDevices(src, s) {
+    const c = codeOnly(src), find = name => c.search(new RegExp('(?<![\\w.])' + name + '\\s*\\.'));
+    const at = i => c.slice(0, i).split('\n').length;
+    for (const [job, j] of Object.entries(SETUP_JOBS)) {
+      if (job === 'gyro' && s.gen === 2) continue;
+      const d = s.devices[job], label = job === 'color' && d.kind === 'optical' ? 'Optical Sensor' : j.label;
+      for (const name of j.known) {
+        const i = find(name);
+        if (i < 0 || (d.on && name === d.name)) continue;
+        if (d.on) return { error: `${name} isn't on your robot. Your ${label} is named ${d.name} in Robot Setup.`, line: at(i) };
+        if (name === 'BrainInertial') return { error: 'The 1st gen Brain has no built-in inertial sensor. Add a Gyro Sensor in Robot Setup and use its name instead.', line: at(i) };
+        return { error: `Your code uses ${name}, but your robot has no ${label}. Add it in Robot Setup.`, line: at(i) };
+      }
+    }
+    const col = s.devices.color;
+    if (col.on && col.kind === 'color') { const i = c.search(new RegExp('(?<![\\w.])' + col.name + '\\s*\\.\\s*color\\s*\\(')); if (i >= 0) return { error: `The Color Sensor reads colors with ${col.name}.colorname(), not color().`, line: at(i) }; }
+    return null;
+  }
+  /** Rewrites a student's code into lesson names, so auto-checks work whatever they called their devices. */
+  function canonicalize(src, s) {
+    let c = src;
+    for (const job of activeJobs(s)) { const d = s.devices[job]; c = c.replace(new RegExp('(?<![\\w.])' + d.name + '\\b', 'g'), SETUP_JOBS[job].canon); }
+    return c.replace(/\bOptical\s*\.\s*colorname\b/g, 'Optical.color');
+  }
+  /** Rewrites lesson text and starter code for this robot's kit and device names. */
+  function adaptText(text, s) {
+    const d = s.devices, isColor = d.color.kind === 'color', gen1 = s.gen === 1;
+    const rename = (from, to) => { if (from !== to) t = t.replace(new RegExp('\\b' + from + '(?=\\s*\\.|</code>)', 'g'), to); };
+    let t = text.split('Our simulator already has these devices set up with the same names.').join('Then set up the same devices in 🔌 Robot Setup, next to the Run button.');
+    t = t.replace(/\bOptical\s*\.\s*color\(\)/g, d.color.name + (isColor ? '.colorname()' : '.color()'));
+    rename('Optical', d.color.name); rename('DistanceSensor', d.distance.name); rename('BumperA', d.bumper.name);
+    rename('TouchLED', d.touchled.name); rename('ClawMotor', d.claw.name); rename('ArmMotor', d.arm.name);
+    if (isColor) t = t.replace(/Optical [Ss]ensor/g, 'Color Sensor').replace(/\bOptical sees/g, 'Color Sensor sees');
+    if (gen1) {
+      t = t.split('The 2nd gen Brain has a built-in <strong>inertial sensor</strong>, so').join('With a <strong>Gyro Sensor</strong> on your robot,')
+        .split('turn on the <strong>BrainInertial</strong> for turning').join('add a <strong>Gyro Sensor</strong> for turning')
+        .split('<td>Built-in Inertial</td><td>(inside Brain)</td>').join(`<td>Gyro Sensor</td><td>${d.gyro.port}</td>`)
+        .split('A sensor built into the 2nd gen Brain (BrainInertial) that').join('A sensor added to the robot that')
+        .replace(/Inertial sensor/g, 'Gyro Sensor').replace(/\bBrainInertial\b/g, d.gyro.name).replace(/2nd gen/g, '1st gen');
+    }
+    return t;
+  }
 
-  function translate(src) {
+
+  function translate(src, deviceNames) {
     const { code: raw, strings } = splitLiterals(src.replace(/\r/g, ''));
     precheck(raw);
     let c = raw;
@@ -12139,7 +12244,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     c = c.replace(/\bNULL\b|\bnullptr\b/g, 'null');
 
     // awaits for robot calls, waits and user functions
-    c = c.replace(new RegExp('(?<![\\w.])(' + DEVICE_NAMES.join('|') + ')\\s*\\.', 'g'), 'await $1.');
+    c = c.replace(new RegExp('(?<![\\w.])(' + deviceNames.join('|') + ')\\s*\\.', 'g'), 'await $1.');
     c = c.replace(/(?<![\w.])(wait|__cout|printf|vexDelay|task_sleep)\s*\(/g, 'await $1(');
     if (funcs.length) c = c.replace(new RegExp('(?<![\\w.])(?<!function )(' + funcs.join('|') + ')\\s*\\(', 'g'), 'await $1(');
 
@@ -12515,8 +12620,27 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       }
     };
     const mot = { spinFor: async () => { await sim.sleep(0.5); }, spin: async () => {}, stop: async () => {}, setVelocity: async () => {}, position: async () => 0, setStopping: async () => {} };
-    api.LeftMotor = mot; api.RightMotor = mot; api.Distance = api.DistanceSensor; api.Bumper = api.BumperA; api.Inertial = api.BrainInertial;
+    api.LeftMotor = mot; api.RightMotor = mot;
     return api;
+  }
+  // Only the devices in this robot's setup exist for its program.
+  const DEVICE_KEYS = ['BrainInertial', 'DistanceSensor', 'Optical', 'BumperA', 'TouchLED', 'ClawMotor', 'ArmMotor'];
+  function robotApi(sim, s) {
+    const all = makeApi(sim), out = { ...all }, names = ['Drivetrain', 'Brain', 'LeftMotor', 'RightMotor'];
+    DEVICE_KEYS.forEach(k => delete out[k]);
+    const O = all.Optical, detects = async c => (await O.color()) === c;
+    const colorApi = s.devices.color.kind === 'color'
+      ? { colorname: O.color, brightness: O.brightness, hue: O.hue, detects, isNearObject: O.isNearObject, setLight: O.setLight, installed: O.installed }
+      : { ...O, colorname: O.color, detects };
+    const objects = { gyro: all.BrainInertial, distance: all.DistanceSensor, color: colorApi, bumper: all.BumperA, touchled: all.TouchLED, claw: all.ClawMotor, arm: all.ArmMotor };
+    for (const job of activeJobs(s)) { out[s.devices[job].name] = objects[job]; names.push(s.devices[job].name); }
+    if (s.gen === 2) { out.BrainInertial = all.BrainInertial; names.push('BrainInertial'); }
+    if (s.gen === 1 && !activeJobs(s).includes('gyro')) {
+      const needsGyro = name => async () => { throw new Error(`Drivetrain.${name} needs a Gyro Sensor. Add one in Robot Setup.`); };
+      out.Drivetrain = { ...all.Drivetrain };
+      ['turnToHeading', 'turnToRotation', 'heading', 'rotation', 'setHeading'].forEach(n => { out.Drivetrain[n] = needsGyro(n); });
+    }
+    return { api: out, names };
   }
 
   // vector-style helpers on arrays / strings (non-enumerable)
@@ -12527,10 +12651,14 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   def(Array, 'clear', function () { this.length = 0; });
   def(String, 'size', function () { return this.length; }); def(String, 'empty', function () { return this.length === 0; });
 
-  async function run(sim, src) {
+  async function run(sim, src, setup) {
+    const robot = setup || fullSetup();
+    const problem = checkDevices(src, robot);
+    if (problem) return { ok: false, ...problem };
+    const { api, names: deviceNames } = robotApi(sim, robot);
     let js;
-    try { js = translate(src); } catch (e) { return { ok: false, error: e.message, line: e.line }; }
-    const api = makeApi(sim); const names = Object.keys(api).filter(n => /^[A-Za-z_]\w*$/.test(n) && n !== 'true' && n !== 'false');
+    try { js = translate(src, deviceNames); } catch (e) { return { ok: false, error: e.message, line: e.line }; }
+    const names = Object.keys(api).filter(n => /^[A-Za-z_]\w*$/.test(n) && n !== 'true' && n !== 'false');
     let fn;
     try { fn = new AsyncFunction(...names, '"use strict";{' + js + '\n;return await main();}'); }
     catch (e) { return { ok: false, error: 'Syntax error: ' + e.message.replace(/Unexpected token/, 'unexpected symbol') + ' — check spelling, brackets and semicolons near your last change.', js }; }
@@ -12568,7 +12696,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     });
   }
 
-  window.VexSim = { Sim, run, translate, evaluate, FIELD_W, FIELD_H, drawRobot, normalizeLook, LOOK_OPTIONS, DEFAULT_LOOK };
+  window.VexSim = { Sim, run, translate, evaluate, FIELD_W, FIELD_H, drawRobot, normalizeLook, LOOK_OPTIONS, DEFAULT_LOOK, SETUP_JOBS, normalizeSetup, validateSetup, generatedConfig, adaptText, canonicalize };
 })();
 
 </script>
@@ -12711,76 +12839,81 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 </script>
 <script>
 /* The Rescue Robot quest: which lesson earns which part, how the partly built
-   robot is drawn, and the learning map. Lesson numbers are the `order` values. */
+   robot is drawn, and the learning map. Parts are keyed by lesson id, so they work with any term plan. */
 (function () {
   const PARTS = [
-    { n: 1, icon: '🔩', name: 'Chassis frame', does: 'The skeleton everything else bolts onto.' },
-    { n: 2, icon: '🛞', name: 'Drive wheels', does: 'Four wheels to cross rough ground.' },
-    { n: 3, icon: '🖥️', name: 'Robot Brain', does: 'Runs every line of code you write.' },
-    { n: 4, icon: '⚙️', name: 'Drive motors', does: 'Turn your commands into movement.' },
-    { n: 5, icon: '💾', name: 'Memory bank', does: 'Stores the values your robot keeps track of.' },
-    { n: 6, icon: '🔋', name: 'Battery pack', does: 'Keeps the loops running through a long search.' },
-    { n: 7, icon: '🚨', name: 'Touch LED', does: 'Signals what the robot has decided.' },
-    { n: 8, icon: '📡', name: 'Distance sensor', does: 'Sees walls and rubble before hitting them.' },
-    { n: 9, icon: '🧰', name: 'Function board', does: 'Packages skills the robot can reuse.' },
-    { n: 10, icon: '🛡️', name: 'Front bumper', does: 'Feels its way through a collapsed maze.' },
-    { n: 11, icon: '👁️', name: 'Optical sensor', does: 'Follows marked evacuation routes.' },
-    { n: 12, icon: '🔦', name: 'Searchlight', does: 'Scans each zone for survivors.' },
-    { n: 13, icon: '📦', name: 'Cargo rack', does: 'Keeps supplies sorted and ready.' },
-    { n: 14, icon: '🦾', name: 'Rescue claw', does: 'Picks up and carries what matters.' },
-    { n: 15, icon: '🛰️', name: 'Navigation antenna', does: 'Finds the shortest safe path.' },
-    { n: 16, icon: '🧭', name: 'Stabilizer', does: 'Smooths out every stop and turn.' },
-    { n: 17, icon: '🧠', name: 'AI core', does: 'Lets the robot act on what it senses.' },
-    { n: 18, icon: '🌳', name: 'Decision module', does: 'Works through choices step by step.' },
-    { n: 19, icon: '🎛️', name: 'Mode switch', does: 'Moves between search, carry and return.' },
-    { n: 20, icon: '📷', name: 'Training camera', does: 'Collects the examples the AI learns from.' },
-    { n: 21, icon: '✨', name: 'Learning chip', does: 'Improves through trial and error.' },
-    { n: 22, icon: '⚖️', name: 'Safety governor', does: 'Keeps decisions fair and people safe.' }
+    { id: 'u1l1', icon: '🔩', name: 'Chassis frame', does: 'The skeleton everything else bolts onto.' },
+    { id: 'u1b1', icon: '📐', name: 'Corner brackets', does: 'Pin the frame together so it holds its shape.' },
+    { id: 'u1b2', icon: '🏗️', name: 'Cross braces', does: 'Stiffen the frame for rough terrain.' },
+    { id: 'u1b3', icon: '⚙️', name: 'Gearbox', does: 'Trades speed for the strength to climb rubble.' },
+    { id: 'u1l2', icon: '🛞', name: 'Drive wheels', does: 'Four wheels to cross rough ground.' },
+    { id: 'u1l3', icon: '🖥️', name: 'Robot Brain', does: 'Runs every line of code you write.' },
+    { id: 'u1l4', icon: '🔌', name: 'Drive motors', does: 'Turn your commands into movement.' },
+    { id: 'u2l1', icon: '💾', name: 'Memory bank', does: 'Stores the values your robot keeps track of.' },
+    { id: 'u2l2', icon: '🔋', name: 'Battery pack', does: 'Keeps the loops running through a long search.' },
+    { id: 'u2l3', icon: '🚨', name: 'Touch LED', does: 'Signals what the robot has decided.' },
+    { id: 'u2l4', icon: '📡', name: 'Distance sensor', does: 'Sees walls and rubble before hitting them.' },
+    { id: 'u2l5', icon: '🧰', name: 'Function board', does: 'Packages skills the robot can reuse.' },
+    { id: 'u3l1', icon: '🛡️', name: 'Front bumper', does: 'Feels its way through a collapsed maze.' },
+    { id: 'u3l2', icon: '👁️', name: 'Optical sensor', does: 'Follows marked evacuation routes.' },
+    { id: 'u3l3', icon: '🔦', name: 'Searchlight', does: 'Scans each zone for survivors.' },
+    { id: 'u3l4', icon: '📦', name: 'Cargo rack', does: 'Keeps supplies sorted and ready.' },
+    { id: 'u3l5', icon: '🦾', name: 'Rescue claw', does: 'Picks up and carries what matters.' },
+    { id: 'u3l6', icon: '🛰️', name: 'Navigation antenna', does: 'Finds the shortest safe path.' },
+    { id: 'u3l7', icon: '🧭', name: 'Stabilizer', does: 'Smooths out every stop and turn.' },
+    { id: 'u4l1', icon: '🧠', name: 'AI core', does: 'Lets the robot act on what it senses.' },
+    { id: 'u4l2', icon: '🌳', name: 'Decision module', does: 'Works through choices step by step.' },
+    { id: 'u4l3', icon: '🎛️', name: 'Mode switch', does: 'Moves between search, carry and return.' },
+    { id: 'u4l4', icon: '📷', name: 'Training camera', does: 'Collects the examples the AI learns from.' },
+    { id: 'u4l5', icon: '✨', name: 'Learning chip', does: 'Improves through trial and error.' },
+    { id: 'u4l6', icon: '⚖️', name: 'Safety governor', does: 'Keeps decisions fair and people safe.' }
   ];
   const MISSION = [
-    { n: 23, icon: '🗺️', name: 'Plan the rescue', does: 'Design your robot\'s rescue strategy.' },
-    { n: 24, icon: '🧪', name: 'Field test', does: 'Build, code and test on the rescue field.' },
-    { n: 25, icon: '🏅', name: 'Rescue day', does: 'Show what your finished robot can do.' }
+    { id: 'u5l1', icon: '🗺️', name: 'Plan the rescue', mission: true, does: 'Fit the rescue claw and design your strategy.' },
+    { id: 'u5l2', icon: '🧪', name: 'Field test', mission: true, does: 'Build, code and test on the rescue field.' },
+    { id: 'u5l3', icon: '🏅', name: 'Rescue day', mission: true, does: 'Show what your finished robot can do.' }
   ];
   const ALL = PARTS.concat(MISSION);
   // Parts that sim.js draws itself; everything else is added on top in drawExtras.
-  const BUILT_IN = { 2: 'wheels', 3: 'brain', 7: 'led', 14: 'claw' };
+  const BUILT_IN = { wheels: ['u1l2'], brain: ['u1l3'], led: ['u2l3'], claw: ['u3l5', 'u5l1'] } // the capstone fits a claw if the Cube Sorting lesson didn't;
   const UNIT_COLORS = { 1: '#f0d9b5', 2: '#c9d7f2', 3: '#e3cbef', 4: '#bfe6e0', 5: '#f6e39a' };
   const UNIT_NAMES = { 1: 'Meet Your Robot', 2: 'C++ Foundations', 3: 'Algorithms', 4: 'Artificial Intelligence', 5: 'Rescue Mission' };
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const part = order => ALL.find(p => p.n === order);
-  const upTo = count => new Set(Array.from({ length: count }, (_, i) => i + 1));
+  const part = id => ALL.find(p => p.id === id);
 
   function drawExtras(ctx, k, has) {
     const box = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x * k, y * k, w * k, h * k); ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.strokeRect(x * k, y * k, w * k, h * k); };
     const dot = (x, y, r, color) => { ctx.fillStyle = color; ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x * k, y * k, r * k, 0, 7); ctx.fill(); ctx.stroke(); };
-    if (has(4)) { box(-4.5, -2.8, 1.1, 1.7, '#555'); box(3.4, -2.8, 1.1, 1.7, '#555'); box(-4.5, 1.6, 1.1, 1.7, '#555'); box(3.4, 1.6, 1.1, 1.7, '#555'); }
-    if (has(5)) box(-3.2, -4.2, 1.5, 1, '#2e8b57');
-    if (has(6)) box(-2.2, 4.2, 4.4, 1.4, '#e0a500');
-    if (has(8)) box(-1, -5.8, 2, .9, '#1c7ed6');
-    if (has(9)) box(1.7, -4.2, 1.5, 1, '#8e44ad');
-    if (has(10)) box(-3.9, -6.5, 7.8, .55, '#333');
-    if (has(11)) dot(-2.8, -1.9, .45, '#f03e3e');
-    if (has(12)) { ctx.fillStyle = 'rgba(255,225,90,.55)'; ctx.beginPath(); ctx.moveTo(2.8 * k, -2 * k); ctx.lineTo(6.5 * k, -8 * k); ctx.lineTo(1 * k, -8.6 * k); ctx.fill(); dot(2.8, -1.9, .45, '#ffe066'); }
-    if (has(13)) { box(-3.4, 5.7, 6.8, 1.5, '#a0764a'); box(-2.8, 6, 1.1, .9, '#d94848'); box(-.5, 6, 1.1, .9, '#3e7bd6'); box(1.7, 6, 1.1, .9, '#3ca55c'); }
-    if (has(15)) { ctx.strokeStyle = '#222'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-3 * k, 3.4 * k); ctx.lineTo(-5.8 * k, -.2 * k); ctx.stroke(); dot(-5.8, -.2, .4, '#e03131'); }
-    if (has(16)) dot(2.9, 3.5, .55, '#20c997');
-    if (has(17)) { ctx.save(); ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 2 * k; box(-1.1, -.2, 2.2, 2, '#22d3ee'); ctx.restore(); }
-    if (has(18)) { box(-2.3, -.9, .9, .9, '#74c476'); box(1.4, -.9, .9, .9, '#74c476'); }
-    if (has(19)) { box(-2.3, 1.7, .9, .9, '#fab005'); box(1.4, 1.7, .9, .9, '#fab005'); }
-    if (has(20)) { box(-.8, -3.7, 1.6, 1.1, '#222'); dot(0, -3.15, .35, '#74c0fc'); }
-    if (has(21)) dot(0, .8, .35, '#fff');
-    if (has(22)) { ctx.strokeStyle = 'rgba(56,160,255,.75)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, -.4, 7.6 * k, 8.8 * k, 0, 0, 7); ctx.stroke(); }
-    if (has(23)) { ctx.fillStyle = '#c92a2a'; ctx.fillRect(3 * k, 3.9 * k, .25 * k, 2.8 * k); ctx.beginPath(); ctx.moveTo(3.25 * k, 3.9 * k); ctx.lineTo(5.1 * k, 4.6 * k); ctx.lineTo(3.25 * k, 5.3 * k); ctx.fill(); }
-    if (has(24)) { box(-1, 4.4, 2, 1, '#fff'); ctx.fillStyle = '#e03131'; ctx.fillRect(-.15 * k, 4.5 * k, .3 * k, .8 * k); ctx.fillRect(-.45 * k, 4.8 * k, .9 * k, .22 * k); }
-    if (has(25)) dot(0, -7.9, .75, '#ffd43b');
+    if (has('u1b2')) { box(-3.35, -4.4, .35, 8.8, '#9aa3ad'); box(3, -4.4, .35, 8.8, '#9aa3ad'); }
+    if (has('u1b1')) [[-3.8, -4.9], [3.1, -4.9], [-3.8, 4.2], [3.1, 4.2]].forEach(([x, y]) => box(x, y, .7, .7, '#6c7580'));
+    if (has('u1b3')) { dot(-3.1, .4, .6, '#c0c0c0'); dot(3.1, .4, .6, '#c0c0c0'); }
+    if (has('u1l4')) { box(-4.5, -2.8, 1.1, 1.7, '#555'); box(3.4, -2.8, 1.1, 1.7, '#555'); box(-4.5, 1.6, 1.1, 1.7, '#555'); box(3.4, 1.6, 1.1, 1.7, '#555'); }
+    if (has('u2l1')) box(-3.2, -4.2, 1.5, 1, '#2e8b57');
+    if (has('u2l2')) box(-2.2, 4.2, 4.4, 1.4, '#e0a500');
+    if (has('u2l4')) box(-1, -5.8, 2, .9, '#1c7ed6');
+    if (has('u2l5')) box(1.7, -4.2, 1.5, 1, '#8e44ad');
+    if (has('u3l1')) box(-3.9, -6.5, 7.8, .55, '#333');
+    if (has('u3l2')) dot(-2.8, -1.9, .45, '#f03e3e');
+    if (has('u3l3')) { ctx.fillStyle = 'rgba(255,225,90,.55)'; ctx.beginPath(); ctx.moveTo(2.8 * k, -2 * k); ctx.lineTo(6.5 * k, -8 * k); ctx.lineTo(1 * k, -8.6 * k); ctx.fill(); dot(2.8, -1.9, .45, '#ffe066'); }
+    if (has('u3l4')) { box(-3.4, 5.7, 6.8, 1.5, '#a0764a'); box(-2.8, 6, 1.1, .9, '#d94848'); box(-.5, 6, 1.1, .9, '#3e7bd6'); box(1.7, 6, 1.1, .9, '#3ca55c'); }
+    if (has('u3l6')) { ctx.strokeStyle = '#222'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-3 * k, 3.4 * k); ctx.lineTo(-5.8 * k, -.2 * k); ctx.stroke(); dot(-5.8, -.2, .4, '#e03131'); }
+    if (has('u3l7')) dot(2.9, 3.5, .55, '#20c997');
+    if (has('u4l1')) { ctx.save(); ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 2 * k; box(-1.1, -.2, 2.2, 2, '#22d3ee'); ctx.restore(); }
+    if (has('u4l2')) { box(-2.3, -.9, .9, .9, '#74c476'); box(1.4, -.9, .9, .9, '#74c476'); }
+    if (has('u4l3')) { box(-2.3, 1.7, .9, .9, '#fab005'); box(1.4, 1.7, .9, .9, '#fab005'); }
+    if (has('u4l4')) { box(-.8, -3.7, 1.6, 1.1, '#222'); dot(0, -3.15, .35, '#74c0fc'); }
+    if (has('u4l5')) dot(0, .8, .35, '#fff');
+    if (has('u4l6')) { ctx.strokeStyle = 'rgba(56,160,255,.75)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, -.4, 7.6 * k, 8.8 * k, 0, 0, 7); ctx.stroke(); }
+    if (has('u5l1')) { ctx.fillStyle = '#c92a2a'; ctx.fillRect(3 * k, 3.9 * k, .25 * k, 2.8 * k); ctx.beginPath(); ctx.moveTo(3.25 * k, 3.9 * k); ctx.lineTo(5.1 * k, 4.6 * k); ctx.lineTo(3.25 * k, 5.3 * k); ctx.fill(); }
+    if (has('u5l2')) { box(-1, 4.4, 2, 1, '#fff'); ctx.fillStyle = '#e03131'; ctx.fillRect(-.15 * k, 4.5 * k, .3 * k, .8 * k); ctx.fillRect(-.45 * k, 4.8 * k, .9 * k, .22 * k); }
+    if (has('u5l3')) dot(0, -7.9, .75, '#ffd43b');
   }
 
-  /** Draws the robot with only the parts in `orders` (a Set of lesson numbers). */
-  function drawBuild(canvas, look, orders, background) {
+  /** Draws the robot with only the parts earned by the lessons in `built` (a Set of lesson ids). */
+  function drawBuild(canvas, look, built, background) {
     const ctx = canvas.getContext('2d'), S = canvas.width, k = S / 22;
-    const parts = new Set(Object.keys(BUILT_IN).filter(n => orders.has(+n)).map(n => BUILT_IN[n]));
+    const parts = new Set(Object.keys(BUILT_IN).filter(name => BUILT_IN[name].some(id => built.has(id))));
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, S, S);
     if (background) {
@@ -12789,18 +12922,18 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       for (let i = k * 2; i < S; i += k * 3) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, S); ctx.moveTo(0, i); ctx.lineTo(S, i); ctx.stroke(); }
     }
     ctx.translate(S / 2, S / 2);
-    ctx.globalAlpha = orders.has(1) ? 1 : .25; // nothing earned yet: a faint outline of what's to come
+    ctx.globalAlpha = built.has('u1l1') ? 1 : .25; // nothing earned yet: a faint outline of what's to come
     VexSim.drawRobot(ctx, k, VexSim.normalizeLook(look), { parts });
     ctx.globalAlpha = 1;
-    drawExtras(ctx, k, n => orders.has(n));
+    drawExtras(ctx, k, id => built.has(id));
   }
 
   const tokens = new Map();
-  function tokenImage(look, done) {
-    const key = JSON.stringify([look, done]);
+  function tokenImage(look, built) {
+    const key = JSON.stringify([look, built]);
     if (!tokens.has(key)) {
       const c = document.createElement('canvas'); c.width = c.height = 110;
-      drawBuild(c, look, upTo(Math.max(done, 1)), false); // even a new student shows up on the map
+      drawBuild(c, look, new Set(['u1l1', ...built]), false); // even a new student shows up on the map
       tokens.set(key, c.toDataURL());
     }
     return tokens.get(key);
@@ -12815,6 +12948,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       const inRow = lessons.filter(l => l.unit === u).map(l => ({ lesson: l }));
       if (row === units.length - 1) inRow.push({ finish: true });
       const gap = inRow.length > 1 ? (W - 2 * MARGIN) / (inRow.length - 1) : 0;
+      if (inRow.length === 1) { stops.push(Object.assign(inRow[0], { x: W / 2, y: row * ROW + 50, row, index: stops.length })); return; }
       inRow.forEach((s, i) => {
         const across = MARGIN + gap * (row % 2 ? inRow.length - 1 - i : i);
         stops.push(Object.assign(s, { x: Math.round(across), y: row * ROW + 50, row, index: stops.length }));
@@ -12842,15 +12976,15 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       const state = s.finish ? (youAt === i ? 'done' : 'finish') : l.complete ? 'done' : i === youAt ? 'here' : l.unlocked ? 'open' : 'locked';
       const you = people.find(p => p.me);
       const names = people.length > 3 ? people.slice(0, 2) : people;
-      const lines = names.map((p, j) => `<image href="${tokenImage(p.look, p.done)}" x="${s.x - 62}" y="${s.y + 25 + j * 26}" width="26" height="26"/>
+      const lines = names.map((p, j) => `<image href="${tokenImage(p.look, p.built)}" x="${s.x - 62}" y="${s.y + 25 + j * 26}" width="26" height="26"/>
         <text x="${s.x - 34}" y="${s.y + 43 + j * 26}" class="map-name${p.me ? ' me' : ''}">${esc(p.me ? 'You' : p.name.length > 15 ? p.name.slice(0, 14) + '…' : p.name)}</text>`).join('');
       const more = people.length > 3 ? `<text x="${s.x - 34}" y="${s.y + 95}" class="map-name">+${people.length - 2} more</text>` : '';
-      const label = s.finish ? 'Rescue HQ, the finish line' : `Lesson ${l.order}: ${l.title}`;
+      const label = s.finish ? 'Rescue HQ, the finish line' : `Lesson ${l.num}: ${l.title}`;
       return `<g class="map-stop ${state}" data-stop="${i}" role="button" tabindex="0" aria-label="${esc(label)}, ${people.length} here">
         <title>${esc(label)}</title>
         <circle cx="${s.x}" cy="${s.y}" r="21"/>
-        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🏁' : l.complete ? '✓' : l.order}</text>
-        ${you ? `<image href="${tokenImage(you.look, you.done)}" x="${s.x - 42}" y="${s.y - 52}" width="84" height="84" class="map-you"/>` : ''}
+        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🏁' : l.complete ? '✓' : l.num}</text>
+        ${you ? `<image href="${tokenImage(you.look, you.built)}" x="${s.x - 42}" y="${s.y - 52}" width="84" height="84" class="map-you"/>` : ''}
         ${lines}${more}</g>`;
     }).join('');
     return {
@@ -12862,7 +12996,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     };
   }
 
-  window.Quest = { PARTS, MISSION, part, upTo, drawBuild, renderMap };
+  window.Quest = { part, drawBuild, renderMap };
 })();
 
 </script>
@@ -12974,7 +13108,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       <div>
         <span class="tag ai">Grade 8 · VEX IQ · C++</span>
         <h1>Code real robots.<br>Think like an engineer.<br>Build smarter machines.</h1>
-        <p class="lead">25 hands-on lessons that take you from your first <code>Brain.Screen.print</code> to robots that search, sort, find paths and <b>learn</b> — in a C++ editor with a built-in robot simulator.</p>
+        <p class="lead">Hands-on lessons that take you from your first <code>Brain.Screen.print</code> to robots that search, sort, find paths and <b>learn</b> — in a C++ editor with a built-in robot simulator.</p>
       </div>
       <div class="hero-art"><span class="c">// Your robot, your rules</span>
 <span class="k">int</span> main() {
@@ -13012,24 +13146,26 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   // ---------------------------------------------------------------- student home
   async function studentHome() {
     const { lessons } = await api('/api/lessons');
-    const done = lessons.filter(l => l.status === 'complete').length;
+    const main = lessons.filter(l => l.track === 'main'), extra = lessons.filter(l => l.track === 'extra');
+    const isDone = l => l.status === 'complete';
+    const done = main.filter(isDone).length, extraDone = extra.filter(isDone).length;
     const quizPts = lessons.reduce((s, l) => s + (l.quizScore ? +l.quizScore.split('/')[0] : 0), 0);
-    const xp = done * 50 + quizPts * 10;
+    const xp = (done + extraDone) * 50 + quizPts * 10;
     const level = Math.floor(xp / 250) + 1;
-    const next = lessons.find(l => l.unlocked && l.status !== 'complete');
-    const units = [...new Set(lessons.map(l => l.unit))];
-    const orders = completedOrders(lessons);
-    const partsDone = Quest.PARTS.filter(p => orders.has(p.n)).length, nextPart = Quest.PARTS.find(p => !orders.has(p.n));
-    const unitDone = u => lessons.filter(l => l.unit === u).every(l => l.status === 'complete');
+    const next = main.find(l => l.unlocked && !isDone(l));
+    const units = [...new Set(main.map(l => l.unit))];
+    const built = completedIds(lessons);
+    const parts = buildParts(lessons), partsDone = parts.filter(isDone).length, nextPart = Quest.part(parts.find(l => !isDone(l))?.id);
+    const allIn = (list, u) => { const inUnit = list.filter(l => l.unit === u); return inUnit.length > 0 && inUnit.every(isDone); };
     const BADGES = [
-      ['🔧', 'Robot Builder', unitDone(1)], ['💻', 'C++ Coder', unitDone(2)], ['🧩', 'Algorithm Ace', unitDone(3)],
-      ['🧠', 'AI Engineer', unitDone(4)], ['🏆', 'Capstone Champion', unitDone(5)], ['⭐', 'First Lesson', done >= 1], ['🔥', '10 Lessons', done >= 10]
+      ['🔧', 'Robot Builder', allIn(main, 1)], ['💻', 'C++ Coder', allIn(main, 2)], ['🏆', 'Rescue Certified', allIn(main, 5)],
+      ['🧩', 'Algorithm Ace', allIn(lessons, 3)], ['🧠', 'AI Engineer', allIn(lessons, 4)], ['⭐', 'First Lesson', done + extraDone >= 1], ['🚀', 'Went Further', extraDone >= 1]
     ];
     $app.innerHTML = `
       <div class="row" style="margin-bottom:16px"><div><h1>Hi, ${esc(ME.name.split(' ')[0])}! 👋</h1><p class="muted" style="margin:0">${esc(MYCLASS?.name || '')}</p></div><div class="spacer"></div>
         ${next ? `<a class="btn primary" href="#/lesson/${next.id}">${next.status === 'started' ? 'Continue' : 'Start'}: ${esc(next.title)} →</a>` : ''}</div>
       <div class="stats">
-        <div class="stat"><span class="muted small">Lessons complete</span><b>${done} / ${lessons.length}</b><div class="bar"><i style="width:${100 * done / lessons.length}%"></i></div></div>
+        <div class="stat"><span class="muted small">Lessons complete</span><b>${done} / ${main.length}</b><div class="bar"><i style="width:${100 * done / main.length}%"></i></div>${extraDone ? `<span class="small muted">+ ${extraDone} Go Further</span>` : ''}</div>
         <div class="stat"><span class="muted small">Robot XP</span><b>${xp} XP</b><span class="small muted">Level ${level} · ${250 - (xp % 250)} XP to next level</span></div>
         <div class="stat"><span class="muted small">Quiz points</span><b>${quizPts}</b></div>
         <div class="stat"><span class="muted small">Badges</span><b>${BADGES.filter(b => b[2]).length} / ${BADGES.length}</b></div>
@@ -13037,24 +13173,31 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       <div class="quest-strip panel">
         <canvas id="home-robot" width="132" height="132" aria-label="Your Rescue Robot so far"></canvas>
         <div style="flex:1;min-width:200px"><b>🤖 Your Rescue Robot</b>
-          <div class="bar" style="margin:6px 0"><i style="width:${100 * partsDone / Quest.PARTS.length}%"></i></div>
-          <span class="small muted">${partsDone} of ${Quest.PARTS.length} parts installed${nextPart ? ` · Next: ${nextPart.icon} ${esc(nextPart.name)}` : ' · Ready for the rescue mission!'}</span></div>
+          <div class="bar" style="margin:6px 0"><i style="width:${100 * partsDone / (parts.length || 1)}%"></i></div>
+          <span class="small muted">${partsDone} of ${parts.length} parts installed${nextPart ? ` · Next: ${nextPart.icon} ${esc(nextPart.name)}` : ' · Ready for the rescue mission!'}</span></div>
         <a class="btn" href="#/robot">🔧 My Robot</a><a class="btn" href="#/map">🗺 Learning Map</a>
       </div>
       <div class="badges">${BADGES.map(([i, n, on]) => `<span class="badge ${on ? '' : 'off'}">${i} ${n}</span>`).join('')}</div>
       ${units.map(u => `
         <section class="unit">
-          <div class="unit-head"><h2>${UNIT_ICONS[u] || '📦'} Unit ${u}: ${UNIT_NAMES[u] || ''}</h2><span class="muted small">${lessons.filter(l => l.unit === u && l.status === 'complete').length}/${lessons.filter(l => l.unit === u).length} done</span></div>
-          <div class="cards">${lessons.filter(l => l.unit === u).map(card).join('')}</div>
-        </section>`).join('')}`;
-    Quest.drawBuild(document.getElementById('home-robot'), ME.robot, orders, true);
+          <div class="unit-head"><h2>${UNIT_ICONS[u] || '📦'} Unit ${u}: ${UNIT_NAMES[u] || ''}</h2><span class="muted small">${main.filter(l => l.unit === u && isDone(l)).length}/${main.filter(l => l.unit === u).length} done</span></div>
+          <div class="cards">${main.filter(l => l.unit === u).map(card).join('')}</div>
+        </section>`).join('')}
+      ${extra.length ? `<section class="unit">
+        <div class="unit-head"><h2>🚀 Go Further</h2><span class="muted small">${extraDone}/${extra.length} done</span></div>
+        <p class="muted" style="margin-top:0">Extra lessons for anyone who wants more. They open as you finish the lessons they build on, and each one adds an upgrade to your robot.</p>
+        <div class="cards">${extra.map(card).join('')}</div></section>` : ''}`;
+    Quest.drawBuild(document.getElementById('home-robot'), ME.robot, built, true);
   }
-  const completedOrders = lessons => new Set(lessons.filter(l => l.status === 'complete').map(l => l.order));
+  const completedIds = lessons => new Set(lessons.filter(l => l.status === 'complete').map(l => l.id));
+  // The parts that make up this term's robot: the main path before the rescue mission.
+  const buildParts = lessons => lessons.filter(l => l.track === 'main' && !Quest.part(l.id)?.mission);
   function card(l) {
     const icon = !l.unlocked ? '🔒' : l.status === 'complete' ? '✅' : l.status === 'started' ? '🟡' : '';
     return `<a class="lcard ${l.unlocked ? '' : 'locked'} ${l.status}" href="#/lesson/${l.id}">
-      <span class="status">${icon}</span><span class="num">LESSON ${l.order} · ${l.minutes} MIN</span>
+      <span class="status">${icon}</span><span class="num">${l.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + l.num} · ${l.minutes} MIN</span>
       <h3>${esc(l.title)}</h3><p>${esc(l.summary)}</p><div>${tags(l.tags)}</div>
+      ${l.requires?.length ? `<span class="small muted">Opens after: ${l.requires.map(esc).join(', ')}</span>` : ''}
       ${l.quizScore ? `<span class="small muted">Quiz: ${l.quizScore}</span>` : ''}</a>`;
   }
 
@@ -13070,15 +13213,16 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   }
 
   async function lessonPage(id) {
-    const { lesson: L, progress: P, prev, next } = await api('/api/lessons/' + id);
+    const { lesson: raw, progress: P, prev, next, place } = await api('/api/lessons/' + id);
+    const L = adaptLesson(raw, mySetup());
     const teacher = ME.role === 'teacher';
     const secs = L.sections || [];
-    celebrated = P?.completed ? L.id : null;
+    celebrated = P?.completed ? L.id : null; lessonPlace = place;
     $app.innerHTML = `
       <div class="lesson-head">
         <div style="flex:1;min-width:260px">
           <a href="${teacher ? '#/teacher/lessons' : '#/'}" class="small">← ${teacher ? 'All lessons' : 'My course'}</a>
-          <div class="muted small" style="margin-top:8px">UNIT ${L.unit} · ${esc(UNIT_NAMES[L.unit] || '')} · LESSON ${L.order} · ⏱ ${L.minutes} min</div>
+          <div class="muted small" style="margin-top:8px">UNIT ${L.unit} · ${esc(UNIT_NAMES[L.unit] || '')} · ${place.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + place.num} · ⏱ ${L.minutes} min</div>
           <h1>${esc(L.title)}</h1><div>${tags(L.tags)}</div>
         </div>
         <div class="row">${prev ? `<a class="btn sm" href="#/lesson/${prev}">← Prev</a>` : ''}${next ? `<a class="btn sm" href="#/lesson/${next}">Next →</a>` : ''}</div>
@@ -13131,6 +13275,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       ide = createIDE(document.getElementById('ide'), {
         code: saved || L.challenge.starterCode, starter: L.challenge.starterCode, field: L.challenge.field, checks: L.challenge.checks,
         submitLabel: teacher ? 'Check (preview)' : 'Check & Submit',
+        onNewNames: () => route(),
         onChange: teacher ? null : code => { try { localStorage.setItem(ck, code); localStorage.setItem(ck + ':at', new Date().toISOString()); } catch (e) {} unsaved = code; clearTimeout(ide._d); ide._d = setTimeout(saveDraft, 20000); },
         onSubmit: teacher ? null : async (code, checks, output) => {
           unsaved = null; clearTimeout(ide._d);
@@ -13146,19 +13291,19 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     renderQuiz(L, P, teacher);
   }
 
-  let celebrated = null;
+  let celebrated = null, lessonPlace = null;
   async function celebrate(L, progress) {
     if (!progress.completed || celebrated === L.id) return;
     celebrated = L.id;
-    const part = Quest.part(L.order); if (!part) return;
-    const isPart = Quest.PARTS.includes(part);
-    const m = modal(`<h2 style="margin-top:0">${isPart ? '🔧 New part installed!' : '🚩 Mission stage complete!'}</h2>
+    const part = Quest.part(L.id); if (!part) return;
+    const heading = lessonPlace?.track === 'extra' ? '🚀 Upgrade installed!' : part.mission ? '🚩 Mission stage complete!' : '🔧 New part installed!';
+    const m = modal(`<h2 style="margin-top:0">${heading}</h2>
       <div class="celebrate"><canvas width="220" height="220"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
       <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Learning map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => m.remove()));
     const { lessons } = await api('/api/lessons');
-    Quest.drawBuild(m.querySelector('canvas'), ME.robot, completedOrders(lessons), true);
+    Quest.drawBuild(m.querySelector('canvas'), ME.robot, completedIds(lessons), true);
   }
 
   function renderQuiz(L, P, teacher) {
@@ -13183,7 +13328,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       const answers = quiz.map((_, i) => Number(fd.get('q' + i)));
       try {
         const r = await api(`/api/lessons/${L.id}/quiz`, { body: { answers, reflection: fd.get('reflection') || '' } });
-        toast(`Exit ticket: ${r.progress.quiz.score}/${r.progress.quiz.total}`); renderQuiz(r.lesson, r.progress, false); celebrate(L, r.progress);
+        toast(`Exit ticket: ${r.progress.quiz.score}/${r.progress.quiz.total}`); renderQuiz(adaptLesson(r.lesson, mySetup()), r.progress, false); celebrate(L, r.progress);
       } catch (err) { toast(err.message); }
     };
   }
@@ -13214,6 +13359,7 @@ std::vector&lt;int&gt; v;  v.push_back(4);  v.size();
 if / else if / else · while · for · do-while · switch · functions
 abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
 
+  const ADAPT_SAMPLE = 'Optical.color() DistanceSensor. BumperA. TouchLED. ClawMotor. ArmMotor. BrainInertial 2nd gen';
   // Saved per user in this browser and shared by every editor on the site.
   const EDITOR_DEFAULTS = { fontSize: 14, theme: 'retro', indent: 2, lineNumbers: true, wrap: false, closeBrackets: true, matchBrackets: true };
   const EDITOR_THEMES = { retro: 'Retro blue', paper: 'Notepad white', terminal: 'Terminal green', night: 'Night' };
@@ -13230,18 +13376,29 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
   }
   const options = (values, current, label = v => v) => values.map(v => `<option value="${v}" ${String(v) === String(current) ? 'selected' : ''}>${esc(label(v))}</option>`).join('');
 
+  // Students use their class's kit; teachers pick theirs in Robot Setup.
+  const myGen = () => MYCLASS ? +MYCLASS.kit : (ME.setup?.gen || 1);
+  const mySetup = () => VexSim.normalizeSetup(ME.setup, myGen());
+  function adaptLesson(lesson, setup) {
+    const checks = lesson.challenge?.checks, out = JSON.parse(VexSim.adaptText(JSON.stringify(lesson), setup));
+    if (checks) out.challenge.checks = checks; // always written in lesson names; student code is mapped to them when checked
+    return out;
+  }
+
   function createIDE(host, opts) {
-    let prefs = loadEditorPrefs();
+    let prefs = loadEditorPrefs(), setup = opts.setup || mySetup();
     host.innerHTML = `
       <div class="ide-bar">
         <button class="btn go" data-a="run">▶ Run</button><button class="btn stop" data-a="stop" disabled>■ Stop</button>
         <button class="btn" data-a="reset">↺ Reset robot</button>
         <select class="input" data-a="speed" style="width:auto;margin:0"><option value="1">1× speed</option><option value="2">2×</option><option value="4">4×</option><option value="10">10×</option></select>
+        <button class="btn" data-a="setup" aria-expanded="false">🔌 Robot Setup</button>
         <button class="btn" data-a="settings" aria-expanded="false">⚙ Editor settings</button>
         <div class="spacer"></div>
         ${opts.starter ? '<button class="btn sm" data-a="restore">Restore starter code</button>' : ''}
         ${opts.checks?.length ? `<button class="btn primary" data-a="check">✔ ${esc(opts.submitLabel || 'Check')}</button>` : ''}
       </div>
+      <form class="ide-setup" hidden></form>
       <form class="ide-settings" hidden>
         <label class="f">Text size<select name="fontSize">${options(EDITOR_FONT_SIZES, prefs.fontSize, v => v + ' pt')}</select></label>
         <label class="f">Colors<select name="theme">${options(Object.keys(EDITOR_THEMES), prefs.theme, v => EDITOR_THEMES[v])}</select></label>
@@ -13253,7 +13410,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
         <button class="btn sm" type="button" data-a="settings-reset">Reset to defaults</button>
       </form>
       <div class="ide">
-        <div><textarea></textarea><div class="ref" style="margin-top:10px"><b class="small">📚 Quick reference</b>${API_REF}</div></div>
+        <div><textarea></textarea><div class="ref" style="margin-top:10px"><b class="small">📚 Quick reference</b>${VexSim.adaptText(API_REF, setup)}${setup.gen === 1 ? '<p class="small muted">1st gen Brain screen: 5 rows, 21 columns.</p>' : ''}</div></div>
         <div class="simbox">
           <canvas width="960" height="720"></canvas>
           <div class="hud"></div>
@@ -13283,6 +13440,51 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       try { localStorage.setItem(editorKey(), JSON.stringify(prefs)); } catch (e) {}
       applyPrefs();
     };
+    const setupBox = q('.ide-setup'), setupBtn = q('[data-a=setup]');
+    const showSetup = open => { setupBox.hidden = !open; setupBtn.setAttribute('aria-expanded', String(open)); };
+    const PORTS = Array.from({ length: 12 }, (_, i) => i + 1);
+    const portSelect = (name, current) => `<select name="${name}" aria-label="${name} port">${options(PORTS, current, v => 'Port ' + v)}</select>`;
+    function renderSetup() {
+      const readOnly = !!opts.setup, s = setup;
+      const jobs = Object.keys(VexSim.SETUP_JOBS).filter(job => job !== 'gyro' || s.gen === 1);
+      const row = job => { const d = s.devices[job], J = VexSim.SETUP_JOBS[job]; return `<tr>
+        <td><label class="row"><input type="checkbox" name="${job}.on" ${d.on ? 'checked' : ''}> ${job === 'color' ? `<select name="color.kind" aria-label="Color sensor type">${options(['color', 'optical'], d.kind, v => v === 'color' ? 'Color Sensor' : 'Optical Sensor')}</select>` : J.label}</label></td>
+        <td>${portSelect(job + '.port', d.port)}</td>
+        <td><input name="${job}.name" value="${esc(d.name)}" maxlength="20" spellcheck="false" aria-label="${J.label} name"></td></tr>`; };
+      setupBox.innerHTML = `<p style="margin-top:0"><b>🔌 Robot Setup</b> · Tell your program what's plugged into your robot, just like the Devices window in VEXcode. Only add what your robot has.</p>
+        ${!MYCLASS && !readOnly ? `<label class="f" style="max-width:220px">Brain<select name="gen">${options([1, 2], s.gen, v => `VEX IQ ${v === 1 ? '1st' : '2nd'} gen`)}</select></label>` : `<p class="small muted">Brain: VEX IQ ${s.gen === 1 ? '1st gen (no built-in inertial sensor, so add a Gyro Sensor for accurate turns)' : '2nd gen (inertial sensor built in)'}</p>`}
+        <table class="tbl setup-tbl"><tr><th>Device</th><th>Smart Port</th><th>Name in your code</th></tr>
+          <tr><td><b>Drivetrain</b> (left motor)</td><td>${portSelect('drive.left', s.drive.left)}</td><td rowspan="2"><code>Drivetrain</code></td></tr>
+          <tr><td><b>Drivetrain</b> (right motor)</td><td>${portSelect('drive.right', s.drive.right)}</td></tr>
+          ${jobs.map(row).join('')}</table>
+        <div class="err" data-setup-err></div>
+        ${readOnly ? '' : '<button class="btn primary">Save setup</button>'}
+        <details style="margin-top:8px"><summary class="small">See the C++ this creates</summary><pre class="code">${esc(VexSim.generatedConfig(s))}</pre></details>`;
+      if (readOnly) setupBox.querySelectorAll('input,select').forEach(el => { el.disabled = true; });
+    }
+    function readSetupForm() {
+      const f = setupBox.elements, gen = f.gen ? +f.gen.value : setup.gen, out = VexSim.normalizeSetup({ ...setup, gen }, gen);
+      out.drive = { left: +f['drive.left'].value, right: +f['drive.right'].value };
+      for (const job of Object.keys(out.devices)) {
+        if (!f[job + '.on']) continue;
+        Object.assign(out.devices[job], { on: f[job + '.on'].checked, port: +f[job + '.port'].value, name: f[job + '.name'].value.trim() });
+        if (job === 'color') out.devices.color.kind = f['color.kind'].value;
+      }
+      return out;
+    }
+    setupBox.onsubmit = async e => {
+      e.preventDefault();
+      const next = readSetupForm(), err = setupBox.querySelector('[data-setup-err]'), problem = VexSim.validateSetup(next);
+      if (problem) { err.textContent = problem; return; }
+      const textChanged = VexSim.adaptText(ADAPT_SAMPLE, next) !== VexSim.adaptText(ADAPT_SAMPLE, setup);
+      try {
+        const r = await api('/api/me/setup', { method: 'PUT', body: { setup: next } });
+        ME.setup = r.setup; setup = VexSim.normalizeSetup(r.setup, next.gen);
+        toast('Robot Setup saved 🔌'); renderSetup(); showSetup(false); setMsg('');
+        if (textChanged && opts.onNewNames) opts.onNewNames();
+      } catch (ex) { err.textContent = ex.message; }
+    };
+    renderSetup();
     const sim = new VexSim.Sim(q('canvas'), opts.field);
     const scr = q('.brain-screen'), hud = q('.hud'), msg = q('[data-m]');
     sim.on('screen', () => { scr.textContent = sim.screen.lines.join('\n'); scr.scrollTop = scr.scrollHeight; });
@@ -13295,10 +13497,13 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     cm.on('change', () => { if (errMark !== null) { cm.removeLineClass(errMark, 'background', 'err-line'); errMark = null; } opts.onChange && opts.onChange(cm.getValue()); });
     let running = false;
     async function doRun(withChecks) {
-      if (running) return; running = true;
+      if (running) return;
+      if (!setup.confirmed) { showSetup(true); setMsg('Set up your robot first: choose its devices in Robot Setup, then press Save setup.', 'bad'); return; }
+      running = true;
       q('[data-a=run]').disabled = true; q('[data-a=stop]').disabled = false; q('.checks').innerHTML = ''; setMsg(withChecks ? '🏁 Running your program for the auto-check…' : '');
       const code = cm.getValue();
-      const r = await VexSim.run(sim, code);
+      const r = await VexSim.run(sim, code, setup);
+      if (!r.ok && /Robot Setup/.test(r.error || '')) showSetup(true);
       running = false; q('[data-a=run]').disabled = false; q('[data-a=stop]').disabled = true;
       if (!r.ok) {
         setMsg((r.line ? `Line ${r.line}: ` : '') + r.error, 'bad');
@@ -13307,7 +13512,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       } else if (r.stopped) { setMsg('Program stopped.'); if (withChecks) return; }
       else if (!withChecks) setMsg('✅ Program finished.', 'good');
       if (withChecks) {
-        const res = VexSim.evaluate(sim, code, opts.checks);
+        const res = VexSim.evaluate(sim, VexSim.canonicalize(code, setup), opts.checks);
         if (!r.ok) res.unshift({ message: 'Program runs without errors', pass: false });
         q('.checks').innerHTML = res.map(c => `<li>${c.pass ? '✅' : '❌'} ${esc(c.message)}</li>`).join('');
         const all = res.every(c => c.pass);
@@ -13317,6 +13522,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     }
     host.addEventListener('click', e => {
       const a = e.target.closest('[data-a]')?.dataset.a;
+      if (a === 'setup') showSetup(setupBox.hidden);
       if (a === 'settings') { settings.hidden = !settings.hidden; q('[data-a=settings]').setAttribute('aria-expanded', String(!settings.hidden)); }
       if (a === 'settings-reset') { prefs = { ...EDITOR_DEFAULTS }; try { localStorage.removeItem(editorKey()); } catch (e) {} syncSettingsForm(); applyPrefs(); }
       if (a === 'run') doRun(false);
@@ -13417,6 +13623,10 @@ int main() {
   }
 
   // ---------------------------------------------------------------- teacher
+  const PLANS = { 10: '10-lesson term', 12: '12-lesson term', 15: '15-lesson term', all: 'Full course (28 lessons)' };
+  const KITS = { 1: 'VEX IQ 1st gen', 2: 'VEX IQ 2nd gen' };
+  const PLAN_OPTIONS = current => options(Object.keys(PLANS), current, v => PLANS[v]);
+  const KIT_OPTIONS = current => options(Object.keys(KITS), current, v => KITS[v]);
   async function teacherHome() {
     const { classes } = await api('/api/teacher/classes');
     $app.innerHTML = `
@@ -13424,7 +13634,7 @@ int main() {
       <div class="cards" style="margin-top:12px">
         ${classes.map(c => `<a class="lcard class-card" href="#/teacher/class/${c.id}"><span class="num">CLASS</span><h3>${esc(c.name)}</h3>
           <span class="muted small">Join code</span><span class="joincode">${esc(c.code)}</span><span class="small muted">${c.studentCount} student${c.studentCount === 1 ? '' : 's'} enrolled${c.closed ? ' · enrollment closed' : ''}</span></a>`).join('')}
-        <form class="lcard" id="newc" style="justify-content:center"><h3>➕ New class</h3><input class="input" name="name" placeholder="e.g. Period 3 — Robotics" required><button class="btn primary">Create class</button></form>
+        <form class="lcard" id="newc" style="justify-content:center"><h3>➕ New class</h3><input class="input" name="name" placeholder="e.g. Period 3 — Robotics" required><select class="input" name="plan" aria-label="Term length">${PLAN_OPTIONS('15')}</select><select class="input" name="kit" aria-label="Robot kit">${KIT_OPTIONS('1')}</select><button class="btn primary">Create class</button></form>
       </div>
       <div class="panel" style="margin-top:22px"><h3>How students enroll</h3>
         <ol><li>Create a class above to get a 6-letter <b>join code</b>.</li><li>Students open this website while signed in to their school Google account, then type the code and their name.</li><li>Open the class to watch progress live, read submitted code, and leave feedback & grades.</li></ol>
@@ -13446,15 +13656,15 @@ int main() {
         <div class="stat"><span class="muted small">Students</span><b>${students.length}</b></div>
         <div class="stat"><span class="muted small">Lessons completed (all students)</span><b>${students.reduce((n, s) => n + Object.values(s.progress).filter(p => p.status === 'complete').length, 0)}</b></div>
         <div class="stat"><span class="muted small">Waiting for your review</span><b>${toReview}</b></div>
-        <div class="stat"><span class="muted small">Progression</span><b style="font-size:1.1rem">${C.unlockAll ? '🔓 All unlocked' : '🔒 In order'}</b></div>
+        <div class="stat"><span class="muted small">Progression</span><b style="font-size:1.1rem">${esc(PLANS[C.plan])} · ${esc(KITS[C.kit])}</b></div>
       </div>
       ${students.length ? `
-      <div class="legend"><span><span class="cell complete">8/10</span> complete (quiz score)</span><span><span class="cell started">…</span> started</span><span><span class="cell none">·</span> not started</span><span><span class="cell complete review">✓</span> blue outline = new work to review</span><span>Click any cell to view the student's work.</span></div>
+      <div class="legend"><span><span class="cell complete">8/10</span> complete (quiz score)</span><span><span class="cell started">…</span> started</span><span><span class="cell none">·</span> not started</span><span><span class="cell complete review">✓</span> blue outline = new work to review</span><span>★ = Go Further lesson</span><span>Click any cell to view the student's work.</span></div>
       <div class="gridtbl"><table>
-        <thead><tr><th class="l">Student</th><th>Done</th>${lessons.map(l => `<th class="vert" title="${esc(l.title)}">${l.order}. ${esc(l.title)}</th>`).join('')}</tr>
+        <thead><tr><th class="l">Student</th><th>Done</th>${lessons.map(l => `<th class="vert" title="${esc(l.title)}">${l.track === 'extra' ? '★' : l.num + '.'} ${esc(l.title)}</th>`).join('')}</tr>
           <tr><th class="l small muted">Class quiz average</th><th></th>${lessons.map(l => { const a = avg(l); return `<th class="small muted">${a === null ? '' : a + '%'}</th>`; }).join('')}</tr></thead>
         <tbody>${students.map(s => `<tr><td class="l"><b>${esc(s.name)}</b><br><span class="small muted">@${esc(s.username)}</span> <button class="btn sm" data-stu="${s.id}" style="padding:2px 6px">⋯</button></td>
-          <td><b>${Object.values(s.progress).filter(p => p.status === 'complete').length}</b></td>
+          <td><b>${lessons.filter(l => l.track === 'main' && s.progress[l.id]?.status === 'complete').length}</b></td>
           ${lessons.map(l => { const p = s.progress[l.id];
             if (!p) return `<td><button class="cell none" data-s="${s.id}" data-l="${l.id}">·</button></td>`;
             const label = p.grade != null ? p.grade : p.quiz ? `${p.quiz.score}/${p.quiz.total}` : '…';
@@ -13478,16 +13688,18 @@ int main() {
   function settingsModal(C, lessons) {
     const m = modal(`<h2>⚙ ${esc(C.name)} settings</h2>
       <label class="f">Class name<input name="name" value="${esc(C.name)}"></label>
+      <div class="row" style="margin-bottom:10px"><label class="f" style="flex:1;min-width:180px">Term length<select name="plan">${PLAN_OPTIONS(C.plan)}</select></label><label class="f" style="flex:1;min-width:180px">Robot kit<select name="kit">${KIT_OPTIONS(C.kit)}</select></label></div>
+      <p class="small muted" style="margin:-4px 0 10px">Lessons outside the term stay available as Go Further lessons. Changing the term never removes student work.</p>
       <label class="row"><input type="checkbox" name="unlockAll" ${C.unlockAll ? 'checked' : ''}> Unlock <b>all</b> lessons (students can jump ahead)</label>
       <label class="row" style="margin-top:8px"><input type="checkbox" name="closed" ${C.closed ? 'checked' : ''}> Close enrollment (join code stops working)</label>
       <label class="row" style="margin-top:8px"><input type="checkbox" name="showPeers" ${C.showPeers !== false ? 'checked' : ''}> Show classmates on the learning map (first name + last initial)</label>
       <h3 style="margin-top:18px">Unlock specific lessons</h3><p class="small muted">Useful if you want the whole class on the same lesson today.</p>
-      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px">${lessons.map(l => `<label class="small row"><input type="checkbox" name="u" value="${l.id}" ${(C.unlocked || []).includes(l.id) ? 'checked' : ''}> ${l.order}. ${esc(l.title)}</label>`).join('')}</div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px">${lessons.map(l => `<label class="small row"><input type="checkbox" name="u" value="${l.id}" ${(C.unlocked || []).includes(l.id) ? 'checked' : ''}> ${l.track === 'extra' ? '★' : l.num + '.'} ${esc(l.title)}</label>`).join('')}</div>
       <div class="row" style="margin-top:18px"><button class="btn primary" id="sv">Save</button><button class="btn" id="nc">🔁 New join code</button><button class="btn" id="dl">🗑 Delete class</button><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
     const get = n => m.querySelector(`[name=${n}]`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelector('#sv').onclick = async () => {
-      await api(`/api/teacher/classes/${C.id}`, { method: 'PATCH', body: { name: get('name').value, unlockAll: get('unlockAll').checked, closed: get('closed').checked, showPeers: get('showPeers').checked, unlocked: [...m.querySelectorAll('[name=u]:checked')].map(x => x.value) } });
+      await api(`/api/teacher/classes/${C.id}`, { method: 'PATCH', body: { name: get('name').value, unlockAll: get('unlockAll').checked, closed: get('closed').checked, showPeers: get('showPeers').checked, plan: get('plan').value, kit: get('kit').value, unlocked: [...m.querySelectorAll('[name=u]:checked')].map(x => x.value) } });
       m.remove(); toast('Saved'); classPage(C.id);
     };
     m.querySelector('#nc').onclick = async () => { if (!confirm('Make a new join code? The old one will stop working.')) return; await api(`/api/teacher/classes/${C.id}`, { method: 'PATCH', body: { newCode: true } }); m.remove(); classPage(C.id); };
@@ -13513,7 +13725,7 @@ int main() {
     const subs = P?.submissions || [];
     const last = subs[subs.length - 1];
     const m = modal(`
-      <div class="row"><div><span class="muted small">LESSON ${L.order}</span><h2 style="margin:0">${esc(S.name)} — ${esc(L.title)}</h2></div><div class="spacer"></div><button class="btn" id="cx">✕</button></div>
+      <div class="row"><div><span class="muted small">UNIT ${L.unit}</span><h2 style="margin:0">${esc(S.name)} — ${esc(L.title)}</h2></div><div class="spacer"></div><button class="btn" id="cx">✕</button></div>
       <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:14px">
         <div class="stat"><span class="muted small">Exit ticket</span><b>${P?.quiz ? `${P.quiz.score}/${P.quiz.total}` : '—'}</b><span class="small muted">${P?.quizAttempts ? P.quizAttempts + ' attempt(s)' : 'not submitted'}</span></div>
         <div class="stat"><span class="muted small">Code challenge</span><b>${L.challenge ? (P?.challenge ? (P.challenge.passed ? '✅ Passed' : `${P.challenge.passCount}/${P.challenge.total} checks`) : '—') : 'n/a'}</b><span class="small muted">${subs.length} submission(s)</span></div>
@@ -13535,7 +13747,7 @@ int main() {
       m.querySelector('#ver').onchange = e => show(+e.target.value);
       m.querySelector('#runit').onclick = () => {
         const i = +m.querySelector('#ver').value; m.querySelector('#vcode').style.display = 'none';
-        const ide = createIDE(m.querySelector('#vide'), { code: subs[i].code, field: L.challenge.field, checks: L.challenge.checks, submitLabel: 'Re-check', readOnly: false });
+        const ide = createIDE(m.querySelector('#vide'), { setup: S.setup ? VexSim.normalizeSetup(S.setup, S.setup.gen) : undefined, code: subs[i].code, field: L.challenge.field, checks: L.challenge.checks, submitLabel: 'Re-check', readOnly: false });
         setTimeout(() => ide.cm.refresh(), 50);
       };
     }
@@ -13565,30 +13777,34 @@ int main() {
   // ---------------------------------------------------------------- my robot
   async function robotPage() {
     const { lessons } = await api('/api/lessons');
-    const orders = completedOrders(lessons), lessonAt = n => lessons.find(l => l.order === n);
-    const installed = Quest.PARTS.filter(p => orders.has(p.n)).length, total = Quest.PARTS.length;
-    const nextPart = Quest.PARTS.find(p => !orders.has(p.n));
-    const built = installed === total, certified = built && Quest.MISSION.every(p => orders.has(p.n));
-    const status = certified ? '🏅 Rescue Certified! Your robot finished the mission.' : built ? '🚩 Build complete. Your rescue mission is open!' : `Next part: ${nextPart.icon} ${esc(nextPart.name)}, earned by finishing Lesson ${nextPart.n}.`;
-    const row = (p, unlocked) => { const on = orders.has(p.n); return `<a class="part ${on ? 'on' : ''} ${unlocked ? '' : 'locked'}" href="#/lesson/${lessonAt(p.n)?.id}">
-      <span class="ico">${on ? p.icon : '🔒'}</span><span><b>${esc(p.name)}</b><br><span class="small muted">Lesson ${p.n}: ${esc(lessonAt(p.n)?.title || '')}</span><br><span class="small">${esc(p.does)}</span></span></a>`; };
+    const built = completedIds(lessons), isDone = l => built.has(l.id);
+    const parts = buildParts(lessons), mission = lessons.filter(l => l.track === 'main' && Quest.part(l.id)?.mission), upgrades = lessons.filter(l => l.track === 'extra');
+    const installed = parts.filter(isDone).length, total = parts.length;
+    const nextLesson = parts.find(l => !isDone(l)), nextPart = Quest.part(nextLesson?.id);
+    const finished = installed === total, certified = finished && mission.every(isDone);
+    const status = certified ? '🏅 Rescue Certified! Your robot finished the mission.' : finished ? '🚩 Build complete. Your rescue mission is open!' : `Next part: ${nextPart.icon} ${esc(nextPart.name)}, earned by finishing Lesson ${nextLesson.num}.`;
+    const row = l => { const p = Quest.part(l.id), on = isDone(l); return `<a class="part ${on ? 'on' : ''} ${l.unlocked ? '' : 'locked'}" href="#/lesson/${l.id}">
+      <span class="ico">${on ? p.icon : l.unlocked ? '○' : '🔒'}</span><span><b>${esc(p.name)}</b><br><span class="small muted">${l.track === 'extra' ? '' : `Lesson ${l.num}: `}${esc(l.title)}</span><br><span class="small">${esc(p.does)}</span></span></a>`; };
     $app.innerHTML = `<h1>🔧 My Rescue Robot</h1>
       <div class="hangar">
         <div><canvas class="robot-preview" id="build" width="480" height="480" aria-label="Your robot with ${installed} of ${total} parts"></canvas>
           <button class="btn" id="custom" style="width:100%;margin-top:8px" aria-expanded="false">🎨 Customize colors and style</button></div>
         <div>
-          <div class="panel"><b style="font-size:1.3rem">${installed} / ${total} parts installed</b><div class="bar" style="margin:8px 0"><i style="width:${100 * installed / total}%"></i></div><p style="margin:0">${status}</p>
-            ${nextPart && lessonAt(nextPart.n)?.unlocked ? `<a class="btn primary" style="margin-top:10px" href="#/lesson/${lessonAt(nextPart.n).id}">Go earn it →</a>` : ''}</div>
+          <div class="panel"><b style="font-size:1.3rem">${installed} / ${total} parts installed</b><div class="bar" style="margin:8px 0"><i style="width:${100 * installed / (total || 1)}%"></i></div><p style="margin:0">${status}</p>
+            ${nextLesson?.unlocked ? `<a class="btn primary" style="margin-top:10px" href="#/lesson/${nextLesson.id}">Go earn it →</a>` : ''}</div>
           <div class="panel sec" id="workshop" hidden style="margin-top:12px"></div>
         </div>
       </div>
+      <h2 style="margin-top:20px">🧩 This term's build</h2>
+      <div class="parts">${parts.map(row).join('')}</div>
       <h2 style="margin-top:20px">🚩 The Rescue Mission</h2>
-      <p class="muted" style="margin-top:0">Finish all ${total} parts to open your mission. Your robot then proves itself in the capstone.</p>
-      <div class="parts">${Quest.MISSION.map(p => row(p, built || lessonAt(p.n)?.unlocked)).join('')}</div>
-      <h2 style="margin-top:20px">🧩 Parts</h2>
-      <div class="parts">${Quest.PARTS.map(p => row(p, lessonAt(p.n)?.unlocked)).join('')}</div>`;
+      <p class="muted" style="margin-top:0">Your finished robot proves itself in the capstone.</p>
+      <div class="parts">${mission.map(row).join('')}</div>
+      ${upgrades.length ? `<h2 style="margin-top:20px">🚀 Go Further upgrades</h2>
+      <p class="muted" style="margin-top:0">Optional. Finish a Go Further lesson to add its upgrade to your robot.</p>
+      <div class="parts">${upgrades.map(row).join('')}</div>` : ''}`;
     const canvas = document.getElementById('build'), shop = document.getElementById('workshop'), btn = document.getElementById('custom');
-    const draw = look => Quest.drawBuild(canvas, look, orders, true);
+    const draw = look => Quest.drawBuild(canvas, look, built, true);
     robotWorkshop(shop, draw);
     const toggle = open => { shop.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
     btn.onclick = () => toggle(shop.hidden);
@@ -13607,18 +13823,20 @@ int main() {
     const data = await api(teacher ? '/api/map/' + cid : '/api/map');
     const { stops, svg } = Quest.renderMap(data);
     const peers = data.class.showPeers;
-    const stopName = i => stops[i]?.finish ? '🏁 Finished' : `Lesson ${stops[i].lesson.order}`;
+    const stopName = i => stops[i]?.finish ? '🏁 Finished' : `Lesson ${stops[i].lesson.num}`;
     $app.innerHTML = `<div class="row" style="margin-bottom:10px"><div><h1 style="margin:0">🗺 Learning Map</h1><p class="muted" style="margin:0">${esc(data.class.name)}${!teacher && !peers ? ' · Your teacher has turned off classmates on this map.' : ''}</p></div><div class="spacer"></div>
       ${teacher ? `<label class="small">Class: <select class="input" id="mapc" style="display:inline-block;width:auto">${classes.map(c => `<option value="${c.id}" ${c.id === cid ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>` : ''}</div>
       <div class="map-wrap">${svg}</div>
       <div class="legend" style="margin-top:8px"><span><i class="key done"></i> finished</span><span><i class="key here"></i> you are here</span><span><i class="key open"></i> open</span><span><i class="key locked"></i> locked</span><span>Click a stop to see who is there.</span></div>
       <h2 style="margin-top:18px">Where everyone is</h2>
-      <div class="roster">${data.students.map(s => `<span class="chip ${s.me ? 'me' : ''}"><b>${esc(s.me ? 'You' : s.name)}</b> · ${stopName(s.at)}</span>`).join('') || '<span class="muted">No students have joined yet.</span>'}</div>`;
+      <div class="roster">${data.students.map(s => `<span class="chip ${s.me ? 'me' : ''}"><b>${esc(s.me ? 'You' : s.name)}</b> · ${stopName(s.at)}${s.extras ? ` · ★${s.extras}` : ''}</span>`).join('') || '<span class="muted">No students have joined yet.</span>'}</div>
+      ${data.extras.length ? `<h2 style="margin-top:18px">🚀 Your Go Further lessons</h2>
+      <div class="roster">${data.extras.map(l => l.unlocked ? `<a class="chip ${l.complete ? 'me' : ''}" href="#/lesson/${l.id}">${l.complete ? '✓' : '○'} ${esc(l.title)}</a>` : `<span class="chip locked">🔒 ${esc(l.title)}</span>`).join('')}</div>` : ''}`;
     if (teacher) document.getElementById('mapc').onchange = e => Nav.go('#/map/' + e.target.value);
     const open = el => {
       const i = +el.dataset.stop, s = stops[i], here = data.students.filter(x => x.at === i);
-      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🏁 Rescue HQ' : `${s.lesson.order}. ${esc(s.lesson.title)}`}</h2>
-        ${s.finish ? '<p>Everyone here has finished the whole course.</p>' : (p => `<p>${p.icon} ${Quest.PARTS.includes(p) ? 'Earns' : 'Mission stage:'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.order))}
+      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🏁 Rescue HQ' : `${s.lesson.num}. ${esc(s.lesson.title)}`}</h2>
+        ${s.finish ? '<p>Everyone here has finished this term\'s path.</p>' : (p => `<p>${p.icon} ${p.mission ? 'Mission stage:' : 'Earns'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.id))}
         <h3>Here now (${here.length})</h3><div class="roster">${here.map(x => `<span class="chip ${x.me ? 'me' : ''}">${esc(x.me ? 'You' : x.name)}</span>`).join('') || '<span class="muted small">Nobody is on this stop right now.</span>'}</div>
         <div class="row" style="margin-top:16px"><div class="spacer"></div>${!s.finish && s.lesson.unlocked ? `<a class="btn primary" href="#/lesson/${s.lesson.id}">Open lesson</a>` : ''}<button class="btn" id="cx">Close</button></div>`);
       m.querySelector('#cx').onclick = () => m.remove();

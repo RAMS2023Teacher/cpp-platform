@@ -4,7 +4,7 @@ module.exports = [
   {
     id: "u4l1",
     unit: 4,
-    order: 17,
+    order: 20,
     title: "What Is AI?",
     minutes: 35,
     tags: ["ai", "code"],
@@ -244,7 +244,7 @@ int main() {
   {
     id: "u4l2",
     unit: 4,
-    order: 18,
+    order: 21,
     title: "Decision Trees",
     minutes: 35,
     tags: ["ai", "code", "algorithms"],
@@ -468,7 +468,7 @@ int main() {
   {
     id: "u4l3",
     unit: 4,
-    order: 19,
+    order: 22,
     title: "State Machines",
     minutes: 35,
     tags: ["ai", "code", "algorithms"],
@@ -712,7 +712,7 @@ int main() {
   {
     id: "u4l4",
     unit: 4,
-    order: 20,
+    order: 23,
     title: "Machine Learning: Training Data",
     minutes: 40,
     tags: ["ai", "code", "algorithms"],
@@ -750,7 +750,7 @@ int main() {
         kind: "learn",
         title: "Features, Labels, Training, Testing",
         minutes: 9,
-        html: `<p>In Lesson 2 <em>you</em> wrote the decision rules. In <strong>machine learning</strong> the computer figures out the rules from data.</p>
+        html: `<p>In the Decision Trees lesson <em>you</em> wrote the decision rules. In <strong>machine learning</strong> the computer figures out the rules from data.</p>
 <table class="tbl">
 <tr><th>Word</th><th>Meaning</th><th>Example (sorting blocks)</th></tr>
 <tr><td>Feature</td><td>A measurement</td><td>Brightness = 38</td></tr>
@@ -962,7 +962,7 @@ int main() {
   {
     id: "u4l5",
     unit: 4,
-    order: 21,
+    order: 24,
     title: "The Robot Learns: Trial & Error",
     minutes: 35,
     tags: ["ai", "code", "algorithms"],
@@ -1181,7 +1181,7 @@ int main() {
   {
     id: "u4l6",
     unit: 4,
-    order: 22,
+    order: 25,
     title: "AI Ethics & Bias",
     minutes: 40,
     tags: ["ai", "code"],
@@ -1204,7 +1204,7 @@ int main() {
       "Four corner signs: Strongly Agree, Agree, Disagree, Strongly Disagree",
       "Chart paper and markers",
       "Computers for the coding challenge",
-      "Your data table from Lesson 4 (optional)"
+      "Your data table from the Training Data lesson (optional)"
     ],
     video: "",
     sections: [
@@ -1212,7 +1212,7 @@ int main() {
         kind: "warmup",
         title: "Do Now: The Lamp Problem",
         minutes: 5,
-        html: `<p>Remember our block sorter from Lesson 4? Imagine Team A trained it with 8 red blocks on a normal desk, but only <strong>2 yellow blocks, both under a super-bright desk lamp</strong>.</p>
+        html: `<p>Remember our block sorter from the Training Data lesson? Imagine Team A trained it with 8 red blocks on a normal desk, but only <strong>2 yellow blocks, both under a super-bright desk lamp</strong>.</p>
 <div class="callout think"><p>Predict: Will their robot sort yellow blocks correctly in normal classroom light? Why or why not? Write your prediction down, we will test it in code later.</p></div>`
       },
       {
@@ -1273,7 +1273,7 @@ int main() {
     ],
     challenge: {
       title: "Fair vs. Biased Training",
-      prompt: `<p>The function <code>countCorrect(threshold)</code> (from Lesson 4) tests a threshold on 10 test blocks and returns how many it got right. The fair model is already trained for you.</p>
+      prompt: `<p>The function <code>countCorrect(threshold)</code> (from the Training Data lesson) tests a threshold on 10 test blocks and returns how many it got right. The fair model is already trained for you.</p>
 <p><strong>Your job:</strong> train a second model on this <strong>biased</strong> data, then print both results:</p>
 <table class="tbl">
 <tr><th>Red (8 samples)</th><td>32, 38, 35, 41, 29, 36, 34, 39</td></tr>
