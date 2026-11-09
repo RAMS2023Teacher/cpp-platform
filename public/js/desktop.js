@@ -5,18 +5,18 @@
   tick();
   setInterval(tick, 10000);
 
-  // Look of the whole site: Windows 95 (default) or retro-futurism. Remembered in this browser.
-  const THEMES = { classic: '🖥 Windows 95', future: '🚀 Retro-Future' };
+  // Look of the whole site, remembered in this browser. The button moves on to the next one.
+  const THEMES = { eco: '🌿 Eco', classic: '🖥 Windows 95', future: '🚀 Retro-Future' }, ORDER = Object.keys(THEMES);
   const themeBtn = document.getElementById('theme');
   const setTheme = name => {
     document.documentElement.dataset.theme = name;
-    const other = name === 'future' ? 'classic' : 'future';
-    themeBtn.textContent = THEMES[other];
-    themeBtn.title = 'Switch the site to ' + THEMES[other];
-    themeBtn.onclick = () => { setTheme(other); try { localStorage.setItem('theme', other); } catch (e) {} };
+    const next = ORDER[(ORDER.indexOf(name) + 1) % ORDER.length];
+    themeBtn.textContent = THEMES[next];
+    themeBtn.title = 'Switch the site to ' + THEMES[next];
+    themeBtn.onclick = () => { setTheme(next); try { localStorage.setItem('look', next); } catch (e) {} };
   };
-  let savedTheme = null; try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
-  setTheme(savedTheme === 'future' ? 'future' : 'classic');
+  let savedTheme = null; try { savedTheme = localStorage.getItem('look'); } catch (e) {}
+  setTheme(ORDER.includes(savedTheme) ? savedTheme : 'eco');
 
   // Reading options, remembered in this browser.
   const panel = document.getElementById('reading-panel'), readBtn = document.getElementById('reading'), root = document.documentElement;

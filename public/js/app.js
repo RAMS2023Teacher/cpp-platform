@@ -460,7 +460,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
   const ADAPT_SAMPLE = 'Optical.color() DistanceSensor. BumperA. TouchLED. ClawMotor. ArmMotor. BrainInertial 2nd gen';
   // Saved per user in this browser and shared by every editor on the site.
   const EDITOR_DEFAULTS = { fontSize: 14, theme: 'retro', indent: 2, lineNumbers: true, wrap: false, closeBrackets: true, matchBrackets: true };
-  const EDITOR_THEMES = { retro: 'Retro blue', paper: 'Notepad white', terminal: 'Terminal green', night: 'Night' };
+  const EDITOR_THEMES = { retro: 'Match the site', paper: 'Notepad white', terminal: 'Terminal green', night: 'Night' };
   const EDITOR_FONT_SIZES = [12, 14, 16, 18, 20, 24], EDITOR_INDENTS = [2, 4];
   const editorKey = () => 'editor:' + (ME?.id || 'guest');
   function loadEditorPrefs() {
