@@ -684,20 +684,21 @@ body.busy, body.busy * { cursor: progress !important; }
 /* ---------- Learning map ---------- */
 .map-wrap { overflow-x: auto; background: var(--paper); box-shadow: var(--sunken); padding: 3px; }
 .learning-map { display: block; width: 100%; min-width: 720px; height: auto; }
-.map-unit { font: 700 13px var(--font); fill: #333; }
-.map-road { fill: none; stroke: #808080; stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; }
-.map-lane { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 9 9; }
+.map-unit { font: 700 13px var(--font); fill: #fff; }
+.map-road { fill: none; stroke: #8fe3ff; stroke-opacity: .35; stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; }
+.map-lane { fill: none; stroke: #fff; stroke-width: 2.5; stroke-dasharray: 3 11; stroke-linecap: round; }
 .map-stop { cursor: pointer; outline: none; }
 .map-stop circle { fill: #c0c0c0; stroke: #000; stroke-width: 2; }
-.map-stop:hover circle, .map-stop:focus-visible circle { stroke: #000080; stroke-width: 4; }
+.map-stop circle { filter: drop-shadow(0 0 5px rgba(255,255,255,.45)); }
+.map-stop:hover circle, .map-stop:focus-visible circle { stroke: #ffe27a; stroke-width: 4; }
 .map-stop.done circle { fill: #4fbf67; }
 .map-stop.here circle { fill: #ffd43b; }
 .map-stop.open circle { fill: #fff; }
 .map-stop.locked circle { fill: #a9a9a9; }
 .map-stop.finish circle { fill: #fff3bf; }
 .map-num { font: 700 17px var(--font); text-anchor: middle; fill: #000; }
-.map-name { font: 13px var(--font); fill: #000; }
-.map-name.me { font-weight: 700; fill: #000080; }
+.map-name { font: 600 13px var(--font); fill: #fff; }
+.map-name.me { font-weight: 700; fill: #ffe27a; }
 .map-you { pointer-events: none; }
 .key { display: inline-block; width: 13px; height: 13px; border: 1px solid #000; border-radius: 50%; vertical-align: -2px; margin-right: 3px; }
 .key.done { background: #4fbf67; } .key.here { background: #ffd43b; } .key.open { background: #fff; } .key.locked { background: #a9a9a9; }
@@ -759,9 +760,6 @@ a.chip { color: var(--ink); text-decoration: none; }
 [data-theme="future"] #nav a.active { background: #5ee6d6; color: var(--dark); box-shadow: none; }
 [data-theme="future"] #nav .who, [data-theme="future"] .clock { color: #cbbfe8; background: transparent; box-shadow: none; }
 [data-theme="future"] ::-webkit-scrollbar-track { background: var(--light); }
-[data-theme="future"] .map-road { stroke: #2a1f58; }
-[data-theme="future"] .map-lane { stroke: #ffc861; }
-[data-theme="future"] .map-unit { fill: #2a1f58; font-family: Audiowide, var(--font); font-weight: 400; }
 
 /* ---------- Robot Setup ---------- */
 .ide-setup { padding: 12px; margin-bottom: 8px; background: var(--face); box-shadow: var(--groove); }
@@ -876,8 +874,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 [data-theme="eco"] a:focus-visible, [data-theme="eco"] button:focus-visible, [data-theme="eco"] summary:focus-visible, [data-theme="eco"] input:focus-visible, [data-theme="eco"] select:focus-visible, [data-theme="eco"] textarea:focus-visible, [data-theme="eco"] [role="button"]:focus-visible, [data-theme="eco"] .file-btn:focus-within { outline: 3px solid #0a6072 !important; outline-offset: 2px !important; }
 [data-theme="eco"] ::-webkit-scrollbar-track { background: transparent; }
 [data-theme="eco"] ::-webkit-scrollbar-thumb { background: #a9cfc7; border-radius: 999px; box-shadow: none; border: 3px solid transparent; background-clip: content-box; }
-[data-theme="eco"] .map-road { stroke: #58b6a4; } [data-theme="eco"] .map-lane { stroke: #fff; }
-[data-theme="eco"] .map-unit { fill: #12343a; font-family: var(--font); font-weight: 600; }
 [data-theme="eco"] .gridtbl { border-radius: 12px; }
 [data-theme="eco"] table.tbl th { background: var(--light); box-shadow: none; }
 [data-theme="eco"] .timer { border-radius: 12px; background: var(--ide-bg); color: var(--ide-ink); box-shadow: none; }
@@ -13159,22 +13155,30 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     return tokens.get(key);
   }
 
-  // ---- learning map: one row per unit, snaking back and forth
-  const W = 1000, ROW = 156, MARGIN = 86;
+  // ---- learning map: a flight from Earth (bottom) to Moon Base (top), one row per unit
+  const W = 1000, ROW = 156, MARGIN = 86, SKY = 44, GROUND = 104;
+  const ZONES = {
+    1: { icon: '🌍', name: 'Earth', story: 'Build your robot at the launch site.' },
+    2: { icon: '☁️', name: 'The Sky', story: 'Teach your robot to think on the climb.' },
+    3: { icon: '🛰️', name: 'Orbit', story: 'Plot a course with smarter algorithms.' },
+    4: { icon: '✨', name: 'Deep Space', story: 'Far from home, your robot learns to decide alone.' },
+    5: { icon: '🌕', name: 'Moon Base', story: 'Land and carry out the rescue.' }
+  };
+  const EVENT_STORY = { sumo: 'Launch trials: every robot must prove it is ready to fly.', maze: 'Asteroid field: find the fastest safe way through.' };
+  const MOON_KM = 384400;
   function layout(lessons) {
-    const units = [...new Set(lessons.map(l => l.unit))];
-    const stops = [];
+    const units = [...new Set(lessons.map(l => l.unit))], stops = [], height = SKY + units.length * ROW + GROUND;
+    const rowTop = row => SKY + (units.length - 1 - row) * ROW; // the first unit is at the bottom
     units.forEach((u, row) => {
       const inRow = lessons.filter(l => l.unit === u).map(l => ({ lesson: l }));
       if (row === units.length - 1) inRow.push({ finish: true });
       const gap = inRow.length > 1 ? (W - 2 * MARGIN) / (inRow.length - 1) : 0;
-      if (inRow.length === 1) { stops.push(Object.assign(inRow[0], { x: W / 2, y: row * ROW + 50, row, index: stops.length })); return; }
       inRow.forEach((s, i) => {
-        const across = MARGIN + gap * (row % 2 ? inRow.length - 1 - i : i);
-        stops.push(Object.assign(s, { x: Math.round(across), y: row * ROW + 50, row, index: stops.length }));
+        const across = inRow.length === 1 ? W / 2 : MARGIN + gap * (row % 2 ? inRow.length - 1 - i : i);
+        stops.push(Object.assign(s, { x: Math.round(across), y: rowTop(row) + 50, row, index: stops.length }));
       });
     });
-    return { stops, units, height: units.length * ROW };
+    return { stops, units, height, rowTop };
   }
   function road(stops) {
     return stops.map((s, i) => {
@@ -13185,12 +13189,33 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       return `C${side} ${p.y} ${side} ${s.y} ${s.x} ${s.y}`;
     }).join(' ');
   }
+  function backdrop(stops, height) {
+    const stars = Array.from({ length: 90 }, (_, i) => { // the same sky every time, thinning out toward Earth
+      const x = (i * 197.3) % W, y = (i * i * 7.13) % (height * .72), r = 1 + (i % 3) * .5;
+      return `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r}" fill="#fff" opacity="${(.35 + (i % 4) * .15).toFixed(2)}"/>`;
+    }).join('');
+    const end = stops[stops.length - 1], mx = end.x, my = end.y + 12;
+    const craters = [[-48, -40, 15], [38, -52, 10], [56, 22, 18], [-62, 34, 11], [-12, 62, 13]].map(([x, y, r]) => `<circle cx="${mx + x}" cy="${my + y}" r="${r}" fill="#4d5468"/>`).join('');
+    const top = height - GROUND + 34;
+    return `<defs>
+        <linearGradient id="map-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#090d2b"/><stop offset=".55" stop-color="#16346e"/><stop offset="1" stop-color="#1f6aa5"/></linearGradient>
+        <clipPath id="map-earth"><ellipse cx="500" cy="${top + 720}" rx="1250" ry="720"/></clipPath>
+      </defs>
+      <rect width="${W}" height="${height}" fill="url(#map-sky)"/>${stars}
+      <circle cx="${mx}" cy="${my}" r="104" fill="#666d82"/>${craters}
+      <ellipse cx="500" cy="${top + 720}" rx="1262" ry="732" fill="#7fd6f2" opacity=".35"/>
+      <g clip-path="url(#map-earth)"><rect y="${top}" width="${W}" height="${GROUND}" fill="#1b8fc4"/>
+        <path d="M0 ${top + 38}C120 ${top + 4} 250 ${top + 22} 360 ${top + 60}S520 ${height} 300 ${height}H0Z" fill="#46b36b"/>
+        <path d="M640 ${height}C640 ${top + 40} 760 ${top + 6} 880 ${top + 14}S1000 ${top + 36} 1000 ${top + 50}V${height}Z" fill="#46b36b"/></g>`;
+  }
   function renderMap(data) {
-    const { stops, units, height } = layout(data.lessons);
+    const { stops, units, height, rowTop } = layout(data.lessons);
     const youAt = data.students.find(s => s.me)?.at ?? -1;
     const atStop = i => data.students.filter(s => s.at === i).sort((a, b) => b.me - a.me);
-    const bands = units.map((u, r) => `<rect x="0" y="${r * ROW}" width="${W}" height="${ROW}" fill="${UNIT_COLORS[u] || '#ddd'}"/>
-      <text x="${r % 2 ? 12 : W - 12}" y="${r * ROW + 18}" text-anchor="${r % 2 ? 'start' : 'end'}" class="map-unit">UNIT ${u} · ${esc(UNIT_NAMES[u] || '').toUpperCase()}</text>`).join('');
+    const labels = units.map((u, r) => {
+      const z = ZONES[u] || { icon: '', name: UNIT_NAMES[u] || '' }, y = rowTop(r) + 18;
+      return `<text x="${r % 2 ? W - 12 : 12}" y="${y}" text-anchor="${r % 2 ? 'end' : 'start'}" class="map-unit">${z.icon} ${esc(z.name.toUpperCase())} · ${esc(UNIT_NAMES[u] || '')}</text>`;
+    }).join('');
     const nodes = stops.map((s, i) => {
       const people = atStop(i), l = s.lesson;
       const state = s.finish ? (youAt === i ? 'done' : 'finish') : l.complete ? 'done' : i === youAt ? 'here' : l.unlocked ? 'open' : 'locked';
@@ -13199,24 +13224,26 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       const lines = names.map((p, j) => `<image href="${tokenImage(p.look, p.built)}" x="${s.x - 62}" y="${s.y + 25 + j * 26}" width="26" height="26"/>
         <text x="${s.x - 34}" y="${s.y + 43 + j * 26}" class="map-name${p.me ? ' me' : ''}">${esc(p.me ? 'You' : p.name.length > 15 ? p.name.slice(0, 14) + '…' : p.name)}</text>`).join('');
       const more = people.length > 3 ? `<text x="${s.x - 34}" y="${s.y + 95}" class="map-name">+${people.length - 2} more</text>` : '';
-      const label = s.finish ? 'Rescue HQ, the finish line' : (l.event ? `Class event: ${l.title}` : `Lesson ${l.num}: ${l.title}`);
+      const label = s.finish ? 'Moon Base, the finish line' : (l.event ? `Class event: ${l.title}` : `Lesson ${l.num}: ${l.title}`);
       return `<g class="map-stop ${state}" data-stop="${i}" role="button" tabindex="0" aria-label="${esc(label)}, ${people.length} here">
         <title>${esc(label)}</title>
         <circle cx="${s.x}" cy="${s.y}" r="21"/>
-        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🏁' : l.complete ? '✓' : l.event ? l.icon : l.num}</text>
+        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🚩' : l.complete ? '✓' : l.event ? l.icon : l.num}</text>
         ${you ? `<image href="${tokenImage(you.look, you.built)}" x="${s.x - 42}" y="${s.y - 52}" width="84" height="84" class="map-you"/>` : ''}
         ${lines}${more}</g>`;
     }).join('');
+    const launch = stops[0];
     return {
       stops,
-      svg: `<svg class="learning-map" viewBox="0 0 ${W} ${height}" role="group" aria-label="Learning map">
-        ${bands}
+      svg: `<svg class="learning-map" viewBox="0 0 ${W} ${height}" role="group" aria-label="Mission map from Earth to Moon Base">
+        ${backdrop(stops, height)}${labels}
         <path d="${road(stops)}" class="map-road"/><path d="${road(stops)}" class="map-lane"/>
+        <text x="${launch.x + 2}" y="${height - 22}" font-size="30" text-anchor="middle" aria-hidden="true">🚀</text>
         ${nodes}</svg>`
     };
   }
 
-  window.Quest = { part, drawBuild, renderMap };
+  window.Quest = { part, drawBuild, renderMap, ZONES, EVENT_STORY, MOON_KM };
 })();
 
 </script>
@@ -13439,7 +13466,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
           <div class="bar" style="margin:6px 0"><i style="width:${100 * partsDone / (parts.length || 1)}%"></i></div>
           <span class="small muted">${partsDone} of ${parts.length} parts installed${nextPart ? ` · Next: ${nextPart.icon} ${esc(nextPart.name)}` : ' · Ready for the rescue mission!'}</span></div>
         ${events.map(e => `<a class="btn" href="#/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}
-        <a class="btn" href="#/robot">🔧 My Robot</a><a class="btn" href="#/map">🗺 Learning Map</a>
+        <a class="btn" href="#/robot">🔧 My Robot</a><a class="btn" href="#/map">🚀 Moon Mission</a>
       </div>
       <div class="badges">${BADGES.map(([i, n, on]) => `<span class="badge ${on ? '' : 'off'}">${i} ${n}</span>`).join('')}</div>
       ${units.map(u => `
@@ -13618,7 +13645,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     const heading = lessonPlace?.track === 'extra' ? '🚀 Upgrade installed!' : part.mission ? '🚩 Mission stage complete!' : '🔧 New part installed!';
     const m = modal(`<h2 style="margin-top:0">${heading}</h2>
       <div class="celebrate"><canvas width="220" height="220" role="img" aria-label="Your robot with its newest part installed"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
-      <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Learning map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
+      <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Moon map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => m.remove()));
     const { lessons } = await api('/api/lessons');
@@ -13974,7 +14001,7 @@ int main() {
     $app.innerHTML = `
       <a href="#/teacher" class="small">← All classes</a>
       <div class="row" style="margin:6px 0 14px"><h1 style="margin:0">${esc(C.name)}</h1><span class="joincode" style="font-size:1.1rem">${esc(C.code)}</span><div class="spacer"></div>
-        ${data.events.map(e => `<a class="btn sm" href="#/teacher/class/${C.id}/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}<button class="btn sm" id="teams">👥 Teams</button><button class="btn sm" id="photos">📸 Photos</button><button class="btn sm" id="gc">🎓 Google Classroom</button><a class="btn sm" href="#/map/${C.id}">🗺 Learning map</a><button class="btn sm" id="export">📊 Export to Google Sheets</button><button class="btn sm" id="settings">⚙ Class settings</button></div>
+        ${data.events.map(e => `<a class="btn sm" href="#/teacher/class/${C.id}/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}<button class="btn sm" id="teams">👥 Teams</button><button class="btn sm" id="photos">📸 Photos</button><button class="btn sm" id="gc">🎓 Google Classroom</button><a class="btn sm" href="#/map/${C.id}">🚀 Moon map</a><button class="btn sm" id="export">📊 Export to Google Sheets</button><button class="btn sm" id="settings">⚙ Class settings</button></div>
       <div class="stats">
         <div class="stat"><span class="muted small">Students</span><b>${students.length}</b></div>
         <div class="stat"><span class="muted small">Lessons completed (all students)</span><b>${students.reduce((n, s) => n + Object.values(s.progress).filter(p => p.status === 'complete').length, 0)}</b></div>
@@ -14317,9 +14344,10 @@ int main() {
     const data = await api(teacher ? '/api/map/' + cid : '/api/map');
     const { stops, svg } = Quest.renderMap(data);
     const peers = data.class.showPeers;
-    const stopName = i => stops[i]?.finish ? '🏁 Finished' : stops[i].lesson.event ? `${stops[i].lesson.icon} ${stops[i].lesson.title}` : `Lesson ${stops[i].lesson.num}`;
-    $app.innerHTML = `<div class="row" style="margin-bottom:10px"><div><h1 style="margin:0">🗺 Learning Map</h1><p class="muted" style="margin:0">${esc(data.class.name)}${!teacher && !peers ? ' · Your teacher has turned off classmates on this map.' : ''}</p></div><div class="spacer"></div>
+    const stopName = i => stops[i]?.finish ? '🌕 Moon Base' : stops[i].lesson.event ? `${stops[i].lesson.icon} ${stops[i].lesson.title}` : `Lesson ${stops[i].lesson.num}`;
+    $app.innerHTML = `<div class="row" style="margin-bottom:10px"><div><h1 style="margin:0">🚀 Mission to the Moon</h1><p class="muted" style="margin:0">${esc(data.class.name)}${!teacher && !peers ? ' · Your teacher has turned off classmates on this map.' : ''}</p></div><div class="spacer"></div>
       ${teacher ? `<label class="small">Class: <select class="input" id="mapc" style="display:inline-block;width:auto">${classes.map(c => `<option value="${c.id}" ${c.id === cid ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>` : ''}</div>
+      ${(me => me ? `<p style="margin:0 0 8px"><b>${Math.round(Quest.MOON_KM * Math.min(1, me.at / (stops.length - 1))).toLocaleString()} km</b> of ${Quest.MOON_KM.toLocaleString()} km to the Moon</p>` : '')(data.students.find(s => s.me))}
       <div class="map-wrap">${svg}</div>
       <div class="legend" style="margin-top:8px"><span><i class="key done"></i> finished</span><span><i class="key here"></i> you are here</span><span><i class="key open"></i> open</span><span><i class="key locked"></i> locked</span><span>Click a stop to see who is there.</span></div>
       <h2 style="margin-top:18px">Where everyone is</h2>
@@ -14329,8 +14357,9 @@ int main() {
     if (teacher) document.getElementById('mapc').onchange = e => Nav.go('#/map/' + e.target.value);
     const open = el => {
       const i = +el.dataset.stop, s = stops[i], here = data.students.filter(x => x.at === i);
-      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🏁 Rescue HQ' : s.lesson.event ? `${s.lesson.icon} ${esc(s.lesson.title)}` : `${s.lesson.num}. ${esc(s.lesson.title)}`}</h2>
-        ${s.finish ? '<p>Everyone here has finished this term\'s path.</p>' : s.lesson.event ? '<p>A whole-class event. All teams meet here before moving on.</p>' : (p => `<p>${p.icon} ${p.mission ? 'Mission stage:' : 'Earns'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.id))}
+      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🌕 Moon Base' : s.lesson.event ? `${s.lesson.icon} ${esc(s.lesson.title)}` : `${s.lesson.num}. ${esc(s.lesson.title)}`}</h2>
+        ${s.finish ? '<p>Everyone here has landed and finished this term\'s path.</p>' : s.lesson.event ? `<p><b>${esc(Quest.EVENT_STORY[s.lesson.id] || '')}</b></p><p>A whole-class event. All teams meet here before moving on.</p>` : (p => `<p>${p.icon} ${p.mission ? 'Mission stage:' : 'Earns'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.id))}
+        ${!s.finish && Quest.ZONES[s.lesson.unit] ? `<p class="small muted">${Quest.ZONES[s.lesson.unit].icon} ${esc(Quest.ZONES[s.lesson.unit].name)}: ${esc(Quest.ZONES[s.lesson.unit].story)}</p>` : ''}
         <h3>Here now (${here.length})</h3><div class="roster">${here.map(x => `<span class="chip ${x.me ? 'me' : ''}">${esc(x.me ? 'You' : x.name)}</span>`).join('') || '<span class="muted small">Nobody is on this stop right now.</span>'}</div>
         <div class="row" style="margin-top:16px"><div class="spacer"></div>${!s.finish && s.lesson.event ? `<a class="btn primary" href="${teacher ? `#/teacher/class/${cid}/event/${s.lesson.id}` : `#/event/${s.lesson.id}`}">Open event</a>` : !s.finish && s.lesson.unlocked ? `<a class="btn primary" href="#/lesson/${s.lesson.id}">Open lesson</a>` : ''}<button class="btn" id="cx">Close</button></div>`);
       m.querySelector('#cx').onclick = () => m.remove();

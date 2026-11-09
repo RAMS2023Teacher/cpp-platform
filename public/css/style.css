@@ -326,20 +326,21 @@ body.busy, body.busy * { cursor: progress !important; }
 /* ---------- Learning map ---------- */
 .map-wrap { overflow-x: auto; background: var(--paper); box-shadow: var(--sunken); padding: 3px; }
 .learning-map { display: block; width: 100%; min-width: 720px; height: auto; }
-.map-unit { font: 700 13px var(--font); fill: #333; }
-.map-road { fill: none; stroke: #808080; stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; }
-.map-lane { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 9 9; }
+.map-unit { font: 700 13px var(--font); fill: #fff; }
+.map-road { fill: none; stroke: #8fe3ff; stroke-opacity: .35; stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; }
+.map-lane { fill: none; stroke: #fff; stroke-width: 2.5; stroke-dasharray: 3 11; stroke-linecap: round; }
 .map-stop { cursor: pointer; outline: none; }
 .map-stop circle { fill: #c0c0c0; stroke: #000; stroke-width: 2; }
-.map-stop:hover circle, .map-stop:focus-visible circle { stroke: #000080; stroke-width: 4; }
+.map-stop circle { filter: drop-shadow(0 0 5px rgba(255,255,255,.45)); }
+.map-stop:hover circle, .map-stop:focus-visible circle { stroke: #ffe27a; stroke-width: 4; }
 .map-stop.done circle { fill: #4fbf67; }
 .map-stop.here circle { fill: #ffd43b; }
 .map-stop.open circle { fill: #fff; }
 .map-stop.locked circle { fill: #a9a9a9; }
 .map-stop.finish circle { fill: #fff3bf; }
 .map-num { font: 700 17px var(--font); text-anchor: middle; fill: #000; }
-.map-name { font: 13px var(--font); fill: #000; }
-.map-name.me { font-weight: 700; fill: #000080; }
+.map-name { font: 600 13px var(--font); fill: #fff; }
+.map-name.me { font-weight: 700; fill: #ffe27a; }
 .map-you { pointer-events: none; }
 .key { display: inline-block; width: 13px; height: 13px; border: 1px solid #000; border-radius: 50%; vertical-align: -2px; margin-right: 3px; }
 .key.done { background: #4fbf67; } .key.here { background: #ffd43b; } .key.open { background: #fff; } .key.locked { background: #a9a9a9; }
@@ -401,9 +402,6 @@ a.chip { color: var(--ink); text-decoration: none; }
 [data-theme="future"] #nav a.active { background: #5ee6d6; color: var(--dark); box-shadow: none; }
 [data-theme="future"] #nav .who, [data-theme="future"] .clock { color: #cbbfe8; background: transparent; box-shadow: none; }
 [data-theme="future"] ::-webkit-scrollbar-track { background: var(--light); }
-[data-theme="future"] .map-road { stroke: #2a1f58; }
-[data-theme="future"] .map-lane { stroke: #ffc861; }
-[data-theme="future"] .map-unit { fill: #2a1f58; font-family: Audiowide, var(--font); font-weight: 400; }
 
 /* ---------- Robot Setup ---------- */
 .ide-setup { padding: 12px; margin-bottom: 8px; background: var(--face); box-shadow: var(--groove); }
@@ -518,8 +516,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 [data-theme="eco"] a:focus-visible, [data-theme="eco"] button:focus-visible, [data-theme="eco"] summary:focus-visible, [data-theme="eco"] input:focus-visible, [data-theme="eco"] select:focus-visible, [data-theme="eco"] textarea:focus-visible, [data-theme="eco"] [role="button"]:focus-visible, [data-theme="eco"] .file-btn:focus-within { outline: 3px solid #0a6072 !important; outline-offset: 2px !important; }
 [data-theme="eco"] ::-webkit-scrollbar-track { background: transparent; }
 [data-theme="eco"] ::-webkit-scrollbar-thumb { background: #a9cfc7; border-radius: 999px; box-shadow: none; border: 3px solid transparent; background-clip: content-box; }
-[data-theme="eco"] .map-road { stroke: #58b6a4; } [data-theme="eco"] .map-lane { stroke: #fff; }
-[data-theme="eco"] .map-unit { fill: #12343a; font-family: var(--font); font-weight: 600; }
 [data-theme="eco"] .gridtbl { border-radius: 12px; }
 [data-theme="eco"] table.tbl th { background: var(--light); box-shadow: none; }
 [data-theme="eco"] .timer { border-radius: 12px; background: var(--ide-bg); color: var(--ide-ink); box-shadow: none; }

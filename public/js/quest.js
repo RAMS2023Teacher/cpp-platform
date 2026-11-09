@@ -99,22 +99,30 @@
     return tokens.get(key);
   }
 
-  // ---- learning map: one row per unit, snaking back and forth
-  const W = 1000, ROW = 156, MARGIN = 86;
+  // ---- learning map: a flight from Earth (bottom) to Moon Base (top), one row per unit
+  const W = 1000, ROW = 156, MARGIN = 86, SKY = 44, GROUND = 104;
+  const ZONES = {
+    1: { icon: '🌍', name: 'Earth', story: 'Build your robot at the launch site.' },
+    2: { icon: '☁️', name: 'The Sky', story: 'Teach your robot to think on the climb.' },
+    3: { icon: '🛰️', name: 'Orbit', story: 'Plot a course with smarter algorithms.' },
+    4: { icon: '✨', name: 'Deep Space', story: 'Far from home, your robot learns to decide alone.' },
+    5: { icon: '🌕', name: 'Moon Base', story: 'Land and carry out the rescue.' }
+  };
+  const EVENT_STORY = { sumo: 'Launch trials: every robot must prove it is ready to fly.', maze: 'Asteroid field: find the fastest safe way through.' };
+  const MOON_KM = 384400;
   function layout(lessons) {
-    const units = [...new Set(lessons.map(l => l.unit))];
-    const stops = [];
+    const units = [...new Set(lessons.map(l => l.unit))], stops = [], height = SKY + units.length * ROW + GROUND;
+    const rowTop = row => SKY + (units.length - 1 - row) * ROW; // the first unit is at the bottom
     units.forEach((u, row) => {
       const inRow = lessons.filter(l => l.unit === u).map(l => ({ lesson: l }));
       if (row === units.length - 1) inRow.push({ finish: true });
       const gap = inRow.length > 1 ? (W - 2 * MARGIN) / (inRow.length - 1) : 0;
-      if (inRow.length === 1) { stops.push(Object.assign(inRow[0], { x: W / 2, y: row * ROW + 50, row, index: stops.length })); return; }
       inRow.forEach((s, i) => {
-        const across = MARGIN + gap * (row % 2 ? inRow.length - 1 - i : i);
-        stops.push(Object.assign(s, { x: Math.round(across), y: row * ROW + 50, row, index: stops.length }));
+        const across = inRow.length === 1 ? W / 2 : MARGIN + gap * (row % 2 ? inRow.length - 1 - i : i);
+        stops.push(Object.assign(s, { x: Math.round(across), y: rowTop(row) + 50, row, index: stops.length }));
       });
     });
-    return { stops, units, height: units.length * ROW };
+    return { stops, units, height, rowTop };
   }
   function road(stops) {
     return stops.map((s, i) => {
@@ -125,12 +133,33 @@
       return `C${side} ${p.y} ${side} ${s.y} ${s.x} ${s.y}`;
     }).join(' ');
   }
+  function backdrop(stops, height) {
+    const stars = Array.from({ length: 90 }, (_, i) => { // the same sky every time, thinning out toward Earth
+      const x = (i * 197.3) % W, y = (i * i * 7.13) % (height * .72), r = 1 + (i % 3) * .5;
+      return `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r}" fill="#fff" opacity="${(.35 + (i % 4) * .15).toFixed(2)}"/>`;
+    }).join('');
+    const end = stops[stops.length - 1], mx = end.x, my = end.y + 12;
+    const craters = [[-48, -40, 15], [38, -52, 10], [56, 22, 18], [-62, 34, 11], [-12, 62, 13]].map(([x, y, r]) => `<circle cx="${mx + x}" cy="${my + y}" r="${r}" fill="#4d5468"/>`).join('');
+    const top = height - GROUND + 34;
+    return `<defs>
+        <linearGradient id="map-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#090d2b"/><stop offset=".55" stop-color="#16346e"/><stop offset="1" stop-color="#1f6aa5"/></linearGradient>
+        <clipPath id="map-earth"><ellipse cx="500" cy="${top + 720}" rx="1250" ry="720"/></clipPath>
+      </defs>
+      <rect width="${W}" height="${height}" fill="url(#map-sky)"/>${stars}
+      <circle cx="${mx}" cy="${my}" r="104" fill="#666d82"/>${craters}
+      <ellipse cx="500" cy="${top + 720}" rx="1262" ry="732" fill="#7fd6f2" opacity=".35"/>
+      <g clip-path="url(#map-earth)"><rect y="${top}" width="${W}" height="${GROUND}" fill="#1b8fc4"/>
+        <path d="M0 ${top + 38}C120 ${top + 4} 250 ${top + 22} 360 ${top + 60}S520 ${height} 300 ${height}H0Z" fill="#46b36b"/>
+        <path d="M640 ${height}C640 ${top + 40} 760 ${top + 6} 880 ${top + 14}S1000 ${top + 36} 1000 ${top + 50}V${height}Z" fill="#46b36b"/></g>`;
+  }
   function renderMap(data) {
-    const { stops, units, height } = layout(data.lessons);
+    const { stops, units, height, rowTop } = layout(data.lessons);
     const youAt = data.students.find(s => s.me)?.at ?? -1;
     const atStop = i => data.students.filter(s => s.at === i).sort((a, b) => b.me - a.me);
-    const bands = units.map((u, r) => `<rect x="0" y="${r * ROW}" width="${W}" height="${ROW}" fill="${UNIT_COLORS[u] || '#ddd'}"/>
-      <text x="${r % 2 ? 12 : W - 12}" y="${r * ROW + 18}" text-anchor="${r % 2 ? 'start' : 'end'}" class="map-unit">UNIT ${u} · ${esc(UNIT_NAMES[u] || '').toUpperCase()}</text>`).join('');
+    const labels = units.map((u, r) => {
+      const z = ZONES[u] || { icon: '', name: UNIT_NAMES[u] || '' }, y = rowTop(r) + 18;
+      return `<text x="${r % 2 ? W - 12 : 12}" y="${y}" text-anchor="${r % 2 ? 'end' : 'start'}" class="map-unit">${z.icon} ${esc(z.name.toUpperCase())} · ${esc(UNIT_NAMES[u] || '')}</text>`;
+    }).join('');
     const nodes = stops.map((s, i) => {
       const people = atStop(i), l = s.lesson;
       const state = s.finish ? (youAt === i ? 'done' : 'finish') : l.complete ? 'done' : i === youAt ? 'here' : l.unlocked ? 'open' : 'locked';
@@ -139,22 +168,24 @@
       const lines = names.map((p, j) => `<image href="${tokenImage(p.look, p.built)}" x="${s.x - 62}" y="${s.y + 25 + j * 26}" width="26" height="26"/>
         <text x="${s.x - 34}" y="${s.y + 43 + j * 26}" class="map-name${p.me ? ' me' : ''}">${esc(p.me ? 'You' : p.name.length > 15 ? p.name.slice(0, 14) + '…' : p.name)}</text>`).join('');
       const more = people.length > 3 ? `<text x="${s.x - 34}" y="${s.y + 95}" class="map-name">+${people.length - 2} more</text>` : '';
-      const label = s.finish ? 'Rescue HQ, the finish line' : (l.event ? `Class event: ${l.title}` : `Lesson ${l.num}: ${l.title}`);
+      const label = s.finish ? 'Moon Base, the finish line' : (l.event ? `Class event: ${l.title}` : `Lesson ${l.num}: ${l.title}`);
       return `<g class="map-stop ${state}" data-stop="${i}" role="button" tabindex="0" aria-label="${esc(label)}, ${people.length} here">
         <title>${esc(label)}</title>
         <circle cx="${s.x}" cy="${s.y}" r="21"/>
-        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🏁' : l.complete ? '✓' : l.event ? l.icon : l.num}</text>
+        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🚩' : l.complete ? '✓' : l.event ? l.icon : l.num}</text>
         ${you ? `<image href="${tokenImage(you.look, you.built)}" x="${s.x - 42}" y="${s.y - 52}" width="84" height="84" class="map-you"/>` : ''}
         ${lines}${more}</g>`;
     }).join('');
+    const launch = stops[0];
     return {
       stops,
-      svg: `<svg class="learning-map" viewBox="0 0 ${W} ${height}" role="group" aria-label="Learning map">
-        ${bands}
+      svg: `<svg class="learning-map" viewBox="0 0 ${W} ${height}" role="group" aria-label="Mission map from Earth to Moon Base">
+        ${backdrop(stops, height)}${labels}
         <path d="${road(stops)}" class="map-road"/><path d="${road(stops)}" class="map-lane"/>
+        <text x="${launch.x + 2}" y="${height - 22}" font-size="30" text-anchor="middle" aria-hidden="true">🚀</text>
         ${nodes}</svg>`
     };
   }
 
-  window.Quest = { part, drawBuild, renderMap };
+  window.Quest = { part, drawBuild, renderMap, ZONES, EVENT_STORY, MOON_KM };
 })();

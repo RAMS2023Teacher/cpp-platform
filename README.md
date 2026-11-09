@@ -39,7 +39,7 @@ On 1st gen, lessons automatically show the Color Sensor (`colorname()`) and Gyro
 ## The Rescue Robot quest
 - **My Robot:** each student starts with an empty outline. Each lesson before the capstone installs a part, and the robot visibly grows. Go Further lessons add upgrades. They can choose its colors and style.
 - **Rescue Mission:** the three capstone lessons are the mission stages. Finishing them earns *Rescue Certified*.
-- **Learning Map:** a road through the five units that shows each student's robot at the lesson they're on. Classmates appear as first name and last initial, with no grades or scores. Teachers see full names. A teacher can turn classmates off for a class in **Class settings**.
+- **Mission to the Moon map:** a flight from Earth to Moon Base through the course's units that shows each student's robot at the lesson they're on. Classmates appear as first name and last initial, with no grades or scores. Teachers see full names. A teacher can turn classmates off for a class in **Class settings**.
 
 ## Teacher workflow
 1. **Classes → New class** gives you a 6-letter join code.

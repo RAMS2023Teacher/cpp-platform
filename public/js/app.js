@@ -216,7 +216,7 @@
           <div class="bar" style="margin:6px 0"><i style="width:${100 * partsDone / (parts.length || 1)}%"></i></div>
           <span class="small muted">${partsDone} of ${parts.length} parts installed${nextPart ? ` · Next: ${nextPart.icon} ${esc(nextPart.name)}` : ' · Ready for the rescue mission!'}</span></div>
         ${events.map(e => `<a class="btn" href="#/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}
-        <a class="btn" href="#/robot">🔧 My Robot</a><a class="btn" href="#/map">🗺 Learning Map</a>
+        <a class="btn" href="#/robot">🔧 My Robot</a><a class="btn" href="#/map">🚀 Moon Mission</a>
       </div>
       <div class="badges">${BADGES.map(([i, n, on]) => `<span class="badge ${on ? '' : 'off'}">${i} ${n}</span>`).join('')}</div>
       ${units.map(u => `
@@ -395,7 +395,7 @@
     const heading = lessonPlace?.track === 'extra' ? '🚀 Upgrade installed!' : part.mission ? '🚩 Mission stage complete!' : '🔧 New part installed!';
     const m = modal(`<h2 style="margin-top:0">${heading}</h2>
       <div class="celebrate"><canvas width="220" height="220" role="img" aria-label="Your robot with its newest part installed"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
-      <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Learning map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
+      <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Moon map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => m.remove()));
     const { lessons } = await api('/api/lessons');
@@ -751,7 +751,7 @@ int main() {
     $app.innerHTML = `
       <a href="#/teacher" class="small">← All classes</a>
       <div class="row" style="margin:6px 0 14px"><h1 style="margin:0">${esc(C.name)}</h1><span class="joincode" style="font-size:1.1rem">${esc(C.code)}</span><div class="spacer"></div>
-        ${data.events.map(e => `<a class="btn sm" href="#/teacher/class/${C.id}/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}<button class="btn sm" id="teams">👥 Teams</button><button class="btn sm" id="photos">📸 Photos</button><button class="btn sm" id="gc">🎓 Google Classroom</button><a class="btn sm" href="#/map/${C.id}">🗺 Learning map</a><button class="btn sm" id="export">📊 Export to Google Sheets</button><button class="btn sm" id="settings">⚙ Class settings</button></div>
+        ${data.events.map(e => `<a class="btn sm" href="#/teacher/class/${C.id}/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}<button class="btn sm" id="teams">👥 Teams</button><button class="btn sm" id="photos">📸 Photos</button><button class="btn sm" id="gc">🎓 Google Classroom</button><a class="btn sm" href="#/map/${C.id}">🚀 Moon map</a><button class="btn sm" id="export">📊 Export to Google Sheets</button><button class="btn sm" id="settings">⚙ Class settings</button></div>
       <div class="stats">
         <div class="stat"><span class="muted small">Students</span><b>${students.length}</b></div>
         <div class="stat"><span class="muted small">Lessons completed (all students)</span><b>${students.reduce((n, s) => n + Object.values(s.progress).filter(p => p.status === 'complete').length, 0)}</b></div>
@@ -1094,9 +1094,10 @@ int main() {
     const data = await api(teacher ? '/api/map/' + cid : '/api/map');
     const { stops, svg } = Quest.renderMap(data);
     const peers = data.class.showPeers;
-    const stopName = i => stops[i]?.finish ? '🏁 Finished' : stops[i].lesson.event ? `${stops[i].lesson.icon} ${stops[i].lesson.title}` : `Lesson ${stops[i].lesson.num}`;
-    $app.innerHTML = `<div class="row" style="margin-bottom:10px"><div><h1 style="margin:0">🗺 Learning Map</h1><p class="muted" style="margin:0">${esc(data.class.name)}${!teacher && !peers ? ' · Your teacher has turned off classmates on this map.' : ''}</p></div><div class="spacer"></div>
+    const stopName = i => stops[i]?.finish ? '🌕 Moon Base' : stops[i].lesson.event ? `${stops[i].lesson.icon} ${stops[i].lesson.title}` : `Lesson ${stops[i].lesson.num}`;
+    $app.innerHTML = `<div class="row" style="margin-bottom:10px"><div><h1 style="margin:0">🚀 Mission to the Moon</h1><p class="muted" style="margin:0">${esc(data.class.name)}${!teacher && !peers ? ' · Your teacher has turned off classmates on this map.' : ''}</p></div><div class="spacer"></div>
       ${teacher ? `<label class="small">Class: <select class="input" id="mapc" style="display:inline-block;width:auto">${classes.map(c => `<option value="${c.id}" ${c.id === cid ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>` : ''}</div>
+      ${(me => me ? `<p style="margin:0 0 8px"><b>${Math.round(Quest.MOON_KM * Math.min(1, me.at / (stops.length - 1))).toLocaleString()} km</b> of ${Quest.MOON_KM.toLocaleString()} km to the Moon</p>` : '')(data.students.find(s => s.me))}
       <div class="map-wrap">${svg}</div>
       <div class="legend" style="margin-top:8px"><span><i class="key done"></i> finished</span><span><i class="key here"></i> you are here</span><span><i class="key open"></i> open</span><span><i class="key locked"></i> locked</span><span>Click a stop to see who is there.</span></div>
       <h2 style="margin-top:18px">Where everyone is</h2>
@@ -1106,8 +1107,9 @@ int main() {
     if (teacher) document.getElementById('mapc').onchange = e => Nav.go('#/map/' + e.target.value);
     const open = el => {
       const i = +el.dataset.stop, s = stops[i], here = data.students.filter(x => x.at === i);
-      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🏁 Rescue HQ' : s.lesson.event ? `${s.lesson.icon} ${esc(s.lesson.title)}` : `${s.lesson.num}. ${esc(s.lesson.title)}`}</h2>
-        ${s.finish ? '<p>Everyone here has finished this term\'s path.</p>' : s.lesson.event ? '<p>A whole-class event. All teams meet here before moving on.</p>' : (p => `<p>${p.icon} ${p.mission ? 'Mission stage:' : 'Earns'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.id))}
+      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🌕 Moon Base' : s.lesson.event ? `${s.lesson.icon} ${esc(s.lesson.title)}` : `${s.lesson.num}. ${esc(s.lesson.title)}`}</h2>
+        ${s.finish ? '<p>Everyone here has landed and finished this term\'s path.</p>' : s.lesson.event ? `<p><b>${esc(Quest.EVENT_STORY[s.lesson.id] || '')}</b></p><p>A whole-class event. All teams meet here before moving on.</p>` : (p => `<p>${p.icon} ${p.mission ? 'Mission stage:' : 'Earns'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.id))}
+        ${!s.finish && Quest.ZONES[s.lesson.unit] ? `<p class="small muted">${Quest.ZONES[s.lesson.unit].icon} ${esc(Quest.ZONES[s.lesson.unit].name)}: ${esc(Quest.ZONES[s.lesson.unit].story)}</p>` : ''}
         <h3>Here now (${here.length})</h3><div class="roster">${here.map(x => `<span class="chip ${x.me ? 'me' : ''}">${esc(x.me ? 'You' : x.name)}</span>`).join('') || '<span class="muted small">Nobody is on this stop right now.</span>'}</div>
         <div class="row" style="margin-top:16px"><div class="spacer"></div>${!s.finish && s.lesson.event ? `<a class="btn primary" href="${teacher ? `#/teacher/class/${cid}/event/${s.lesson.id}` : `#/event/${s.lesson.id}`}">Open event</a>` : !s.finish && s.lesson.unlocked ? `<a class="btn primary" href="#/lesson/${s.lesson.id}">Open lesson</a>` : ''}<button class="btn" id="cx">Close</button></div>`);
       m.querySelector('#cx').onclick = () => m.remove();
