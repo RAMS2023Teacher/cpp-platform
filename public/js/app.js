@@ -1,18 +1,57 @@
 /* RoboCode Academy – single page app */
 (function () {
   const $app = document.getElementById('app'), $nav = document.getElementById('nav');
-  let ME = null, MYCLASS = null;
+  let ME = null, MYCLASS = null, ACCOUNT = '';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const UNIT_NAMES = { 1: 'Meet Your Robot', 2: 'C++ Foundations', 3: 'Algorithms', 4: 'Artificial Intelligence', 5: 'Capstone' };
   const UNIT_ICONS = { 1: '🔧', 2: '💻', 3: '🧩', 4: '🧠', 5: '🏆' };
   const KIND = { warmup: ['⚡', 'Warm-up'], learn: ['📘', 'Learn'], build: ['🔧', 'Build'], activity: ['🎯', 'Activity'], unplugged: ['✂️', 'Unplugged'], code: ['💻', 'Code'], wrapup: ['✅', 'Wrap-up'] };
 
-  async function api(url, opts = {}) {
-    const r = await fetch(url, { method: opts.method || (opts.body ? 'POST' : 'GET'), headers: opts.body ? { 'Content-Type': 'application/json' } : {}, body: opts.body ? JSON.stringify(opts.body) : undefined });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || 'Something went wrong.');
-    return data;
+  // Every call goes through the one server function. Answers that arrive after the
+  // student has moved to another page are dropped so they can't overwrite it.
+  let routeSeq = 0, inFlight = 0;
+  const busy = d => { inFlight += d; document.body.classList.toggle('busy', inFlight > 0); };
+  function api(url, opts = {}) {
+    const method = opts.method || (opts.body ? 'POST' : 'GET'), seq = routeSeq;
+    busy(1);
+    return new Promise((resolve, reject) => {
+      const send = tries => google.script.run
+        .withSuccessHandler(text => {
+          busy(-1);
+          if (seq !== routeSeq) return;
+          const data = JSON.parse(text);
+          data && data.__error ? reject(new Error(data.__error)) : resolve(data);
+        })
+        .withFailureHandler(() => {
+          if (method === 'GET' && tries < 1) return setTimeout(() => send(tries + 1), 1500);
+          busy(-1);
+          if (seq === routeSeq) reject(new Error('Could not reach the server. Check your connection and try again.'));
+        })
+        .api(method, url, opts.body ? JSON.stringify(opts.body) : '');
+      send(0);
+    });
   }
+  // Apps Script pages run inside an iframe, so the current page is tracked here
+  // and mirrored to the browser's address bar for the back button.
+  const Nav = {
+    hash: '#/',
+    go(h) { this.hash = h; try { google.script.history.push(null, {}, h.slice(1)); } catch (e) {} route(); },
+    listen() {
+      document.addEventListener('click', e => {
+        const a = e.target.closest && e.target.closest('a[href]'); if (!a) return;
+        const h = a.getAttribute('href');
+        if (h.startsWith('#')) { e.preventDefault(); if (h !== '#') Nav.go(h); }
+        else if (/^https?:/.test(h)) a.target = '_blank';
+      });
+      google.script.history.setChangeHandler(e => { Nav.hash = '#' + (e.location.hash || '/'); route(); });
+    },
+    start() {
+      let started = false;
+      const begin = hash => { if (started) return; started = true; if (hash) Nav.hash = '#' + hash; boot(); };
+      try { google.script.url.getLocation(l => begin(l.hash)); } catch (e) { begin(''); }
+      setTimeout(() => begin(''), 2000);
+    }
+  };
   function toast(t) { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 2600); }
   function modal(html) {
     const bg = document.createElement('div'); bg.className = 'modal-bg';
@@ -24,41 +63,43 @@
 
   // ---------------------------------------------------------------- nav + router
   function renderNav() {
-    if (!ME) { $nav.innerHTML = `<a href="#/">Log in</a><a href="#/join">Join a class</a>`; return; }
+    if (!ME) { $nav.innerHTML = ''; return; }
     const links = ME.role === 'teacher'
-      ? `<a href="#/teacher">Classes</a><a href="#/teacher/lessons">Lessons</a><a href="#/playground">Code Lab</a>`
-      : `<a href="#/">My Course</a><a href="#/playground">Code Lab</a>`;
-    $nav.innerHTML = `${links}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span><button id="logout">Log out</button>`;
-    document.getElementById('logout').onclick = async () => { await api('/api/logout', { body: {} }); ME = null; location.hash = '#/'; boot(); };
-    const h = location.hash || '#/';
-    $nav.querySelectorAll('a').forEach(a => a.classList.toggle('active', h === a.getAttribute('href')));
+      ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/playground">Code Lab</a>`
+      : `<a href="#/">My Course</a><a href="#/robot">My Robot</a><a href="#/map">Map</a><a href="#/playground">Code Lab</a>`;
+    $nav.innerHTML = `${links}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
+    $nav.querySelectorAll('a').forEach(a => a.classList.toggle('active', Nav.hash === a.getAttribute('href')));
   }
   let cleanup = null;
+  function dispatch(parts) {
+    if (!ME) return joinPage();
+    if (parts[0] === 'lesson') return lessonPage(parts[1]);
+    if (parts[0] === 'playground') return playground();
+    if (parts[0] === 'map') return mapPage(parts[1]);
+    if (ME.role === 'teacher') {
+      if (parts[0] === 'teacher' && parts[1] === 'class') return classPage(parts[2]);
+      if (parts[0] === 'teacher' && parts[1] === 'lessons') return lessonsAdmin();
+      return teacherHome();
+    }
+    if (parts[0] === 'robot') return robotPage();
+    return studentHome();
+  }
   async function route() {
     if (cleanup) { cleanup(); cleanup = null; }
-    const h = (location.hash || '#/').slice(1); const parts = h.split('/').filter(Boolean);
+    routeSeq++;
+    const parts = Nav.hash.slice(1).split('/').filter(Boolean);
     renderNav(); window.scrollTo(0, 0);
-    try {
-      if (!ME) {
-        if (parts[0] === 'join') return authPage('student');
-        if (parts[0] === 'teacher-signup') return authPage('teacher');
-        return authPage('login');
-      }
-      if (parts[0] === 'lesson') return lessonPage(parts[1]);
-      if (parts[0] === 'playground') return playground();
-      if (ME.role === 'teacher') {
-        if (parts[0] === 'teacher' && parts[1] === 'class') return classPage(parts[2]);
-        if (parts[0] === 'teacher' && parts[1] === 'lessons') return lessonsAdmin();
-        return teacherHome();
-      }
-      return studentHome();
-    } catch (e) { $app.innerHTML = `<div class="panel"><h2>Oops</h2><p>${esc(e.message)}</p><a class="btn" href="#/">Back home</a></div>`; }
+    $app.innerHTML = '<div class="loading">⏳ Loading…</div>';
+    try { await dispatch(parts); }
+    catch (e) { $app.innerHTML = `<div class="panel"><h2>Oops</h2><p>${esc(e.message)}</p><a class="btn" href="#/">Back home</a></div>`; }
   }
-  window.addEventListener('hashchange', route);
-  async function boot() { const r = await api('/api/me'); ME = r.user; MYCLASS = r.class || null; route(); }
+  async function boot() {
+    try { const r = await api('/api/me'); ME = r.user; MYCLASS = r.class || null; ACCOUNT = r.email || ''; route(); }
+    catch (e) { $app.innerHTML = `<div class="panel"><h2>Can't open RoboCode Academy</h2><p>${esc(e.message)}</p></div>`; }
+  }
 
   // ---------------------------------------------------------------- auth
-  function authPage(mode) {
+  function joinPage() {
     $app.innerHTML = `
     <section class="hero">
       <div>
@@ -82,38 +123,21 @@
       <div class="pillar"><div class="ico">🧠</div><b>AI</b><p class="small muted">Decision trees, state machines, machine learning & ethics.</p></div>
     </div>
     <div class="auth-wrap panel">
-      <div class="tabs"><button data-m="login">Log in</button><button data-m="student">Join a class</button><button data-m="teacher">Teacher sign-up</button></div>
+      <h2 style="margin-top:0">Join your class</h2>
+      <p class="small muted">Signed in as <b>${esc(ACCOUNT)}</b>. You only do this once.</p>
       <div class="err" id="err"></div>
-      <form id="f"></form>
+      <form id="f">
+        <label class="f">Class code <span class="muted small">(6 letters from your teacher)</span><input name="classCode" maxlength="6" style="text-transform:uppercase;letter-spacing:.2em;font-family:var(--mono)" required></label>
+        <label class="f">First name<input name="firstName" maxlength="30" autocomplete="given-name" required></label>
+        <label class="f">Last name <span class="muted small">(classmates only see your first initial)</span><input name="lastName" maxlength="30" autocomplete="family-name" required></label>
+        <button class="btn primary" style="width:100%">Join class 🚀</button>
+      </form>
     </div>`;
-    const forms = {
-      login: `<label class="f">Username<input name="username" autocomplete="username" required></label>
-              <label class="f">Password<input name="password" type="password" autocomplete="current-password" required></label>
-              <button class="btn primary" style="width:100%">Log in</button>`,
-      student: `<label class="f">Class code <span class="muted small">(6 letters from your teacher)</span><input name="classCode" maxlength="6" style="text-transform:uppercase;letter-spacing:.2em;font-family:var(--mono)" required></label>
-              <label class="f">Your name <span class="muted small">(first name + last initial)</span><input name="name" required></label>
-              <label class="f">Pick a username<input name="username" autocomplete="username" required></label>
-              <label class="f">Pick a password<input name="password" type="password" autocomplete="new-password" required></label>
-              <button class="btn primary" style="width:100%">Enroll 🚀</button>`,
-      teacher: `<label class="f">Teacher code <span class="muted small">(shown when the server starts)</span><input name="teacherCode" required></label>
-              <label class="f">Your name<input name="name" placeholder="Mr. Perkins" required></label>
-              <label class="f">Username<input name="username" required></label>
-              <label class="f">Password<input name="password" type="password" required></label>
-              <button class="btn primary" style="width:100%">Create teacher account</button>`
-    };
-    const show = m => {
-      mode = m; document.getElementById('f').innerHTML = forms[m]; document.getElementById('err').textContent = '';
-      document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
-    };
-    document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => show(b.dataset.m));
     document.getElementById('f').onsubmit = async e => {
-      e.preventDefault(); const body = Object.fromEntries(new FormData(e.target));
-      try {
-        const url = mode === 'login' ? '/api/login' : mode === 'student' ? '/api/register/student' : '/api/register/teacher';
-        await api(url, { body }); location.hash = '#/'; boot();
-      } catch (err) { document.getElementById('err').textContent = err.message; }
+      e.preventDefault();
+      try { await api('/api/join', { body: Object.fromEntries(new FormData(e.target)) }); Nav.hash = '#/'; boot(); }
+      catch (err) { document.getElementById('err').textContent = err.message; }
     };
-    show(mode);
   }
 
   // ---------------------------------------------------------------- student home
@@ -125,6 +149,8 @@
     const level = Math.floor(xp / 250) + 1;
     const next = lessons.find(l => l.unlocked && l.status !== 'complete');
     const units = [...new Set(lessons.map(l => l.unit))];
+    const orders = completedOrders(lessons);
+    const partsDone = Quest.PARTS.filter(p => orders.has(p.n)).length, nextPart = Quest.PARTS.find(p => !orders.has(p.n));
     const unitDone = u => lessons.filter(l => l.unit === u).every(l => l.status === 'complete');
     const BADGES = [
       ['🔧', 'Robot Builder', unitDone(1)], ['💻', 'C++ Coder', unitDone(2)], ['🧩', 'Algorithm Ace', unitDone(3)],
@@ -139,13 +165,22 @@
         <div class="stat"><span class="muted small">Quiz points</span><b>${quizPts}</b></div>
         <div class="stat"><span class="muted small">Badges</span><b>${BADGES.filter(b => b[2]).length} / ${BADGES.length}</b></div>
       </div>
+      <div class="quest-strip panel">
+        <canvas id="home-robot" width="132" height="132" aria-label="Your Rescue Robot so far"></canvas>
+        <div style="flex:1;min-width:200px"><b>🤖 Your Rescue Robot</b>
+          <div class="bar" style="margin:6px 0"><i style="width:${100 * partsDone / Quest.PARTS.length}%"></i></div>
+          <span class="small muted">${partsDone} of ${Quest.PARTS.length} parts installed${nextPart ? ` · Next: ${nextPart.icon} ${esc(nextPart.name)}` : ' · Ready for the rescue mission!'}</span></div>
+        <a class="btn" href="#/robot">🔧 My Robot</a><a class="btn" href="#/map">🗺 Learning Map</a>
+      </div>
       <div class="badges">${BADGES.map(([i, n, on]) => `<span class="badge ${on ? '' : 'off'}">${i} ${n}</span>`).join('')}</div>
       ${units.map(u => `
         <section class="unit">
           <div class="unit-head"><h2>${UNIT_ICONS[u] || '📦'} Unit ${u}: ${UNIT_NAMES[u] || ''}</h2><span class="muted small">${lessons.filter(l => l.unit === u && l.status === 'complete').length}/${lessons.filter(l => l.unit === u).length} done</span></div>
           <div class="cards">${lessons.filter(l => l.unit === u).map(card).join('')}</div>
         </section>`).join('')}`;
+    Quest.drawBuild(document.getElementById('home-robot'), ME.robot, orders, true);
   }
+  const completedOrders = lessons => new Set(lessons.filter(l => l.status === 'complete').map(l => l.order));
   function card(l) {
     const icon = !l.unlocked ? '🔒' : l.status === 'complete' ? '✅' : l.status === 'started' ? '🟡' : '';
     return `<a class="lcard ${l.unlocked ? '' : 'locked'} ${l.status}" href="#/lesson/${l.id}">
@@ -169,6 +204,7 @@
     const { lesson: L, progress: P, prev, next } = await api('/api/lessons/' + id);
     const teacher = ME.role === 'teacher';
     const secs = L.sections || [];
+    celebrated = P?.completed ? L.id : null;
     $app.innerHTML = `
       <div class="lesson-head">
         <div style="flex:1;min-width:260px">
@@ -219,20 +255,41 @@
     let ide = null;
     if (L.challenge) {
       const ck = 'draft:' + ME.id + ':' + L.id;
-      let saved = P?.draft; try { saved = saved || localStorage.getItem(ck); } catch (e) {}
+      // Whichever copy is newer wins: the one in this browser or the one saved to the server.
+      let saved = P?.draft; try { const at = localStorage.getItem(ck + ':at') || ''; if (!saved || at > (P?.draftAt || '')) saved = localStorage.getItem(ck) || saved; } catch (e) {}
+      let unsaved = null;
+      const saveDraft = () => { if (unsaved === null) return; const code = unsaved; unsaved = null; clearTimeout(ide._d); api(`/api/lessons/${L.id}/draft`, { body: { code } }).catch(() => {}); };
       ide = createIDE(document.getElementById('ide'), {
         code: saved || L.challenge.starterCode, starter: L.challenge.starterCode, field: L.challenge.field, checks: L.challenge.checks,
         submitLabel: teacher ? 'Check (preview)' : 'Check & Submit',
-        onChange: teacher ? null : code => { try { localStorage.setItem(ck, code); } catch (e) {} clearTimeout(ide._d); ide._d = setTimeout(() => api(`/api/lessons/${L.id}/draft`, { body: { code } }).catch(() => {}), 2500); },
+        onChange: teacher ? null : code => { try { localStorage.setItem(ck, code); localStorage.setItem(ck + ':at', new Date().toISOString()); } catch (e) {} unsaved = code; clearTimeout(ide._d); ide._d = setTimeout(saveDraft, 20000); },
         onSubmit: teacher ? null : async (code, checks, output) => {
-          await api(`/api/lessons/${L.id}/submit`, { body: { code, checks, output } });
+          unsaved = null; clearTimeout(ide._d);
+          const r = await api(`/api/lessons/${L.id}/submit`, { body: { code, checks, output } });
+          celebrate(L, r.progress);
           toast(checks.every(c => c.pass) ? '🎉 Challenge passed and submitted!' : '📤 Submitted — keep improving and resubmit anytime.');
         }
       });
       if (P?.challenge) ide.note(P.challenge.passed ? '✅ You already passed this challenge. You can keep experimenting and resubmit.' : `Last submission: ${P.challenge.passCount}/${P.challenge.total} checks passed.`);
-      cleanup = () => ide.destroy();
+      if (ME.robot) ide.sim.setLook(ME.robot);
+      cleanup = () => { saveDraft(); ide.destroy(); };
     }
     renderQuiz(L, P, teacher);
+  }
+
+  let celebrated = null;
+  async function celebrate(L, progress) {
+    if (!progress.completed || celebrated === L.id) return;
+    celebrated = L.id;
+    const part = Quest.part(L.order); if (!part) return;
+    const isPart = Quest.PARTS.includes(part);
+    const m = modal(`<h2 style="margin-top:0">${isPart ? '🔧 New part installed!' : '🚩 Mission stage complete!'}</h2>
+      <div class="celebrate"><canvas width="220" height="220"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
+      <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Learning map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
+    m.querySelector('#cx').onclick = () => m.remove();
+    m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => m.remove()));
+    const { lessons } = await api('/api/lessons');
+    Quest.drawBuild(m.querySelector('canvas'), ME.robot, completedOrders(lessons), true);
   }
 
   function renderQuiz(L, P, teacher) {
@@ -257,7 +314,7 @@
       const answers = quiz.map((_, i) => Number(fd.get('q' + i)));
       try {
         const r = await api(`/api/lessons/${L.id}/quiz`, { body: { answers, reflection: fd.get('reflection') || '' } });
-        toast(`Exit ticket: ${r.progress.quiz.score}/${r.progress.quiz.total}`); renderQuiz(r.lesson, r.progress, false);
+        toast(`Exit ticket: ${r.progress.quiz.score}/${r.progress.quiz.total}`); renderQuiz(r.lesson, r.progress, false); celebrate(L, r.progress);
       } catch (err) { toast(err.message); }
     };
   }
@@ -433,9 +490,9 @@ int main() {
 }
 `;
   const ROBOT_COLORS = ['#f2f2f2', '#c0c0c0', '#222222', '#e5484d', '#f76b15', '#f5d90a', '#30a46c', '#008080', '#0b5cad', '#3e63dd', '#8e4ec6', '#ff69b4'];
-  function robotWorkshop(host, ide) {
-    const key = 'robot:' + ME.id;
-    let look; try { look = VexSim.normalizeLook(JSON.parse(localStorage.getItem(key))); } catch (e) { look = VexSim.normalizeLook(); }
+  function robotWorkshop(host, onLook) {
+    let look = VexSim.normalizeLook(ME.robot), saveTimer = null;
+    const remember = () => { ME.robot = look; clearTimeout(saveTimer); saveTimer = setTimeout(() => api('/api/me/robot', { method: 'PUT', body: { robot: look } }).catch(() => {}), 1200); };
     const O = VexSim.LOOK_OPTIONS;
     const color = (name, label) => `<label class="f">${label}<input type="color" name="${name}" value="${look[name]}"></label>`;
     host.innerHTML = `<div class="sec-kind">🤖 Robot Workshop<span class="spacer"></span><button class="ctl close" type="button" id="rw-close" title="Close" aria-label="Close Robot Workshop">✕</button></div>
@@ -450,7 +507,7 @@ int main() {
             <label class="f">Decoration<select name="deco">${options(Object.keys(O.deco), look.deco, v => O.deco[v])}</select></label>
             ${color('body', 'Body color')}${color('brain', 'Brain color')}${color('decoColor', 'Decoration color')}${color('trail', 'Trail color')}
           </div>
-          <p class="small muted" style="margin:0">Looks only! Your robot's size, speed and sensors stay the same, so your code behaves the same way. Your design is saved in this browser.</p>
+          <p class="small muted" style="margin:0">Looks only! Your robot's size, speed and sensors stay the same, so your code behaves the same way. Your classmates see your design on the learning map.</p>
         </form>
       </div>`;
     const form = host.querySelector('#rw-form'), cv = host.querySelector('canvas'), ctx = cv.getContext('2d');
@@ -461,10 +518,7 @@ int main() {
       ctx.strokeStyle = '#c2c8d0'; ctx.lineWidth = 1; for (let i = k * 2; i < S; i += k * 3) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, S); ctx.moveTo(0, i); ctx.lineTo(S, i); ctx.stroke(); }
       ctx.translate(S / 2, S / 2 + k); VexSim.drawRobot(ctx, k, look); 
     }
-    function commit() {
-      try { localStorage.setItem(key, JSON.stringify(look)); } catch (e) {}
-      ide.sim.setLook(look); preview();
-    }
+    function commit() { remember(); onLook(look); preview(); }
     function fill() { for (const el of form.elements) if (el.name) el.value = look[el.name]; }
     form.onsubmit = e => e.preventDefault();
     form.oninput = () => { look = VexSim.normalizeLook(Object.fromEntries(new FormData(form))); commit(); };
@@ -473,8 +527,8 @@ int main() {
       look = VexSim.normalizeLook({ name: look.name, shape: pick(Object.keys(O.shape)), wheels: pick(Object.keys(O.wheels)), deco: pick(Object.keys(O.deco).slice(1)), body: pick(ROBOT_COLORS), brain: pick(ROBOT_COLORS), decoColor: pick(ROBOT_COLORS), trail: pick(ROBOT_COLORS) });
       fill(); commit();
     };
-    host.querySelector('#rw-reset').onclick = () => { look = VexSim.normalizeLook(); try { localStorage.removeItem(key); } catch (e) {} fill(); ide.sim.setLook(look); preview(); };
-    ide.sim.setLook(look); preview();
+    host.querySelector('#rw-reset').onclick = () => { look = VexSim.normalizeLook(); fill(); commit(); };
+    onLook(look); preview();
   }
   function playground() {
     let code = PLAY_CODE; try { code = localStorage.getItem('playground:' + ME.id) || PLAY_CODE; } catch (e) {}
@@ -486,7 +540,7 @@ int main() {
     const ide = createIDE(document.getElementById('ide'), { code, starter: PLAY_CODE, field: FIELDS['Open field'], onChange: c => { try { localStorage.setItem('playground:' + ME.id, c); } catch (e) {} } });
     document.getElementById('fsel').onchange = e => ide.setField(FIELDS[e.target.value]);
     const shop = document.getElementById('workshop'), shopBtn = document.getElementById('rw-open');
-    robotWorkshop(shop, ide);
+    robotWorkshop(shop, look => ide.sim.setLook(look));
     const toggleShop = open => { shop.hidden = !open; shopBtn.setAttribute('aria-expanded', String(open)); };
     shopBtn.onclick = () => toggleShop(shop.hidden);
     document.getElementById('rw-close').onclick = () => { toggleShop(false); shopBtn.focus(); };
@@ -504,7 +558,7 @@ int main() {
         <form class="lcard" id="newc" style="justify-content:center"><h3>➕ New class</h3><input class="input" name="name" placeholder="e.g. Period 3 — Robotics" required><button class="btn primary">Create class</button></form>
       </div>
       <div class="panel" style="margin-top:22px"><h3>How students enroll</h3>
-        <ol><li>Create a class above to get a 6-letter <b>join code</b>.</li><li>Students go to this website → <b>Join a class</b>, type the code, their name, a username and password.</li><li>Open the class to watch progress live, read submitted code, and leave feedback & grades.</li></ol>
+        <ol><li>Create a class above to get a 6-letter <b>join code</b>.</li><li>Students open this website while signed in to their school Google account, then type the code and their name.</li><li>Open the class to watch progress live, read submitted code, and leave feedback & grades.</li></ol>
         <p class="muted small">Lessons unlock in order: a student finishes a lesson by submitting its exit ticket and code challenge. You can unlock lessons for a class at any time.</p></div>`;
     document.getElementById('newc').onsubmit = async e => { e.preventDefault(); try { await api('/api/teacher/classes', { body: Object.fromEntries(new FormData(e.target)) }); teacherHome(); } catch (err) { toast(err.message); } };
   }
@@ -518,7 +572,7 @@ int main() {
     $app.innerHTML = `
       <a href="#/teacher" class="small">← All classes</a>
       <div class="row" style="margin:6px 0 14px"><h1 style="margin:0">${esc(C.name)}</h1><span class="joincode" style="font-size:1.1rem">${esc(C.code)}</span><div class="spacer"></div>
-        <a class="btn sm" href="/api/teacher/classes/${C.id}/export.csv">⬇ Export CSV</a><button class="btn sm" id="settings">⚙ Class settings</button></div>
+        <a class="btn sm" href="#/map/${C.id}">🗺 Learning map</a><button class="btn sm" id="export">📊 Export to Google Sheets</button><button class="btn sm" id="settings">⚙ Class settings</button></div>
       <div class="stats">
         <div class="stat"><span class="muted small">Students</span><b>${students.length}</b></div>
         <div class="stat"><span class="muted small">Lessons completed (all students)</span><b>${students.reduce((n, s) => n + Object.values(s.progress).filter(p => p.status === 'complete').length, 0)}</b></div>
@@ -537,10 +591,19 @@ int main() {
             const label = p.grade != null ? p.grade : p.quiz ? `${p.quiz.score}/${p.quiz.total}` : '…';
             const ch = l.hasChallenge ? (p.challenge ? (p.challenge.passed ? '' : '⚠') : '') : '';
             return `<td><button class="cell ${p.status} ${p.needsReview ? 'review' : ''}" data-s="${s.id}" data-l="${l.id}" title="${p.challenge ? 'Challenge: ' + (p.challenge.passed ? 'passed' : p.challenge.passCount + '/' + p.challenge.total) : 'No code submitted'}">${label}${ch}</button></td>`; }).join('')}
-        </tr>`).join('')}</tbody></table></div>` : `<div class="panel"><h3>No students yet</h3><p>Share the join code <span class="joincode">${esc(C.code)}</span> with your class. Students click <b>Join a class</b> on the home page.</p></div>`}`;
+        </tr>`).join('')}</tbody></table></div>` : `<div class="panel"><h3>No students yet</h3><p>Share the join code <span class="joincode">${esc(C.code)}</span> with your class. Students enter it the first time they open this website.</p></div>`}`;
     $app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => reviewModal(b.dataset.s, b.dataset.l, () => classPage(cid)));
     $app.querySelectorAll('[data-stu]').forEach(b => b.onclick = () => studentModal(students.find(s => s.id === b.dataset.stu), cid));
     document.getElementById('settings').onclick = () => settingsModal(C, lessons, units);
+    document.getElementById('export').onclick = async e => {
+      e.target.disabled = true;
+      try {
+        const { url } = await api(`/api/teacher/classes/${C.id}/export`, { body: {} });
+        const m = modal(`<h2 style="margin-top:0">📊 Grades exported</h2><p><a class="btn primary" href="${esc(url)}">Open the Google Sheet</a></p><div class="row"><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
+        m.querySelector('#cx').onclick = () => m.remove();
+      } catch (err) { toast(err.message); }
+      e.target.disabled = false;
+    };
   }
 
   function settingsModal(C, lessons) {
@@ -548,13 +611,14 @@ int main() {
       <label class="f">Class name<input name="name" value="${esc(C.name)}"></label>
       <label class="row"><input type="checkbox" name="unlockAll" ${C.unlockAll ? 'checked' : ''}> Unlock <b>all</b> lessons (students can jump ahead)</label>
       <label class="row" style="margin-top:8px"><input type="checkbox" name="closed" ${C.closed ? 'checked' : ''}> Close enrollment (join code stops working)</label>
+      <label class="row" style="margin-top:8px"><input type="checkbox" name="showPeers" ${C.showPeers !== false ? 'checked' : ''}> Show classmates on the learning map (first name + last initial)</label>
       <h3 style="margin-top:18px">Unlock specific lessons</h3><p class="small muted">Useful if you want the whole class on the same lesson today.</p>
       <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px">${lessons.map(l => `<label class="small row"><input type="checkbox" name="u" value="${l.id}" ${(C.unlocked || []).includes(l.id) ? 'checked' : ''}> ${l.order}. ${esc(l.title)}</label>`).join('')}</div>
       <div class="row" style="margin-top:18px"><button class="btn primary" id="sv">Save</button><button class="btn" id="nc">🔁 New join code</button><button class="btn" id="dl">🗑 Delete class</button><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
     const get = n => m.querySelector(`[name=${n}]`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelector('#sv').onclick = async () => {
-      await api(`/api/teacher/classes/${C.id}`, { method: 'PATCH', body: { name: get('name').value, unlockAll: get('unlockAll').checked, closed: get('closed').checked, unlocked: [...m.querySelectorAll('[name=u]:checked')].map(x => x.value) } });
+      await api(`/api/teacher/classes/${C.id}`, { method: 'PATCH', body: { name: get('name').value, unlockAll: get('unlockAll').checked, closed: get('closed').checked, showPeers: get('showPeers').checked, unlocked: [...m.querySelectorAll('[name=u]:checked')].map(x => x.value) } });
       m.remove(); toast('Saved'); classPage(C.id);
     };
     m.querySelector('#nc').onclick = async () => { if (!confirm('Make a new join code? The old one will stop working.')) return; await api(`/api/teacher/classes/${C.id}`, { method: 'PATCH', body: { newCode: true } }); m.remove(); classPage(C.id); };
@@ -565,12 +629,12 @@ int main() {
     const { classes } = await api('/api/teacher/classes');
     const m = modal(`<h2>${esc(s.name)} <span class="muted small">@${esc(s.username)}</span></h2>
       <p class="small muted">Last login: ${s.lastLogin ? new Date(s.lastLogin).toLocaleString() : 'never'}</p>
-      <h3>Reset password</h3><div class="row"><input class="input" id="pw" placeholder="New password" style="max-width:240px;margin:0"><button class="btn" id="rp">Set password</button></div>
+      <h3>Name</h3><p class="small muted" style="margin:0 0 6px">Classmates see the first name and last initial on the learning map.</p><div class="row"><input class="input" id="nm" value="${esc(s.name)}" maxlength="60" style="max-width:240px;margin:0"><button class="btn" id="rn">Save name</button></div>
       <h3 style="margin-top:16px">Move to another class</h3><div class="row"><select class="input" id="mc" style="max-width:240px;margin:0">${classes.map(c => `<option value="${c.id}" ${c.id === cid ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select><button class="btn" id="mv">Move</button></div>
       <h3 style="margin-top:16px">Remove</h3><button class="btn stop" id="rm">Remove student & all their work</button>
       <div class="row" style="margin-top:18px"><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
-    m.querySelector('#rp').onclick = async () => { try { await api(`/api/teacher/students/${s.id}/reset-password`, { body: { password: m.querySelector('#pw').value } }); toast('Password updated'); } catch (e) { toast(e.message); } };
+    m.querySelector('#rn').onclick = async () => { try { await api(`/api/teacher/students/${s.id}/rename`, { body: { name: m.querySelector('#nm').value } }); m.remove(); toast('Name updated'); classPage(cid); } catch (e) { toast(e.message); } };
     m.querySelector('#mv').onclick = async () => { await api(`/api/teacher/students/${s.id}/move`, { body: { classId: m.querySelector('#mc').value } }); m.remove(); classPage(cid); };
     m.querySelector('#rm').onclick = async () => { if (!confirm(`Remove ${s.name}? This deletes all of their work.`)) return; await api(`/api/teacher/students/${s.id}`, { method: 'DELETE' }); m.remove(); classPage(cid); };
   }
@@ -613,8 +677,8 @@ int main() {
   }
 
   async function lessonsAdmin() {
-    const { lessons } = await api('/api/lessons');
-    const full = await Promise.all(lessons.map(l => api('/api/lessons/' + l.id).then(r => r.lesson)));
+    const { lessons: full } = await api('/api/teacher/lessons-full');
+    const lessons = full;
     $app.innerHTML = `<h1>📚 Lessons, videos & notes</h1>
       <p class="muted">Preview any lesson (as a teacher everything is unlocked and quiz answers are shown). Paste a YouTube, Google Drive or Vimeo link to embed a video at the top of a lesson.</p>
       ${[...new Set(lessons.map(l => l.unit))].map(u => `<h2 style="margin-top:22px">${UNIT_ICONS[u]} Unit ${u}: ${UNIT_NAMES[u]}</h2>
@@ -629,5 +693,74 @@ int main() {
     });
   }
 
-  boot();
+  // ---------------------------------------------------------------- my robot
+  async function robotPage() {
+    const { lessons } = await api('/api/lessons');
+    const orders = completedOrders(lessons), lessonAt = n => lessons.find(l => l.order === n);
+    const installed = Quest.PARTS.filter(p => orders.has(p.n)).length, total = Quest.PARTS.length;
+    const nextPart = Quest.PARTS.find(p => !orders.has(p.n));
+    const built = installed === total, certified = built && Quest.MISSION.every(p => orders.has(p.n));
+    const status = certified ? '🏅 Rescue Certified! Your robot finished the mission.' : built ? '🚩 Build complete. Your rescue mission is open!' : `Next part: ${nextPart.icon} ${esc(nextPart.name)}, earned by finishing Lesson ${nextPart.n}.`;
+    const row = (p, unlocked) => { const on = orders.has(p.n); return `<a class="part ${on ? 'on' : ''} ${unlocked ? '' : 'locked'}" href="#/lesson/${lessonAt(p.n)?.id}">
+      <span class="ico">${on ? p.icon : '🔒'}</span><span><b>${esc(p.name)}</b><br><span class="small muted">Lesson ${p.n}: ${esc(lessonAt(p.n)?.title || '')}</span><br><span class="small">${esc(p.does)}</span></span></a>`; };
+    $app.innerHTML = `<h1>🔧 My Rescue Robot</h1>
+      <div class="hangar">
+        <div><canvas class="robot-preview" id="build" width="480" height="480" aria-label="Your robot with ${installed} of ${total} parts"></canvas>
+          <button class="btn" id="custom" style="width:100%;margin-top:8px" aria-expanded="false">🎨 Customize colors and style</button></div>
+        <div>
+          <div class="panel"><b style="font-size:1.3rem">${installed} / ${total} parts installed</b><div class="bar" style="margin:8px 0"><i style="width:${100 * installed / total}%"></i></div><p style="margin:0">${status}</p>
+            ${nextPart && lessonAt(nextPart.n)?.unlocked ? `<a class="btn primary" style="margin-top:10px" href="#/lesson/${lessonAt(nextPart.n).id}">Go earn it →</a>` : ''}</div>
+          <div class="panel sec" id="workshop" hidden style="margin-top:12px"></div>
+        </div>
+      </div>
+      <h2 style="margin-top:20px">🚩 The Rescue Mission</h2>
+      <p class="muted" style="margin-top:0">Finish all ${total} parts to open your mission. Your robot then proves itself in the capstone.</p>
+      <div class="parts">${Quest.MISSION.map(p => row(p, built || lessonAt(p.n)?.unlocked)).join('')}</div>
+      <h2 style="margin-top:20px">🧩 Parts</h2>
+      <div class="parts">${Quest.PARTS.map(p => row(p, lessonAt(p.n)?.unlocked)).join('')}</div>`;
+    const canvas = document.getElementById('build'), shop = document.getElementById('workshop'), btn = document.getElementById('custom');
+    const draw = look => Quest.drawBuild(canvas, look, orders, true);
+    robotWorkshop(shop, draw);
+    const toggle = open => { shop.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
+    btn.onclick = () => toggle(shop.hidden);
+    document.getElementById('rw-close').onclick = () => { toggle(false); btn.focus(); };
+  }
+
+  // ---------------------------------------------------------------- learning map
+  async function mapPage(cid) {
+    const teacher = ME.role === 'teacher';
+    let classes = [];
+    if (teacher) {
+      ({ classes } = await api('/api/teacher/classes'));
+      cid = cid || classes[0]?.id;
+      if (!cid) { $app.innerHTML = `<div class="panel"><h2>No classes yet</h2><p>Create a class to see its learning map.</p><a class="btn" href="#/teacher">Go to classes</a></div>`; return; }
+    }
+    const data = await api(teacher ? '/api/map/' + cid : '/api/map');
+    const { stops, svg } = Quest.renderMap(data);
+    const peers = data.class.showPeers;
+    const stopName = i => stops[i]?.finish ? '🏁 Finished' : `Lesson ${stops[i].lesson.order}`;
+    $app.innerHTML = `<div class="row" style="margin-bottom:10px"><div><h1 style="margin:0">🗺 Learning Map</h1><p class="muted" style="margin:0">${esc(data.class.name)}${!teacher && !peers ? ' · Your teacher has turned off classmates on this map.' : ''}</p></div><div class="spacer"></div>
+      ${teacher ? `<label class="small">Class: <select class="input" id="mapc" style="display:inline-block;width:auto">${classes.map(c => `<option value="${c.id}" ${c.id === cid ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>` : ''}</div>
+      <div class="map-wrap">${svg}</div>
+      <div class="legend" style="margin-top:8px"><span><i class="key done"></i> finished</span><span><i class="key here"></i> you are here</span><span><i class="key open"></i> open</span><span><i class="key locked"></i> locked</span><span>Click a stop to see who is there.</span></div>
+      <h2 style="margin-top:18px">Where everyone is</h2>
+      <div class="roster">${data.students.map(s => `<span class="chip ${s.me ? 'me' : ''}"><b>${esc(s.me ? 'You' : s.name)}</b> · ${stopName(s.at)}</span>`).join('') || '<span class="muted">No students have joined yet.</span>'}</div>`;
+    if (teacher) document.getElementById('mapc').onchange = e => Nav.go('#/map/' + e.target.value);
+    const open = el => {
+      const i = +el.dataset.stop, s = stops[i], here = data.students.filter(x => x.at === i);
+      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🏁 Rescue HQ' : `${s.lesson.order}. ${esc(s.lesson.title)}`}</h2>
+        ${s.finish ? '<p>Everyone here has finished the whole course.</p>' : (p => `<p>${p.icon} ${Quest.PARTS.includes(p) ? 'Earns' : 'Mission stage:'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.order))}
+        <h3>Here now (${here.length})</h3><div class="roster">${here.map(x => `<span class="chip ${x.me ? 'me' : ''}">${esc(x.me ? 'You' : x.name)}</span>`).join('') || '<span class="muted small">Nobody is on this stop right now.</span>'}</div>
+        <div class="row" style="margin-top:16px"><div class="spacer"></div>${!s.finish && s.lesson.unlocked ? `<a class="btn primary" href="#/lesson/${s.lesson.id}">Open lesson</a>` : ''}<button class="btn" id="cx">Close</button></div>`);
+      m.querySelector('#cx').onclick = () => m.remove();
+      m.querySelector('a')?.addEventListener('click', () => m.remove());
+    };
+    $app.querySelectorAll('[data-stop]').forEach(el => {
+      el.addEventListener('click', () => open(el));
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(el); } });
+    });
+  }
+
+  Nav.listen();
+  Nav.start();
 })();

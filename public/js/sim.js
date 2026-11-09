@@ -220,10 +220,13 @@
     return out;
   }
   // Draws the robot centered on the origin, facing up. k = canvas pixels per inch.
+  // state.parts (optional Set): only draw these of 'wheels', 'brain', 'led', 'claw'. Used for a robot still being built.
   function drawRobot(ctx, k, look, state = {}) {
+    const has = part => !state.parts || state.parts.has(part);
     const poly = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x * k, y * k) : ctx.moveTo(x * k, y * k)); ctx.closePath(); };
     ctx.fillStyle = '#222';
-    if (look.wheels === 'treads') {
+    if (!has('wheels')) { /* not installed yet */ }
+    else if (look.wheels === 'treads') {
       [-5.4, 3.9].forEach(x => { ctx.fillStyle = '#222'; ctx.fillRect(x * k, -5 * k, 1.5 * k, 10 * k); ctx.fillStyle = '#666'; for (let y = -4.4; y < 5; y += 1.4) ctx.fillRect(x * k, y * k, 1.5 * k, .4 * k); });
     } else if (look.wheels === 'big') {
       [[-5.8, -4.4], [3.9, -4.4], [-5.8, .9], [3.9, .9]].forEach(([x, y]) => ctx.fillRect(x * k, y * k, 1.9 * k, 3.6 * k));
@@ -236,14 +239,14 @@
     else { ctx.beginPath(); ctx.roundRect(-3.9 * k, -5 * k, 7.8 * k, 10 * k, (look.shape === 'box' ? .2 : 1.2) * k); }
     ctx.fill(); ctx.stroke();
     if (look.deco === 'stripe') { ctx.fillStyle = look.decoColor; ctx.fillRect(-.9 * k, -4.9 * k, 1.8 * k, 9.8 * k); }
-    ctx.fillStyle = look.brain; ctx.beginPath(); ctx.roundRect(-2.6 * k, -1.2 * k, 5.2 * k, 4 * k, .6 * k); ctx.fill(); // brain
+    if (has('brain')) { ctx.fillStyle = look.brain; ctx.beginPath(); ctx.roundRect(-2.6 * k, -1.2 * k, 5.2 * k, 4 * k, .6 * k); ctx.fill(); }
     if (look.deco === 'flames') { ctx.fillStyle = look.decoColor; [-1, 1].forEach(d => { poly([[d * 1.2, 4.8], [d * 3.6, 4.8], [d * 3.2, .6], [d * 2.7, 2.6], [d * 2.2, 1.4], [d * 1.8, 3.2]]); ctx.fill(); }); }
     if (look.deco === 'star') { ctx.fillStyle = look.decoColor; ctx.beginPath(); for (let i = 0; i < 10; i++) { const r = (i % 2 ? .7 : 1.6) * k, a = -Math.PI / 2 + i * Math.PI / 5; ctx[i ? 'lineTo' : 'moveTo'](Math.cos(a) * r, .8 * k + Math.sin(a) * r); } ctx.closePath(); ctx.fill(); }
     if (look.deco === 'eyes') { [-1, 1].forEach(d => { ctx.fillStyle = '#fff'; ctx.strokeStyle = '#222'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(d * 2.3 * k, -3 * k, 1 * k, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = look.decoColor; ctx.beginPath(); ctx.arc(d * 2.3 * k, -3.3 * k, .5 * k, 0, 7); ctx.fill(); }); }
-    ctx.fillStyle = state.led ? (COLORS[state.led] || COLORS.white).css : '#9aa3ad'; ctx.beginPath(); ctx.arc(0, 3.9 * k, .8 * k, 0, 7); ctx.fill();
+    if (has('led')) { ctx.fillStyle = state.led ? (COLORS[state.led] || COLORS.white).css : '#9aa3ad'; ctx.beginPath(); ctx.arc(0, 3.9 * k, .8 * k, 0, 7); ctx.fill(); }
     ctx.fillStyle = '#e5484d'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; poly([[0, -4.6], [-1.3, -2.6], [1.3, -2.6]]); ctx.stroke(); ctx.fill(); // front arrow
     const cl = state.claw > 0.5 ? 0.6 : 1.8; ctx.fillStyle = '#7c8691';
-    ctx.fillRect((-cl - .7) * k, -7.2 * k, .7 * k, 2.4 * k); ctx.fillRect(cl * k, -7.2 * k, .7 * k, 2.4 * k);
+    if (has('claw')) { ctx.fillRect((-cl - .7) * k, -7.2 * k, .7 * k, 2.4 * k); ctx.fillRect(cl * k, -7.2 * k, .7 * k, 2.4 * k); }
     if (state.arm > 0) { ctx.fillStyle = 'rgba(124,134,145,.6)'; ctx.fillRect(-.6 * k, -5 * k, 1.2 * k, -state.arm * 2 * k); }
   }
 
