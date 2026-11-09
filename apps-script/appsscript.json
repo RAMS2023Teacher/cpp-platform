@@ -1,6 +1,7 @@
 {
   "timeZone": "America/New_York",
   "runtimeVersion": "V8",
+  "dependencies": { "enabledAdvancedServices": [{ "userSymbol": "Classroom", "version": "v1", "serviceId": "classroom" }] },
   "exceptionLogging": "STACKDRIVER",
   "webapp": {
     "executeAs": "USER_DEPLOYING",

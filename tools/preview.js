@@ -47,11 +47,51 @@ function book(id) {
     insertSheet: n => sheet(b.tabs[n] = [])
   };
 }
+const previewFolder = {
+  getId: () => 'folder1',
+  createFile(blob) { const id = 'file' + crypto.randomBytes(4).toString('hex'); store.files = store.files || {}; store.files[id] = Buffer.from(blob.bytes).toString('base64'); return { getId: () => id }; }
+};
+// Mimics the rules that matter: students' submissions exist only once work is created, and only returned grades count.
+function classroomStandIn() {
+  const c = () => { store.classroom = store.classroom || { work: {} }; return store.classroom; };
+  const students = () => Object.values(store.books).flatMap(b => (b.tabs.Users || []).slice(1)).map(r => JSON.parse(r[2])).filter(u => u.role === 'student' && !u.email.startsWith('notinclassroom')).map(u => ({ userId: 'g' + u.id, profile: { emailAddress: u.email } }));
+  return {
+    Courses: {
+      list: () => ({ courses: [{ id: 'course1', name: 'Robotics P3', section: 'Period 3' }] }),
+      get: id => ({ id, name: 'Robotics P3' }),
+      Students: { list: () => ({ students: students() }) },
+      CourseWork: {
+        create(res) {
+          if (!res.dueDate || res.maxPoints !== 100) throw new Error('bad coursework');
+          const id = 'cw' + Object.keys(c().work).length;
+          c().work[id] = { res, subs: Object.fromEntries(students().map(s => ['sub' + s.userId, { id: 'sub' + s.userId, userId: s.userId }])) };
+          return { id };
+        },
+        StudentSubmissions: {
+          list: (_, cw) => ({ studentSubmissions: Object.values(c().work[cw].subs) }),
+          patch(res, _, cw, id, opts) { if (opts.updateMask !== 'draftGrade,assignedGrade') throw new Error('bad mask'); Object.assign(c().work[cw].subs[id], res); },
+          return(_, __, cw, id) { c().work[cw].subs[id].state = 'RETURNED'; }
+        }
+      }
+    }
+  };
+}
 let activeUser = OWNER;
 const sandbox = vm.createContext({
   console,
   Session: { getActiveUser: () => ({ getEmail: () => activeUser }), getEffectiveUser: () => ({ getEmail: () => OWNER }) },
-  Utilities: { getUuid: () => crypto.randomUUID() },
+  Utilities: {
+    getUuid: () => crypto.randomUUID(),
+    base64Decode: s => [...Buffer.from(s, 'base64')],
+    base64Encode: b => Buffer.from(b).toString('base64'),
+    newBlob: (bytes, type, name) => ({ bytes, type, name })
+  },
+  DriveApp: {
+    createFolder: () => previewFolder,
+    getFolderById: () => previewFolder,
+    getFileById: id => ({ setTrashed() { delete store.files[id]; }, getBlob: () => ({ getBytes: () => [...Buffer.from(store.files[id], 'base64')] }) })
+  },
+  Classroom: classroomStandIn(),
   Logger: { log: console.log },
   LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }) },
   PropertiesService: { getScriptProperties: () => ({ getProperty: k => store.props[k] ?? null, setProperty: (k, v) => { store.props[k] = v; } }) },

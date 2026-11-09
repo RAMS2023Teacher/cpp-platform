@@ -139,11 +139,11 @@
       const lines = names.map((p, j) => `<image href="${tokenImage(p.look, p.built)}" x="${s.x - 62}" y="${s.y + 25 + j * 26}" width="26" height="26"/>
         <text x="${s.x - 34}" y="${s.y + 43 + j * 26}" class="map-name${p.me ? ' me' : ''}">${esc(p.me ? 'You' : p.name.length > 15 ? p.name.slice(0, 14) + '…' : p.name)}</text>`).join('');
       const more = people.length > 3 ? `<text x="${s.x - 34}" y="${s.y + 95}" class="map-name">+${people.length - 2} more</text>` : '';
-      const label = s.finish ? 'Rescue HQ, the finish line' : `Lesson ${l.num}: ${l.title}`;
+      const label = s.finish ? 'Rescue HQ, the finish line' : (l.event ? `Class event: ${l.title}` : `Lesson ${l.num}: ${l.title}`);
       return `<g class="map-stop ${state}" data-stop="${i}" role="button" tabindex="0" aria-label="${esc(label)}, ${people.length} here">
         <title>${esc(label)}</title>
         <circle cx="${s.x}" cy="${s.y}" r="21"/>
-        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🏁' : l.complete ? '✓' : l.num}</text>
+        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🏁' : l.complete ? '✓' : l.event ? l.icon : l.num}</text>
         ${you ? `<image href="${tokenImage(you.look, you.built)}" x="${s.x - 42}" y="${s.y - 52}" width="84" height="84" class="map-you"/>` : ''}
         ${lines}${more}</g>`;
     }).join('');

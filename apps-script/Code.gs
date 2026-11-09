@@ -21,7 +21,10 @@ var TABS = {
   Classes: ['id', 'name', 'json'],
   Overrides: ['lessonId', 'note', 'json'],
   Progress: ['id', 'userId', 'lessonId', 'summary', 'work (split across cells)'],
-  Teachers: ['Extra teacher emails, one per row']
+  Teachers: ['Extra teacher emails, one per row'],
+  Teams: ['id', 'code', 'json'],
+  Photos: ['id', 'checkpoint', 'json'],
+  Events: ['id', 'event', 'json']
 };
 
 var cache_ = {};      // per-request copy of sheet data
@@ -81,6 +84,16 @@ function routes_() {
     R('GET', P('map'), 'student', false, function (c) { return map_(c.user, classById_(c.user.classId)); }),
     R('GET', P('map/:id'), 'teacher', false, function (c) { return map_(c.user, ownClass_(c.user, c.params[0])); }),
 
+    R('GET', P('team'), 'student', false, getTeam_),
+    R('POST', P('team'), 'student', true, createTeam_),
+    R('POST', P('team/join'), 'student', true, joinTeam_),
+    R('POST', P('team/leave'), 'student', true, leaveTeam_),
+    R('POST', P('team/rename'), 'student', true, renameTeam_),
+    R('POST', P('photos'), 'student', false, uploadPhoto_),
+    R('GET', P('photos/:id'), 'any', false, getPhoto_),
+    R('DELETE', P('photos/:id'), 'teacher', true, deletePhoto_),
+    R('GET', P('events/:id'), 'student', false, function (c) { return eventView_(c.user, classById_(c.user.classId), c.params[0]); }),
+
     R('GET', P('lessons'), 'any', false, listLessons_),
     R('GET', P('lessons/:id'), 'any', false, getLesson_),
     R('POST', P('lessons/:id/draft'), 'student', true, saveDraft_),
@@ -99,6 +112,19 @@ function routes_() {
     R('POST', P('teacher/students/:id/move'), 'teacher', true, moveStudent_),
     R('DELETE', P('teacher/students/:id'), 'teacher', true, removeStudent_),
     R('GET', P('teacher/lessons-full'), 'teacher', false, function () { return { lessons: LESSONS.map(function (l) { return lessonForClient_(l, true, true); }) }; }),
+    R('GET', P('teacher/classes/:id/teams'), 'teacher', false, classTeams_),
+    R('POST', P('teacher/classes/:id/teams/remove'), 'teacher', true, teacherRemoveFromTeam_),
+    R('GET', P('teacher/classes/:id/photos'), 'teacher', false, classPhotos_),
+    R('GET', P('teacher/classes/:id/events/:id'), 'teacher', false, function (c) { return eventView_(c.user, ownClass_(c.user, c.params[0]), c.params[1]); }),
+    R('POST', P('teacher/classes/:id/events/:id/status'), 'teacher', true, setEventStatus_),
+    R('POST', P('teacher/classes/:id/events/:id/waive'), 'teacher', true, waiveCheckIn_),
+    R('POST', P('teacher/classes/:id/events/:id/bracket'), 'teacher', true, buildBracket_),
+    R('POST', P('teacher/classes/:id/events/:id/match'), 'teacher', true, setMatchWinner_),
+    R('POST', P('teacher/classes/:id/events/:id/time'), 'teacher', true, addRaceTime_),
+    R('POST', P('teacher/classes/:id/events/:id/time/remove'), 'teacher', true, removeRaceTime_),
+    R('GET', P('teacher/classroom/courses'), 'teacher', false, classroomCourses_),
+    R('POST', P('teacher/classes/:id/classroom/link'), 'teacher', true, linkClassroom_),
+    R('POST', P('teacher/classes/:id/classroom/sync'), 'teacher', false, syncClassroom_),
     R('GET', P('teacher/standards'), 'teacher', false, function () {
       return { standards: STANDARDS, plans: PLANS, lessons: LESSONS.map(function (l) { return { id: l.id, unit: l.unit, order: l.order, title: l.title, anchor: l.standards.anchor, supporting: l.standards.supporting }; }) };
     }),
@@ -126,7 +152,13 @@ function lock_() {
   cache_ = {}; // anything read before the lock may be out of date
 }
 function publicUser_(u) {
-  return u && { id: u.id, role: u.role, name: u.name, username: u.email.split('@')[0], classId: u.classId || null, robot: u.robot || null, setup: u.setup || null };
+  if (!u) return u;
+  var team = teamOf_(u);
+  return {
+    id: u.id, role: u.role, name: u.name, username: u.email.split('@')[0], classId: u.classId || null,
+    robot: (team ? team.robot : u.robot) || null, setup: (team ? team.setup : u.setup) || null,
+    team: team ? { id: team.id, name: team.name } : null
+  };
 }
 /** What classmates see: first name and last initial, nothing else. */
 function peerName_(name) {
@@ -311,15 +343,15 @@ function join_(c) {
   return { user: publicUser_(u), 'class': classInfo_(klass) };
 }
 function saveRobot_(c) {
-  c.user.robot = cleanLook_(c.body.robot);
-  saveUser_(c.user);
-  return { robot: c.user.robot };
+  var robot = cleanLook_(c.body.robot), team = teamOf_(c.user);
+  if (team) { team.robot = robot; saveTeam_(team); } else { c.user.robot = robot; saveUser_(c.user); }
+  return { robot: robot };
 }
 
 function saveSetup_(c) {
-  c.user.setup = cleanSetup_(c.body.setup);
-  saveUser_(c.user);
-  return { setup: c.user.setup };
+  var setup = cleanSetup_(c.body.setup), team = teamOf_(c.user);
+  if (team) { team.setup = setup; saveTeam_(team); } else { c.user.setup = setup; saveUser_(c.user); }
+  return { setup: setup };
 }
 
 // ---------------------------------------------------------------- term plans
@@ -334,6 +366,18 @@ function pathOfClass_(k) {
   return { main: LESSONS.filter(inPlan), extra: LESSONS.filter(function (l) { return !inPlan(l); }) };
 }
 function pathOf_(user) { return user.role === 'teacher' ? { main: LESSONS, extra: [] } : pathOfClass_(classById_(user.classId)); }
+function eventAfter_(lessonId) {
+  var id = Object.keys(EVENTS).filter(function (e) { return EVENTS[e].after === lessonId; })[0];
+  return id ? Object.assign({ id: id }, EVENTS[id]) : null;
+}
+function eventState_(k, id) {
+  var key = k.id + '_' + id;
+  return rows_('Events').filter(function (e) { return e.id === key; })[0] || { id: key, classId: k.id, eventId: id, status: 'upcoming', waived: [], times: [], bracket: null };
+}
+function blockingEvent_(k, lessonId) {
+  var ev = eventAfter_(lessonId);
+  return ev && k.id && eventState_(k, ev.id).status !== 'done' ? ev : null;
+}
 function placeIn_(path, l) {
   var i = path.main.indexOf(l);
   return i >= 0 ? { track: 'main', num: i + 1 } : { track: 'extra', num: null };
@@ -343,14 +387,19 @@ function placeIn_(path, l) {
 function isComplete_(p) {
   if (!p || !p.quiz) return false;
   var l = lessonById_(p.lessonId);
-  return !!(p.challenge || !(l && l.challenge));
+  if (!(p.challenge || !(l && l.challenge))) return false;
+  return !PHOTO_LESSONS[p.lessonId] || !!p.photoExcused || hasPhoto_(userById_(p.userId), p.lessonId);
 }
 function unlockedFor_(user) {
   if (user.role === 'teacher') return LESSONS.map(function (l) { return l.id; });
   var k = classById_(user.classId) || {};
   var extra = k.unlocked || [], mine = progressOf_(user.id), path = pathOfClass_(k);
   var opened = function (l) { return k.unlockAll || extra.indexOf(l.id) >= 0 || !!mine[l.id]; };
-  var main = path.main.filter(function (l, i) { return i === 0 || opened(l) || isComplete_(mine[path.main[i - 1].id]); });
+  var main = path.main.filter(function (l, i) {
+    if (i === 0 || opened(l)) return true;
+    var before = path.main[i - 1];
+    return isComplete_(mine[before.id]) && !blockingEvent_(k, before.id);
+  });
   var extras = path.extra.filter(function (l) { return opened(l) || (PREREQS[l.id] || []).every(function (id) { return isComplete_(mine[id]); }); });
   return main.concat(extras).map(function (l) { return l.id; });
 }
@@ -367,7 +416,13 @@ function lessonForClient_(l, revealAnswers, isTeacher) {
 }
 function listLessons_(c) {
   var unlocked = unlockedFor_(c.user), mine = progressOf_(c.user.id), path = pathOf_(c.user);
+  var k = c.user.classId ? classById_(c.user.classId) : null;
+  var events = k ? Object.keys(EVENTS).map(function (id) {
+    var state = eventState_(k, id), after = placeIn_(path, lessonById_(EVENTS[id].after));
+    return { id: id, title: EVENTS[id].title, icon: EVENTS[id].icon, status: state.status, afterNum: after.num, ready: isComplete_(mine[EVENTS[id].after]) };
+  }).filter(function (e) { return e.afterNum; }) : [];
   return {
+    events: events,
     lessons: path.main.concat(path.extra).map(function (l) {
       var p = mine[l.id], place = placeIn_(path, l), open = unlocked.indexOf(l.id) >= 0;
       var waiting = place.track === 'extra' && !open ? (PREREQS[l.id] || []).filter(function (id) { return !isComplete_(mine[id]); }) : [];
@@ -375,6 +430,7 @@ function listLessons_(c) {
         id: l.id, unit: l.unit, order: l.order, title: l.title, minutes: l.minutes, tags: l.tags, summary: l.summary,
         hasChallenge: !!l.challenge, unlocked: open, track: place.track, num: place.num,
         requires: waiting.map(function (id) { return lessonById_(id).title; }),
+        photo: !!PHOTO_LESSONS[l.id],
         status: isComplete_(p) ? 'complete' : p ? 'started' : 'new',
         quizScore: p && p.quiz ? p.quiz.score + '/' + p.quiz.total : null
       };
@@ -385,7 +441,7 @@ function getLesson_(c) {
   var l = lessonById_(c.params[0]);
   if (!l) throw fail_(404, 'No such lesson.');
   var user = c.user;
-  if (unlockedFor_(user).indexOf(l.id) < 0) throw fail_(403, 'Finish the earlier lesson to unlock this one!');
+  if (unlockedFor_(user).indexOf(l.id) < 0) throw fail_(403, 'Finish the earlier lesson or class event to unlock this one!');
   var p = progressOf_(user.id)[l.id];
   if (user.role === 'student' && !p) {
     lock_();
@@ -398,6 +454,7 @@ function getLesson_(c) {
     lesson: lessonForClient_(l, teacher || !!(p && p.quiz), teacher),
     progress: p ? merged_(p, workOf_(p)) : null,
     place: placeIn_(path, l),
+    photo: PHOTO_LESSONS[l.id] && user.role === 'student' ? { prompt: PHOTO_LESSONS[l.id], photoId: (photoFor_(user, l.id) || {}).id || null, excused: !!(p && p.photoExcused) } : null,
     prev: idx > 0 ? path.main[idx - 1].id : null,
     next: idx >= 0 && idx < path.main.length - 1 ? path.main[idx + 1].id : null
   };
@@ -444,21 +501,30 @@ function map_(user, klass) {
   if (!klass) throw fail_(404, 'Class not found.');
   var teacher = user.role === 'teacher', showPeers = klass.showPeers !== false;
   var unlocked = unlockedFor_(user), mine = progressOf_(user.id), path = pathOfClass_(klass);
+  var stops = [];
+  path.main.forEach(function (l, i) {
+    stops.push({ id: l.id, unit: l.unit, num: i + 1, title: l.title, unlocked: teacher || unlocked.indexOf(l.id) >= 0, complete: isComplete_(mine[l.id]) });
+    var ev = eventAfter_(l.id);
+    if (ev) stops.push({ id: ev.id, event: true, icon: ev.icon, unit: l.unit, title: ev.title, unlocked: true, complete: eventState_(klass, ev.id).status === 'done' });
+  });
   var entries = users_().filter(function (s) {
     return s.classId === klass.id && (teacher || showPeers || s.id === user.id);
   }).map(function (s) {
-    var progress = progressOf_(s.id), at = -1;
-    path.main.forEach(function (l, i) { if (at < 0 && !isComplete_(progress[l.id])) at = i; });
+    var progress = progressOf_(s.id), at = -1, team = teamOf_(s);
+    stops.forEach(function (stop, i) {
+      if (at >= 0) return;
+      if (stop.event ? !stop.complete : !isComplete_(progress[stop.id])) at = i;
+    });
     var built = LESSONS.filter(function (l) { return isComplete_(progress[l.id]); }).map(function (l) { return l.id; });
-    var entry = { name: teacher ? s.name : peerName_(s.name), me: s.id === user.id, built: built, at: at < 0 ? path.main.length : at, look: Object.assign({}, cleanLook_(s.robot), { name: '' }) };
+    var entry = { name: teacher ? s.name : peerName_(s.name), team: team ? team.name : null, me: s.id === user.id, built: built, at: at < 0 ? stops.length : at, look: Object.assign({}, cleanLook_(team ? team.robot : s.robot), { name: '' }) };
     if (teacher) entry.extras = path.extra.filter(function (l) { return isComplete_(progress[l.id]); }).length; // students don't see how many extras others did
     return entry;
   }).sort(function (a, b) { return a.name.localeCompare(b.name); });
-  var stop = function (l, i) { return { id: l.id, unit: l.unit, num: i + 1, title: l.title, unlocked: teacher || unlocked.indexOf(l.id) >= 0, complete: isComplete_(mine[l.id]) }; };
+  var extra = function (l) { return { id: l.id, unit: l.unit, title: l.title, unlocked: unlocked.indexOf(l.id) >= 0, complete: isComplete_(mine[l.id]) }; };
   return {
     'class': { id: klass.id, name: klass.name, showPeers: showPeers },
-    lessons: path.main.map(stop),
-    extras: teacher ? [] : path.extra.map(stop),
+    lessons: stops,
+    extras: teacher ? [] : path.extra.map(extra),
     students: entries
   };
 }
@@ -520,6 +586,7 @@ function classProgress_(c) {
   var k = ownClass_(c.user, c.params[0]), path = pathOfClass_(k);
   return {
     'class': Object.assign({}, k, { plan: planId_(k), kit: kitOf_(k) }),
+    events: Object.keys(EVENTS).map(function (id) { return { id: id, title: EVENTS[id].title, icon: EVENTS[id].icon, status: eventState_(k, id).status }; }),
     lessons: path.main.concat(path.extra).map(function (l) { var pl = placeIn_(path, l); return { id: l.id, unit: l.unit, order: l.order, title: l.title, hasChallenge: !!l.challenge, track: pl.track, num: pl.num }; }),
     students: studentsIn_(k).map(function (s) {
       var progress = {}, mine = progressOf_(s.id);
@@ -559,6 +626,7 @@ function reviewWork_(c) {
     p.quiz = p.quiz || { score: 0, total: 0, answers: [], at: now_(), excused: true };
     p.challenge = p.challenge || { at: now_(), passed: true, excused: true };
     p.completed = p.completed || now_();
+    p.photoExcused = true;
   }
   p.reviewedAt = now_();
   saveProgress_(p, work);
@@ -574,6 +642,7 @@ function renameStudent_(c) {
 function moveStudent_(c) {
   var s = ownStudent_(c.user, c.params[0]);
   var k = ownClass_(c.user, c.body.classId);
+  removeFromTeam_(s);
   s.classId = k.id;
   saveUser_(s);
   return { ok: true };
@@ -582,6 +651,7 @@ function removeStudent_(c) {
   var s = ownStudent_(c.user, c.params[0]);
   var rows = summaries_().filter(function (p) { return p.userId === s.id; }).map(function (p) { return p._row; });
   rows.sort(function (a, b) { return b - a; }).forEach(function (r) { tab_('Progress').deleteRow(r); }); // bottom up, so row numbers stay valid
+  removeFromTeam_(s);
   drop_('Users', s);
   delete cache_.summaries; delete cache_.byUser;
   return { ok: true };
@@ -625,4 +695,355 @@ function exportClass_(c) {
   sh.getRange(1, 1, rows.length, header.length).setNumberFormat('@').setValues(rows); // plain text, so 8/10 doesn't become a date
   sh.setFrozenRows(1);
   return { url: ss.getUrl() };
+}
+
+// ---------------------------------------------------------------- teams
+var TEAM_WORDS = [['Turbo', 'Mighty', 'Rapid', 'Clever', 'Atomic', 'Golden', 'Silent', 'Rocket', 'Steel', 'Cosmic', 'Electric', 'Brave'], ['Gears', 'Bolts', 'Sprockets', 'Circuits', 'Pistons', 'Sensors', 'Comets', 'Falcons', 'Rovers', 'Wheels', 'Magnets', 'Motors']];
+var TEAM_SIZE = 4;
+function teams_() { return rows_('Teams'); }
+function teamOf_(u) { return u && u.teamId ? teams_().filter(function (t) { return t.id === u.teamId; })[0] : null; }
+function userById_(id) {
+  if (!cache_.userIds) { cache_.userIds = {}; users_().forEach(function (u) { cache_.userIds[u.id] = u; }); }
+  return cache_.userIds[id];
+}
+function saveTeam_(t) { put_('Teams', t, t.code); }
+function pick_(list) { return list[Math.floor(Math.random() * list.length)]; }
+// Names come from a word list, so nothing a student types appears on classmates' screens.
+function teamName_() { return pick_(TEAM_WORDS[0]) + ' ' + pick_(TEAM_WORDS[1]); }
+function teamCode_() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', code;
+  do {
+    code = '';
+    for (var i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+  } while (teams_().some(function (t) { return t.code === code; }) || classes_().some(function (k) { return k.code === code; }));
+  return code;
+}
+function teamView_(t, teacher) {
+  return {
+    id: t.id, name: t.name, code: t.code,
+    members: t.members.map(function (id) { var u = userById_(id); return { id: id, name: u ? (teacher ? u.name : peerName_(u.name)) : '?' }; })
+  };
+}
+function checkpointLabel_(checkpoint) {
+  if (checkpoint.indexOf('event_') === 0) return EVENTS[checkpoint.slice(6)].title;
+  return lessonById_(checkpoint).title;
+}
+function getTeam_(c) {
+  var team = teamOf_(c.user);
+  var photos = rows_('Photos').filter(function (p) { return team ? p.teamId === team.id : p.by === c.user.id; }).map(function (p) { return { id: p.id, label: checkpointLabel_(p.checkpoint), at: p.at }; });
+  return { team: team ? teamView_(team) : null, photos: photos, maxSize: TEAM_SIZE };
+}
+function createTeam_(c) {
+  if (c.user.teamId) throw fail_(400, 'You are already on a team.');
+  var t = { id: uid_('t_'), classId: c.user.classId, code: teamCode_(), name: teamName_(), members: [c.user.id], robot: c.user.robot || null, setup: c.user.setup || null, created: now_() };
+  saveTeam_(t);
+  c.user.teamId = t.id;
+  saveUser_(c.user);
+  return { team: teamView_(t) };
+}
+function joinTeam_(c) {
+  if (c.user.teamId) throw fail_(400, 'Leave your current team first.');
+  var code = clean_(c.body.code, 10).toUpperCase();
+  var t = teams_().filter(function (x) { return x.code === code && x.classId === c.user.classId; })[0];
+  if (!t) throw fail_(400, 'Team code not found. Check it with your partner.');
+  if (t.members.length >= TEAM_SIZE) throw fail_(400, 'That team is full.');
+  t.members.push(c.user.id);
+  saveTeam_(t);
+  c.user.teamId = t.id;
+  saveUser_(c.user);
+  return { team: teamView_(t) };
+}
+function removeFromTeam_(u) {
+  var t = teamOf_(u);
+  if (!t) return;
+  t.members = t.members.filter(function (id) { return id !== u.id; });
+  if (t.members.length) saveTeam_(t); else drop_('Teams', t);
+  delete u.teamId;
+  saveUser_(u);
+}
+function leaveTeam_(c) { removeFromTeam_(c.user); return { ok: true }; }
+function renameTeam_(c) {
+  var t = teamOf_(c.user);
+  if (!t) throw fail_(400, 'Join a team first.');
+  t.name = teamName_();
+  saveTeam_(t);
+  return { team: teamView_(t) };
+}
+function classTeams_(c) {
+  var k = ownClass_(c.user, c.params[0]);
+  return {
+    teams: teams_().filter(function (t) { return t.classId === k.id; }).map(function (t) { return teamView_(t, true); }),
+    solo: studentsIn_(k).filter(function (s) { return !s.teamId; }).map(function (s) { return s.name; })
+  };
+}
+function teacherRemoveFromTeam_(c) {
+  var s = ownStudent_(c.user, c.body.userId);
+  removeFromTeam_(s);
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------- robot photos (kept private in the teacher's Drive)
+function photoFolder_() {
+  var props = PropertiesService.getScriptProperties(), id = props.getProperty('PHOTO_FOLDER');
+  if (id) return DriveApp.getFolderById(id);
+  var folder = DriveApp.createFolder('RoboCode Academy Robot Photos');
+  props.setProperty('PHOTO_FOLDER', folder.getId());
+  return folder;
+}
+function photoIndex_() {
+  if (cache_.photoIndex) return cache_.photoIndex;
+  var index = {};
+  rows_('Photos').forEach(function (p) {
+    if (p.teamId) index['t|' + p.teamId + '|' + p.checkpoint] = p;
+    p.members.forEach(function (m) { index['u|' + m + '|' + p.checkpoint] = p; });
+  });
+  return (cache_.photoIndex = index);
+}
+function photoFor_(u, checkpoint) {
+  var index = photoIndex_();
+  return (u && u.teamId && index['t|' + u.teamId + '|' + checkpoint]) || (u && index['u|' + u.id + '|' + checkpoint]) || null;
+}
+function hasPhoto_(u, checkpoint) { return !!photoFor_(u, checkpoint); }
+function validCheckpoint_(cp) {
+  if (PHOTO_LESSONS[cp]) return true;
+  return cp.indexOf('event_') === 0 && !!EVENTS[cp.slice(6)];
+}
+function uploadPhoto_(c) {
+  var checkpoint = clean_(c.body.checkpoint, 30);
+  if (!validCheckpoint_(checkpoint)) throw fail_(400, 'This step does not need a photo.');
+  var data = String(c.body.image || '').replace(/^data:image\/jpeg;base64,/, '');
+  if (!data || data.length > 4000000) throw fail_(413, 'That photo is too large. Please try another.');
+  var bytes = Utilities.base64Decode(data);
+  if ((bytes[0] & 255) !== 255 || (bytes[1] & 255) !== 216) throw fail_(400, 'Please upload a photo.');
+  // Saved to Drive before taking the lock, so one upload doesn't hold up the class.
+  var file = photoFolder_().createFile(Utilities.newBlob(bytes, 'image/jpeg', checkpoint + '_' + c.user.id + '.jpg'));
+  lock_();
+  var user = currentUser_(), team = teamOf_(user), old = photoFor_(user, checkpoint);
+  if (old) { trashPhotoFile_(old); drop_('Photos', old); delete cache_.photoIndex; }
+  var photo = { id: uid_('f_'), classId: user.classId, checkpoint: checkpoint, teamId: team ? team.id : null, by: user.id, members: team ? team.members.slice() : [user.id], fileId: file.getId(), at: now_() };
+  put_('Photos', photo, checkpoint);
+  delete cache_.photoIndex;
+  var p = progressOf_(user.id)[checkpoint], progress = null;
+  if (p) { var work = workOf_(p); markCompleted_(p); saveProgress_(p, work); progress = merged_(p, work); }
+  return { photo: { id: photo.id, at: photo.at }, progress: progress };
+}
+function trashPhotoFile_(p) { try { DriveApp.getFileById(p.fileId).setTrashed(true); } catch (e) { console.error(e); } }
+function photoById_(id) { return rows_('Photos').filter(function (p) { return p.id === id; })[0]; }
+function getPhoto_(c) {
+  var p = photoById_(c.params[0]);
+  if (!p) throw fail_(404, 'Photo not found.');
+  var allowed = c.user.role === 'teacher' ? classes_().some(function (k) { return k.id === p.classId && k.teacherId === c.user.id; }) : p.members.indexOf(c.user.id) >= 0 || (p.teamId && c.user.teamId === p.teamId);
+  if (!allowed) throw fail_(403, 'Not allowed.');
+  return { image: 'data:image/jpeg;base64,' + Utilities.base64Encode(DriveApp.getFileById(p.fileId).getBlob().getBytes()) };
+}
+function deletePhoto_(c) {
+  var p = photoById_(c.params[0]);
+  if (!p) throw fail_(404, 'Photo not found.');
+  ownClass_(c.user, p.classId);
+  trashPhotoFile_(p);
+  drop_('Photos', p);
+  return { ok: true };
+}
+function classPhotos_(c) {
+  var k = ownClass_(c.user, c.params[0]);
+  return {
+    photos: rows_('Photos').filter(function (p) { return p.classId === k.id; }).map(function (p) {
+      var t = p.teamId ? teams_().filter(function (x) { return x.id === p.teamId; })[0] : null, by = userById_(p.by);
+      return { id: p.id, label: checkpointLabel_(p.checkpoint), who: t ? t.name : (by ? by.name : 'Former student'), at: p.at };
+    })
+  };
+}
+
+// ---------------------------------------------------------------- class events
+function eventEntrants_(k, eventId, teacher) {
+  var checkpoint = 'event_' + eventId, waived = eventState_(k, eventId).waived, list = [];
+  teams_().filter(function (t) { return t.classId === k.id; }).forEach(function (t) {
+    var key = 't_' + t.id, view = teamView_(t, teacher);
+    list.push({ key: key, name: t.name, members: view.members.map(function (m) { return m.name; }), checkedIn: !!photoIndex_()['t|' + t.id + '|' + checkpoint] || waived.indexOf(key) >= 0 });
+  });
+  studentsIn_(k).filter(function (s) { return !s.teamId; }).forEach(function (s) {
+    var key = 'u_' + s.id, name = teacher ? s.name : peerName_(s.name);
+    list.push({ key: key, name: name, members: [name], checkedIn: !!photoIndex_()['u|' + s.id + '|' + checkpoint] || waived.indexOf(key) >= 0 });
+  });
+  return list;
+}
+function bestTimes_(state) {
+  var best = {};
+  state.times.forEach(function (t) {
+    var total = t.seconds + t.touches * 5;
+    if (!best[t.key] || total < best[t.key].total) best[t.key] = { key: t.key, total: total, seconds: t.seconds, touches: t.touches };
+  });
+  return Object.keys(best).map(function (k) { return best[k]; }).sort(function (a, b) { return a.total - b.total; });
+}
+function eventView_(user, k, eventId) {
+  if (!k || !EVENTS[eventId]) throw fail_(404, 'Event not found.');
+  var state = eventState_(k, eventId), teacher = user.role === 'teacher', e = EVENTS[eventId];
+  var myKey = teacher ? null : (user.teamId ? 't_' + user.teamId : 'u_' + user.id);
+  var view = {
+    event: { id: eventId, title: e.title, icon: e.icon, kind: e.kind, rules: e.rules, photo: e.photo, after: lessonById_(e.after).title, status: state.status },
+    entrants: eventEntrants_(k, eventId, teacher), bracket: state.bracket, best: bestTimes_(state), myKey: myKey
+  };
+  if (teacher) view.times = state.times;
+  if (!teacher) view.myPhotoId = (photoFor_(user, 'event_' + eventId) || {}).id || null;
+  return view;
+}
+function teacherEvent_(c) {
+  var k = ownClass_(c.user, c.params[0]), id = c.params[1];
+  if (!EVENTS[id]) throw fail_(404, 'Event not found.');
+  var state = eventState_(k, id);
+  state.waived = state.waived || [];
+  state.times = state.times || [];
+  return { k: k, id: id, state: state };
+}
+function saveEvent_(e) {
+  put_('Events', e.state, e.id);
+  return eventView_(e.user, e.k, e.id);
+}
+function setEventStatus_(c) {
+  var e = teacherEvent_(c), s = c.body.status;
+  if (['upcoming', 'live', 'done'].indexOf(s) < 0) throw fail_(400, 'Unknown status.');
+  e.state.status = s; e.user = c.user;
+  return saveEvent_(e);
+}
+function waiveCheckIn_(c) {
+  var e = teacherEvent_(c), key = clean_(c.body.key, 40);
+  if (e.state.waived.indexOf(key) < 0) e.state.waived.push(key);
+  e.user = c.user;
+  return saveEvent_(e);
+}
+function propagateWinner_(rounds, r, m) {
+  while (r + 1 < rounds.length) {
+    var value = rounds[r][m].winner || null, nm = Math.floor(m / 2), next = rounds[r + 1][nm], side = m % 2 ? 'b' : 'a';
+    if (next[side] === value) return;
+    next[side] = value; next.winner = null;
+    r += 1; m = nm;
+  }
+}
+function buildBracket_(c) {
+  var e = teacherEvent_(c), players = eventEntrants_(e.k, e.id, true).filter(function (x) { return x.checkedIn; }).map(function (x) { return x.key; });
+  if (players.length < 2) throw fail_(400, 'At least 2 checked-in teams are needed.');
+  for (var i = players.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), hold = players[i]; players[i] = players[j]; players[j] = hold; }
+  var size = 2; while (size < players.length) size *= 2;
+  var byes = size - players.length, slots = [];
+  players.forEach(function (key, n) { slots.push(key); if (n < byes) slots.push(null); });
+  var rounds = [[]];
+  for (var s = 0; s < size; s += 2) rounds[0].push({ a: slots[s], b: slots[s + 1], winner: null });
+  for (var n = size / 2; n > 1; n /= 2) { var round = []; for (var q = 0; q < n / 2; q++) round.push({ a: null, b: null, winner: null }); rounds.push(round); }
+  rounds[0].forEach(function (match, m) { if (!match.b) { match.winner = match.a; propagateWinner_(rounds, 0, m); } });
+  e.state.bracket = { rounds: rounds }; e.user = c.user;
+  return saveEvent_(e);
+}
+function setMatchWinner_(c) {
+  var e = teacherEvent_(c), rounds = e.state.bracket && e.state.bracket.rounds, r = Number(c.body.round), m = Number(c.body.match);
+  var match = rounds && rounds[r] && rounds[r][m];
+  if (!match) throw fail_(404, 'Match not found.');
+  if (c.body.winner !== match.a && c.body.winner !== match.b) throw fail_(400, 'That team is not in this match.');
+  match.winner = c.body.winner;
+  propagateWinner_(rounds, r, m);
+  e.user = c.user;
+  return saveEvent_(e);
+}
+function addRaceTime_(c) {
+  var e = teacherEvent_(c), key = clean_(c.body.key, 40), seconds = Number(c.body.seconds), touches = Math.max(0, Math.floor(Number(c.body.touches) || 0));
+  if (!(seconds > 0)) throw fail_(400, 'Enter the time in seconds.');
+  if (!eventEntrants_(e.k, e.id, true).some(function (x) { return x.key === key; })) throw fail_(400, 'Choose a team.');
+  e.state.times.push({ id: uid_('r_'), key: key, seconds: seconds, touches: touches, at: now_() });
+  e.user = c.user;
+  return saveEvent_(e);
+}
+function removeRaceTime_(c) {
+  var e = teacherEvent_(c);
+  e.state.times = e.state.times.filter(function (t) { return t.id !== c.body.id; });
+  e.user = c.user;
+  return saveEvent_(e);
+}
+
+// ---------------------------------------------------------------- Google Classroom
+function needClassroom_() {
+  if (typeof Classroom === 'undefined') throw fail_(400, 'The Google Classroom API is not turned on for this script. See "Connect Google Classroom" in the setup guide.');
+}
+function classroomCourses_() {
+  needClassroom_();
+  var res = Classroom.Courses.list({ teacherId: 'me', courseStates: ['ACTIVE'], pageSize: 100 });
+  return { courses: (res.courses || []).map(function (x) { return { id: x.id, name: x.name, section: x.section || '' }; }) };
+}
+function linkClassroom_(c) {
+  needClassroom_();
+  var k = ownClass_(c.user, c.params[0]), courseId = clean_(c.body.courseId, 40);
+  var course = Classroom.Courses.get(courseId);
+  if (k.courseId !== courseId) k.sync = {};
+  k.courseId = courseId; k.courseName = course.name;
+  saveClass_(k);
+  return { courseName: course.name };
+}
+/** The teacher's grade if there is one. Otherwise a score from a completed lesson's exit ticket and code challenge. */
+function gradeFor_(p, l) {
+  if (p && p.grade !== undefined && p.grade !== null) return p.grade;
+  if (!isComplete_(p) || p.quiz.excused || !p.quiz.total) return null;
+  var quiz = Math.max(p.quiz.score, p.quizBest || 0) / p.quiz.total * 100;
+  if (!l.challenge) return Math.round(quiz);
+  var ch = p.challenge;
+  var code = ch.excused ? quiz : ch.passed ? 100 : ch.total ? ch.passCount / ch.total * 100 : 0;
+  return Math.round((quiz + code) / 2);
+}
+function pageOptions_(token) { return token ? { pageSize: 100, pageToken: token } : { pageSize: 100 }; }
+function allPages_(fetch, field) {
+  var out = [], token;
+  do {
+    var res = fetch(token);
+    out = out.concat(res[field] || []);
+    token = res.nextPageToken;
+  } while (token);
+  return out;
+}
+function syncClassroom_(c) {
+  needClassroom_();
+  var k = ownClass_(c.user, c.params[0]), courseId = k.courseId;
+  if (!courseId) throw fail_(400, 'Choose a Google Classroom class first.');
+  var due = String(c.body.dueDate || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!due) throw fail_(400, 'Choose a due date inside your PowerSchool grading period.');
+  var started = Date.now(), state = k.sync || {}, report = { assignments: 0, sent: 0, unchanged: 0, notOnRoster: [], errors: [], partial: false };
+  var students = studentsIn_(k), path = pathOfClass_(k);
+  var roster = {};
+  allPages_(function (token) { return Classroom.Courses.Students.list(courseId, pageOptions_(token)); }, 'students').forEach(function (s) {
+    if (s.profile && s.profile.emailAddress) roster[s.profile.emailAddress.toLowerCase()] = s.userId;
+  });
+  students.forEach(function (s) { if (!roster[s.email]) report.notOnRoster.push(s.name); });
+  path.main.some(function (l, i) {
+    if (Date.now() - started > 270000) { report.partial = true; return true; } // Apps Script stops a run at 6 minutes
+    var graded = students.filter(function (s) { return roster[s.email] && gradeFor_(progressOf_(s.id)[l.id], l) !== null; });
+    if (!graded.length) return false;
+    var entry = state[l.id] || { grades: {} };
+    try {
+      if (!entry.courseWorkId) {
+        var work = Classroom.Courses.CourseWork.create({ title: 'RoboCode ' + (i + 1) + ': ' + l.title, workType: 'ASSIGNMENT', state: 'PUBLISHED', maxPoints: 100, dueDate: { year: +due[1], month: +due[2], day: +due[3] }, dueTime: { hours: 23, minutes: 59 } }, courseId);
+        entry.courseWorkId = work.id;
+        report.assignments++;
+      }
+      state[l.id] = entry;
+      var submissions = {};
+      allPages_(function (token) { return Classroom.Courses.CourseWork.StudentSubmissions.list(courseId, entry.courseWorkId, pageOptions_(token)); }, 'studentSubmissions').forEach(function (sub) { submissions[sub.userId] = sub; });
+      graded.forEach(function (s) {
+        var grade = gradeFor_(progressOf_(s.id)[l.id], l);
+        if (entry.grades[s.id] === grade) { report.unchanged++; return; }
+        var sub = submissions[roster[s.email]];
+        if (!sub) { report.errors.push(s.name + ' has no submission for ' + l.title); return; }
+        try {
+          Classroom.Courses.CourseWork.StudentSubmissions.patch({ draftGrade: grade, assignedGrade: grade }, courseId, entry.courseWorkId, sub.id, { updateMask: 'draftGrade,assignedGrade' });
+          Classroom.Courses.CourseWork.StudentSubmissions['return']({}, courseId, entry.courseWorkId, sub.id); // only returned grades reach PowerSchool
+          entry.grades[s.id] = grade;
+          report.sent++;
+        } catch (e) { report.errors.push(s.name + ', ' + l.title + ': ' + e.message); }
+      });
+    } catch (e) {
+      report.errors.push(l.title + ': ' + e.message);
+      if (/not found/i.test(e.message)) delete state[l.id]; // the assignment was deleted in Classroom; the next sync recreates it
+    }
+    return false;
+  });
+  lock_();
+  var fresh = ownClass_(c.user, c.params[0]);
+  fresh.sync = state; fresh.lastSync = now_();
+  saveClass_(fresh);
+  return report;
 }

@@ -435,3 +435,21 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 [data-spacing="1"] main p, [data-spacing="1"] main li, [data-spacing="1"] main td { line-height: 1.9; letter-spacing: .03em; word-spacing: .12em; }
 [data-font="plain"] body, [data-font="plain"] h1, [data-font="plain"] h2, [data-font="plain"] h3, [data-font="plain"] .sec-kind, [data-font="plain"] #wintitle { font-family: Verdana, Arial, sans-serif !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
+/* ---------- Teams, photos and class events ---------- */
+.event-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; background: var(--tip); }
+.robot-photo { display: block; max-width: 320px; width: 100%; margin: 8px 0; box-shadow: var(--sunken); }
+.file-btn { cursor: pointer; }
+.file-btn:focus-within { outline: 3px solid #d10000; outline-offset: 1px; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.photo-card { padding: 8px; background: var(--face); box-shadow: var(--groove); }
+.photo-card img { width: 100%; display: block; min-height: 90px; background: var(--light); }
+.bracket { display: flex; gap: 16px; overflow-x: auto; padding: 4px; }
+.bracket-round { flex: 1 0 190px; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+.match { padding: 6px; background: var(--paper); box-shadow: var(--sunken); }
+.match .side { display: block; width: 100%; padding: 4px 6px; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; }
+.match button.side { cursor: pointer; }
+.match button.side:hover { background: var(--light); }
+.match .side.won { background: var(--ok-soft); font-weight: 700; }
+.match .side.mine { outline: 2px solid var(--title); outline-offset: -2px; }
+.status-pill { padding: 2px 10px; background: var(--tip); box-shadow: var(--groove); font-size: .85rem; }
