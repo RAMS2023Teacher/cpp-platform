@@ -4,7 +4,7 @@ module.exports = [
   {
     id: "u4l1",
     unit: 4,
-    order: 17,
+    order: 20,
     title: "What Is AI?",
     minutes: 35,
     tags: ["ai", "code"],
@@ -206,7 +206,7 @@ int main() {
       {
         q: "What is the main difference between a rule-based program and machine learning?",
         choices: [
-          "Rule-based programs are always faster",
+          "Machine learning always follows a list of rules that a programmer typed in one line at a time before it runs",
           "In machine learning the computer finds patterns from examples instead of a human writing every rule",
           "Machine learning does not use any math",
           "Rule-based programs can only run on robots"
@@ -232,7 +232,7 @@ int main() {
           "To make the robot drive faster",
           "So the robot keeps reacting until 20 seconds have passed",
           "To measure the distance to the wall",
-          "Because wait() does not work"
+          "Because wait() cannot be used in a program that has a sensor, so the timer takes its place"
         ],
         answer: 1,
         explain: "The timer counts up from when it was cleared. The loop keeps running until it reaches 20."
@@ -244,7 +244,7 @@ int main() {
   {
     id: "u4l2",
     unit: 4,
-    order: 18,
+    order: 21,
     title: "Decision Trees",
     minutes: 35,
     tags: ["ai", "code", "algorithms"],
@@ -440,14 +440,14 @@ int main() {
       },
       {
         q: "Which C++ structure is the most natural way to code a decision tree?",
-        choices: ["A for loop", "Nested if / else if / else", "An array", "A wait() call"],
+        choices: ["A for loop", "Nested if / else if / else", "An array", "A single wait() call placed after each one of the questions"],
         answer: 1,
         explain: "Each question is an if, and each branch leads to more ifs or a final answer."
       },
       {
         q: "Why is 'Is it bigger than a backpack?' a better first question than 'Is it the stapler?' in 20 questions?",
         choices: [
-          "It is shorter",
+          "It is shorter than the other question, and short questions always make a decision tree more accurate",
           "It splits the possibilities into two big groups",
           "It is always true",
           "Staplers are not allowed"
@@ -468,7 +468,7 @@ int main() {
   {
     id: "u4l3",
     unit: 4,
-    order: 19,
+    order: 22,
     title: "State Machines",
     minutes: 35,
     tags: ["ai", "code", "algorithms"],
@@ -679,7 +679,7 @@ int main() {
       },
       {
         q: "In a state diagram, what does an arrow represent?",
-        choices: ["A motor", "A transition caused by an event", "A loop counter", "A comment"],
+        choices: ["A motor", "A transition caused by an event", "A loop counter", "A note in the code that explains what the robot is doing while it stays in one state"],
         answer: 1,
         explain: "Arrows show how the robot moves from one state to another and what triggers it."
       },
@@ -697,7 +697,7 @@ int main() {
       {
         q: "In our challenge, what causes the transition from SEARCH to APPROACH?",
         choices: [
-          "20 seconds passing",
+          "The robot turning in place for a full 20 seconds without finding anything in front of it",
           "The Distance Sensor reading less than 28 inches",
           "The bumper being pressed",
           "The TouchLED turning green"
@@ -712,7 +712,7 @@ int main() {
   {
     id: "u4l4",
     unit: 4,
-    order: 20,
+    order: 23,
     title: "Machine Learning: Training Data",
     minutes: 40,
     tags: ["ai", "code", "algorithms"],
@@ -750,7 +750,7 @@ int main() {
         kind: "learn",
         title: "Features, Labels, Training, Testing",
         minutes: 9,
-        html: `<p>In Lesson 2 <em>you</em> wrote the decision rules. In <strong>machine learning</strong> the computer figures out the rules from data.</p>
+        html: `<p>In the Decision Trees lesson <em>you</em> wrote the decision rules. In <strong>machine learning</strong> the computer figures out the rules from data.</p>
 <table class="tbl">
 <tr><th>Word</th><th>Meaning</th><th>Example (sorting blocks)</th></tr>
 <tr><td>Feature</td><td>A measurement</td><td>Brightness = 38</td></tr>
@@ -926,7 +926,7 @@ int main() {
         choices: [
           "To train the model",
           "To check how well the model works on examples it has not seen",
-          "To make the robot drive",
+          "To give the model extra examples to study so that it can raise its accuracy before it is used",
           "To make the threshold bigger"
         ],
         answer: 1,
@@ -949,7 +949,7 @@ int main() {
         choices: [
           "It uses a for loop",
           "The threshold is calculated from data, so different data gives a different rule",
-          "It prints to the screen",
+          "It prints the accuracy on the Brain screen, and printing a result is what makes a program count as learning",
           "It uses arrays"
         ],
         answer: 1,
@@ -962,7 +962,7 @@ int main() {
   {
     id: "u4l5",
     unit: 4,
-    order: 21,
+    order: 24,
     title: "The Robot Learns: Trial & Error",
     minutes: 35,
     tags: ["ai", "code", "algorithms"],
@@ -1152,7 +1152,7 @@ int main() {
           "1000 is the target",
           "So the first real attempt is guaranteed to be better and gets saved",
           "The sensor only reads up to 1000",
-          "It makes the robot faster"
+          "Because a larger starting number makes the robot try more attempts before the loop is allowed to end"
         ],
         answer: 1,
         explain: "Starting with a terrible score means the first try always becomes the record."
@@ -1169,7 +1169,7 @@ int main() {
           "Simulators are more colorful",
           "Real robots can break, run out of battery, and each real try takes time",
           "Real robots cannot use sensors",
-          "It is required by law"
+          "Simulators give the robot better sensors, so what it learns there is more accurate than real-world data"
         ],
         answer: 1,
         explain: "Simulation lets a robot try thousands of times safely and quickly."
@@ -1181,7 +1181,7 @@ int main() {
   {
     id: "u4l6",
     unit: 4,
-    order: 22,
+    order: 25,
     title: "AI Ethics & Bias",
     minutes: 40,
     tags: ["ai", "code"],
@@ -1204,7 +1204,7 @@ int main() {
       "Four corner signs: Strongly Agree, Agree, Disagree, Strongly Disagree",
       "Chart paper and markers",
       "Computers for the coding challenge",
-      "Your data table from Lesson 4 (optional)"
+      "Your data table from the Training Data lesson (optional)"
     ],
     video: "",
     sections: [
@@ -1212,7 +1212,7 @@ int main() {
         kind: "warmup",
         title: "Do Now: The Lamp Problem",
         minutes: 5,
-        html: `<p>Remember our block sorter from Lesson 4? Imagine Team A trained it with 8 red blocks on a normal desk, but only <strong>2 yellow blocks, both under a super-bright desk lamp</strong>.</p>
+        html: `<p>Remember our block sorter from the Training Data lesson? Imagine Team A trained it with 8 red blocks on a normal desk, but only <strong>2 yellow blocks, both under a super-bright desk lamp</strong>.</p>
 <div class="callout think"><p>Predict: Will their robot sort yellow blocks correctly in normal classroom light? Why or why not? Write your prediction down, we will test it in code later.</p></div>`
       },
       {
@@ -1273,7 +1273,7 @@ int main() {
     ],
     challenge: {
       title: "Fair vs. Biased Training",
-      prompt: `<p>The function <code>countCorrect(threshold)</code> (from Lesson 4) tests a threshold on 10 test blocks and returns how many it got right. The fair model is already trained for you.</p>
+      prompt: `<p>The function <code>countCorrect(threshold)</code> (from the Training Data lesson) tests a threshold on 10 test blocks and returns how many it got right. The fair model is already trained for you.</p>
 <p><strong>Your job:</strong> train a second model on this <strong>biased</strong> data, then print both results:</p>
 <table class="tbl">
 <tr><th>Red (8 samples)</th><td>32, 38, 35, 41, 29, 36, 34, 39</td></tr>
@@ -1391,7 +1391,7 @@ int main() {
         choices: [
           "The computer is in a bad mood",
           "Training data that is unbalanced or not representative",
-          "Using a for loop",
+          "Using a for loop to read the data, because loops process each example in a slightly different way",
           "The screen is too small"
         ],
         answer: 1,
@@ -1403,7 +1403,7 @@ int main() {
           "There were more red samples",
           "The only yellow samples were extra bright, so the yellow average was too high",
           "The test data changed",
-          "The robot drove faster"
+          "The robot saw more red samples during testing, so the red average changed after the threshold was trained"
         ],
         answer: 1,
         explain: "The lamp made the yellow average 96 instead of about 78, pulling the midpoint up."
@@ -1413,7 +1413,7 @@ int main() {
         choices: [
           "There is no problem, 95% is great",
           "It may be unfair to that group, even though overall accuracy looks high",
-          "It needs a bigger screen",
+          "Nothing needs to change, because the mistakes will even out on their own as more people use the system",
           "It should use a decision tree"
         ],
         answer: 1,
@@ -1424,7 +1424,7 @@ int main() {
         choices: [
           "Delete the red samples",
           "Collect more yellow samples in the same lighting the robot will really use",
-          "Make the threshold 100",
+          "Keep the training data the same and move the robot's sensor closer to the floor so yellow looks darker",
           "Turn off the Optical sensor"
         ],
         answer: 1,

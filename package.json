@@ -2,8 +2,16 @@
   "name": "robocode-academy",
   "version": "1.0.0",
   "description": "C++, algorithms and AI with VEX IQ - a course website for 8th graders with a built-in code editor and robot simulator",
-  "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" },
-  "dependencies": { "codemirror": "^5.65.20", "express": "^4.21.2" }
+  "main": "tools/preview.js",
+  "scripts": {
+    "build": "node tools/build-gas.js",
+    "start": "node tools/build-gas.js && node tools/preview.js"
+  },
+  "dependencies": {
+    "codemirror": "^5.65.20",
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }

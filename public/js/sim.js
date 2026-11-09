@@ -79,9 +79,119 @@
   }
 
   const TYPES = '(?:long\\s+long|long\\s+double|long\\s+int|unsigned\\s+int|int|double|float|bool|char|string|auto|long|short|size_t|uint8_t|uint32_t|int32_t|colorType|directionType|turnType)';
-  const DEVICE_NAMES = ['Drivetrain', 'Brain', 'BrainInertial', 'DistanceSensor', 'Distance', 'BumperA', 'Bumper', 'Optical', 'TouchLED', 'ClawMotor', 'ArmMotor', 'LeftMotor', 'RightMotor', 'Inertial'];
+  // ---------- Robot Setup: the devices a robot has, like the Devices window in VEXcode.
+  // `canon` is the name lessons are written with; students can call a device anything.
+  const SETUP_JOBS = {
+    gyro: { label: 'Gyro Sensor', canon: 'BrainInertial', name: 'Gyro', port: 4, known: ['BrainInertial', 'Inertial', 'Gyro'] },
+    distance: { label: 'Distance Sensor', canon: 'DistanceSensor', name: 'DistanceSensor', port: 7, known: ['DistanceSensor', 'Distance'] },
+    color: { label: 'Color Sensor', canon: 'Optical', name: 'ColorSensor', port: 8, known: ['Optical', 'ColorSensor', 'Color'] },
+    bumper: { label: 'Bumper Switch', canon: 'BumperA', name: 'BumperA', port: 9, known: ['BumperA', 'Bumper'] },
+    touchled: { label: 'Touch LED', canon: 'TouchLED', name: 'TouchLED', port: 2, known: ['TouchLED'] },
+    claw: { label: 'Claw motor', canon: 'ClawMotor', name: 'ClawMotor', port: 3, known: ['ClawMotor'] },
+    arm: { label: 'Arm motor', canon: 'ArmMotor', name: 'ArmMotor', port: 10, known: ['ArmMotor'] }
+  };
+  function defaultSetup(gen) {
+    const devices = {};
+    for (const [job, j] of Object.entries(SETUP_JOBS)) devices[job] = { on: false, port: j.port, name: j.name };
+    devices.color.kind = gen === 2 ? 'optical' : 'color';
+    if (gen === 2) devices.color.name = 'Optical';
+    return { gen, confirmed: false, drive: { left: 1, right: 6 }, devices };
+  }
+  function normalizeSetup(raw, gen) {
+    const s = defaultSetup(gen || (raw && raw.gen) || 1);
+    if (!raw) return s;
+    s.confirmed = !!raw.confirmed;
+    if (raw.drive) s.drive = { left: +raw.drive.left || 1, right: +raw.drive.right || 6 };
+    for (const job of Object.keys(SETUP_JOBS)) if (raw.devices && raw.devices[job]) Object.assign(s.devices[job], raw.devices[job]);
+    return s;
+  }
+  // Used when no setup is given: every device present under its lesson name.
+  function fullSetup() { const s = defaultSetup(2); s.confirmed = true; for (const [job, d] of Object.entries(s.devices)) { d.on = job !== 'gyro'; d.name = SETUP_JOBS[job].canon; } return s; }
+  function validateSetup(s) {
+    const ports = [s.drive.left, s.drive.right], names = ['Drivetrain', 'Brain', 'main'];
+    for (const [job, d] of Object.entries(s.devices)) {
+      if (!d.on || (job === 'gyro' && s.gen === 2)) continue;
+      if (!/^[A-Za-z_][A-Za-z0-9_]{0,19}$/.test(d.name)) return `"${d.name}" can't be a device name. Use letters, numbers and _, starting with a letter.`;
+      if (names.includes(d.name)) return `The name ${d.name} is used twice.`;
+      names.push(d.name); ports.push(d.port);
+    }
+    const twice = ports.find((p, i) => ports.indexOf(p) !== i);
+    return twice ? `Port ${twice} is used twice. Each device needs its own Smart Port.` : null;
+  }
+  const activeJobs = s => Object.keys(SETUP_JOBS).filter(job => s.devices[job].on && !(job === 'gyro' && s.gen === 2));
+  /** The C++ a project needs for this setup. VEXcode writes the same thing from its Devices window. */
+  function generatedConfig(s) {
+    const d = s.devices, lines = [`// VEX IQ ${s.gen === 1 ? '1st' : '2nd'} gen`, 'brain Brain;', `motor LeftDriveSmart = motor(PORT${s.drive.left}, false);`, `motor RightDriveSmart = motor(PORT${s.drive.right}, true);`];
+    const gyro = s.gen === 1 ? (activeJobs(s).includes('gyro') ? d.gyro.name : null) : 'BrainInertial';
+    if (s.gen === 2) lines.push('inertial BrainInertial = inertial();');
+    const make = { distance: 'distance', bumper: 'bumper', touchled: 'touchled', gyro: 'gyro', claw: 'motor', arm: 'motor' };
+    for (const job of activeJobs(s)) {
+      const type = job === 'color' ? (d.color.kind === 'optical' ? 'optical' : 'colorsensor') : make[job];
+      lines.push(`${type} ${d[job].name} = ${type}(PORT${d[job].port}${type === 'motor' ? ', false' : ''});`);
+    }
+    lines.push(gyro ? `smartdrive Drivetrain = smartdrive(LeftDriveSmart, RightDriveSmart, ${gyro});` : 'drivetrain Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart);');
+    return lines.join('\n');
+  }
+  const codeOnly = src => src.replace(/\r/g, '').replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' ')).replace(/\/\/.*$/gm, '').replace(/"(?:[^"\\\n]|\\.)*"/g, '""');
+  /** Finds code that uses a device the robot doesn't have, the way a real build would fail. */
+  function checkDevices(src, s) {
+    const c = codeOnly(src), find = name => c.search(new RegExp('(?<![\\w.])' + name + '\\s*\\.'));
+    const at = i => c.slice(0, i).split('\n').length;
+    for (const [job, j] of Object.entries(SETUP_JOBS)) {
+      if (job === 'gyro' && s.gen === 2) continue;
+      const d = s.devices[job], label = job === 'color' && d.kind === 'optical' ? 'Optical Sensor' : j.label;
+      for (const name of j.known) {
+        const i = find(name);
+        if (i < 0 || (d.on && name === d.name)) continue;
+        if (d.on) return { error: `${name} isn't on your robot. Your ${label} is named ${d.name} in Robot Setup.`, line: at(i) };
+        if (name === 'BrainInertial') return { error: 'The 1st gen Brain has no built-in inertial sensor. Add a Gyro Sensor in Robot Setup and use its name instead.', line: at(i) };
+        return { error: `Your code uses ${name}, but your robot has no ${label}. Add it in Robot Setup.`, line: at(i) };
+      }
+    }
+    const col = s.devices.color;
+    if (col.on && col.kind === 'color') { const i = c.search(new RegExp('(?<![\\w.])' + col.name + '\\s*\\.\\s*color\\s*\\(')); if (i >= 0) return { error: `The Color Sensor reads colors with ${col.name}.colorname(), not color().`, line: at(i) }; }
+    return null;
+  }
+  /** Catches two beginner mistakes: moves with no units, and = where == was meant. */
+  function checkHabits(src) {
+    const c = codeOnly(src), at = i => c.slice(0, i).split('\n').length;
+    for (const m of c.matchAll(/\.(driveFor|turnFor|spinFor)\s*\(([^;]*)\)\s*;/g)) {
+      if (!/\b(inches|mm|degrees|turns|rev)\b/.test(m[2])) return { error: `${m[1]} needs units, like ${m[1] === 'driveFor' ? 'inches' : 'degrees'}. Example: Drivetrain.${m[1]}(${m[1] === 'driveFor' ? 'forward, 10, inches' : m[1] === 'turnFor' ? 'right, 90, degrees' : 'forward, 90, degrees'});`, line: at(m.index) };
+    }
+    for (const m of c.matchAll(/\b(if|while)\s*\(/g)) {
+      let depth = 1, i = m.index + m[0].length, start = i;
+      while (i < c.length && depth) { if (c[i] === '(') depth++; else if (c[i] === ')') depth--; i++; }
+      if (/(?<![=!<>+\-*/%])=(?!=)/.test(c.slice(start, i - 1))) return { error: 'Use == to compare two values. A single = changes the value instead of checking it.', line: at(m.index) };
+    }
+    return null;
+  }
+  /** Rewrites a student's code into lesson names, so auto-checks work whatever they called their devices. */
+  function canonicalize(src, s) {
+    let c = src;
+    for (const job of activeJobs(s)) { const d = s.devices[job]; c = c.replace(new RegExp('(?<![\\w.])' + d.name + '\\b', 'g'), SETUP_JOBS[job].canon); }
+    return c.replace(/\bOptical\s*\.\s*colorname\b/g, 'Optical.color');
+  }
+  /** Rewrites lesson text and starter code for this robot's kit and device names. */
+  function adaptText(text, s) {
+    const d = s.devices, isColor = d.color.kind === 'color', gen1 = s.gen === 1;
+    const rename = (from, to) => { if (from !== to) t = t.replace(new RegExp('\\b' + from + '(?=\\s*\\.|</code>)', 'g'), to); };
+    let t = text.split('Our simulator already has these devices set up with the same names.').join('Then set up the same devices in 🔌 Robot Setup, next to the Run button.');
+    t = t.replace(/\bOptical\s*\.\s*color\(\)/g, d.color.name + (isColor ? '.colorname()' : '.color()'));
+    rename('Optical', d.color.name); rename('DistanceSensor', d.distance.name); rename('BumperA', d.bumper.name);
+    rename('TouchLED', d.touchled.name); rename('ClawMotor', d.claw.name); rename('ArmMotor', d.arm.name);
+    if (isColor) t = t.replace(/Optical [Ss]ensor/g, 'Color Sensor').replace(/\bOptical sees/g, 'Color Sensor sees');
+    if (gen1) {
+      t = t.split('The 2nd gen Brain has a built-in <strong>inertial sensor</strong>, so').join('With a <strong>Gyro Sensor</strong> on your robot,')
+        .split('turn on the <strong>BrainInertial</strong> for turning').join('add a <strong>Gyro Sensor</strong> for turning')
+        .split('<td>Built-in Inertial</td><td>(inside Brain)</td>').join(`<td>Gyro Sensor</td><td>${d.gyro.port}</td>`)
+        .split('A sensor built into the 2nd gen Brain (BrainInertial) that').join('A sensor added to the robot that')
+        .replace(/Inertial sensor/g, 'Gyro Sensor').replace(/\bBrainInertial\b/g, d.gyro.name).replace(/2nd gen/g, '1st gen');
+    }
+    return t;
+  }
 
-  function translate(src) {
+
+  function translate(src, deviceNames) {
     const { code: raw, strings } = splitLiterals(src.replace(/\r/g, ''));
     precheck(raw);
     let c = raw;
@@ -162,7 +272,7 @@
     c = c.replace(/\bNULL\b|\bnullptr\b/g, 'null');
 
     // awaits for robot calls, waits and user functions
-    c = c.replace(new RegExp('(?<![\\w.])(' + DEVICE_NAMES.join('|') + ')\\s*\\.', 'g'), 'await $1.');
+    c = c.replace(new RegExp('(?<![\\w.])(' + deviceNames.join('|') + ')\\s*\\.', 'g'), 'await $1.');
     c = c.replace(/(?<![\w.])(wait|__cout|printf|vexDelay|task_sleep)\s*\(/g, 'await $1(');
     if (funcs.length) c = c.replace(new RegExp('(?<![\\w.])(?<!function )(' + funcs.join('|') + ')\\s*\\(', 'g'), 'await $1(');
 
@@ -220,10 +330,13 @@
     return out;
   }
   // Draws the robot centered on the origin, facing up. k = canvas pixels per inch.
+  // state.parts (optional Set): only draw these of 'wheels', 'brain', 'led', 'claw'. Used for a robot still being built.
   function drawRobot(ctx, k, look, state = {}) {
+    const has = part => !state.parts || state.parts.has(part);
     const poly = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x * k, y * k) : ctx.moveTo(x * k, y * k)); ctx.closePath(); };
     ctx.fillStyle = '#222';
-    if (look.wheels === 'treads') {
+    if (!has('wheels')) { /* not installed yet */ }
+    else if (look.wheels === 'treads') {
       [-5.4, 3.9].forEach(x => { ctx.fillStyle = '#222'; ctx.fillRect(x * k, -5 * k, 1.5 * k, 10 * k); ctx.fillStyle = '#666'; for (let y = -4.4; y < 5; y += 1.4) ctx.fillRect(x * k, y * k, 1.5 * k, .4 * k); });
     } else if (look.wheels === 'big') {
       [[-5.8, -4.4], [3.9, -4.4], [-5.8, .9], [3.9, .9]].forEach(([x, y]) => ctx.fillRect(x * k, y * k, 1.9 * k, 3.6 * k));
@@ -236,14 +349,14 @@
     else { ctx.beginPath(); ctx.roundRect(-3.9 * k, -5 * k, 7.8 * k, 10 * k, (look.shape === 'box' ? .2 : 1.2) * k); }
     ctx.fill(); ctx.stroke();
     if (look.deco === 'stripe') { ctx.fillStyle = look.decoColor; ctx.fillRect(-.9 * k, -4.9 * k, 1.8 * k, 9.8 * k); }
-    ctx.fillStyle = look.brain; ctx.beginPath(); ctx.roundRect(-2.6 * k, -1.2 * k, 5.2 * k, 4 * k, .6 * k); ctx.fill(); // brain
+    if (has('brain')) { ctx.fillStyle = look.brain; ctx.beginPath(); ctx.roundRect(-2.6 * k, -1.2 * k, 5.2 * k, 4 * k, .6 * k); ctx.fill(); }
     if (look.deco === 'flames') { ctx.fillStyle = look.decoColor; [-1, 1].forEach(d => { poly([[d * 1.2, 4.8], [d * 3.6, 4.8], [d * 3.2, .6], [d * 2.7, 2.6], [d * 2.2, 1.4], [d * 1.8, 3.2]]); ctx.fill(); }); }
     if (look.deco === 'star') { ctx.fillStyle = look.decoColor; ctx.beginPath(); for (let i = 0; i < 10; i++) { const r = (i % 2 ? .7 : 1.6) * k, a = -Math.PI / 2 + i * Math.PI / 5; ctx[i ? 'lineTo' : 'moveTo'](Math.cos(a) * r, .8 * k + Math.sin(a) * r); } ctx.closePath(); ctx.fill(); }
     if (look.deco === 'eyes') { [-1, 1].forEach(d => { ctx.fillStyle = '#fff'; ctx.strokeStyle = '#222'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(d * 2.3 * k, -3 * k, 1 * k, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = look.decoColor; ctx.beginPath(); ctx.arc(d * 2.3 * k, -3.3 * k, .5 * k, 0, 7); ctx.fill(); }); }
-    ctx.fillStyle = state.led ? (COLORS[state.led] || COLORS.white).css : '#9aa3ad'; ctx.beginPath(); ctx.arc(0, 3.9 * k, .8 * k, 0, 7); ctx.fill();
+    if (has('led')) { ctx.fillStyle = state.led ? (COLORS[state.led] || COLORS.white).css : '#9aa3ad'; ctx.beginPath(); ctx.arc(0, 3.9 * k, .8 * k, 0, 7); ctx.fill(); }
     ctx.fillStyle = '#e5484d'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; poly([[0, -4.6], [-1.3, -2.6], [1.3, -2.6]]); ctx.stroke(); ctx.fill(); // front arrow
     const cl = state.claw > 0.5 ? 0.6 : 1.8; ctx.fillStyle = '#7c8691';
-    ctx.fillRect((-cl - .7) * k, -7.2 * k, .7 * k, 2.4 * k); ctx.fillRect(cl * k, -7.2 * k, .7 * k, 2.4 * k);
+    if (has('claw')) { ctx.fillRect((-cl - .7) * k, -7.2 * k, .7 * k, 2.4 * k); ctx.fillRect(cl * k, -7.2 * k, .7 * k, 2.4 * k); }
     if (state.arm > 0) { ctx.fillStyle = 'rgba(124,134,145,.6)'; ctx.fillRect(-.6 * k, -5 * k, 1.2 * k, -state.arm * 2 * k); }
   }
 
@@ -535,8 +648,27 @@
       }
     };
     const mot = { spinFor: async () => { await sim.sleep(0.5); }, spin: async () => {}, stop: async () => {}, setVelocity: async () => {}, position: async () => 0, setStopping: async () => {} };
-    api.LeftMotor = mot; api.RightMotor = mot; api.Distance = api.DistanceSensor; api.Bumper = api.BumperA; api.Inertial = api.BrainInertial;
+    api.LeftMotor = mot; api.RightMotor = mot;
     return api;
+  }
+  // Only the devices in this robot's setup exist for its program.
+  const DEVICE_KEYS = ['BrainInertial', 'DistanceSensor', 'Optical', 'BumperA', 'TouchLED', 'ClawMotor', 'ArmMotor'];
+  function robotApi(sim, s) {
+    const all = makeApi(sim), out = { ...all }, names = ['Drivetrain', 'Brain', 'LeftMotor', 'RightMotor'];
+    DEVICE_KEYS.forEach(k => delete out[k]);
+    const O = all.Optical, detects = async c => (await O.color()) === c;
+    const colorApi = s.devices.color.kind === 'color'
+      ? { colorname: O.color, brightness: O.brightness, hue: O.hue, detects, isNearObject: O.isNearObject, setLight: O.setLight, installed: O.installed }
+      : { ...O, colorname: O.color, detects };
+    const objects = { gyro: all.BrainInertial, distance: all.DistanceSensor, color: colorApi, bumper: all.BumperA, touchled: all.TouchLED, claw: all.ClawMotor, arm: all.ArmMotor };
+    for (const job of activeJobs(s)) { out[s.devices[job].name] = objects[job]; names.push(s.devices[job].name); }
+    if (s.gen === 2) { out.BrainInertial = all.BrainInertial; names.push('BrainInertial'); }
+    if (s.gen === 1 && !activeJobs(s).includes('gyro')) {
+      const needsGyro = name => async () => { throw new Error(`Drivetrain.${name} needs a Gyro Sensor. Add one in Robot Setup.`); };
+      out.Drivetrain = { ...all.Drivetrain };
+      ['turnToHeading', 'turnToRotation', 'heading', 'rotation', 'setHeading'].forEach(n => { out.Drivetrain[n] = needsGyro(n); });
+    }
+    return { api: out, names };
   }
 
   // vector-style helpers on arrays / strings (non-enumerable)
@@ -547,10 +679,24 @@
   def(Array, 'clear', function () { this.length = 0; });
   def(String, 'size', function () { return this.length; }); def(String, 'empty', function () { return this.length === 0; });
 
-  async function run(sim, src) {
+  // Trusts the stack only if it points inside the student's code; otherwise finds the name the error mentions.
+  function errorLine(e, msg, src) {
+    const lm = /<anonymous>:(\d+)/.exec(e.stack || ''), total = src.split('\n').length, line = lm ? +lm[1] - 2 : 0;
+    if (line > 0 && line <= total) return line;
+    const name = /'([\w.]+)'/.exec(msg);
+    if (!name) return undefined;
+    const c = codeOnly(src), i = c.indexOf(name[1]);
+    return i < 0 ? undefined : c.slice(0, i).split('\n').length;
+  }
+
+  async function run(sim, src, setup) {
+    const robot = setup || fullSetup();
+    const problem = checkDevices(src, robot) || checkHabits(src);
+    if (problem) return { ok: false, ...problem };
+    const { api, names: deviceNames } = robotApi(sim, robot);
     let js;
-    try { js = translate(src); } catch (e) { return { ok: false, error: e.message, line: e.line }; }
-    const api = makeApi(sim); const names = Object.keys(api).filter(n => /^[A-Za-z_]\w*$/.test(n) && n !== 'true' && n !== 'false');
+    try { js = translate(src, deviceNames); } catch (e) { return { ok: false, error: e.message, line: e.line }; }
+    const names = Object.keys(api).filter(n => /^[A-Za-z_]\w*$/.test(n) && n !== 'true' && n !== 'false');
     let fn;
     try { fn = new AsyncFunction(...names, '"use strict";{' + js + '\n;return await main();}'); }
     catch (e) { return { ok: false, error: 'Syntax error: ' + e.message.replace(/Unexpected token/, 'unexpected symbol') + ' — check spelling, brackets and semicolons near your last change.', js }; }
@@ -568,8 +714,7 @@
       const m = /(\w+) is not defined/.exec(msg); if (m) msg = `'${m[1]}' was not declared in this scope — check the spelling or declare it first (e.g. int ${m[1]} = 0;)`;
       if (/is not a function/.test(msg)) msg = msg.replace(/(.+) is not a function/, "'$1' is not a function the robot knows — check the spelling/capital letters");
       if (/Assignment to constant/.test(msg)) msg = 'You tried to change a const variable.';
-      const lm = /<anonymous>:(\d+)/.exec(e.stack || ''); const line = lm ? +lm[1] - 2 : undefined;
-      return { ok: false, error: msg, line: line > 0 ? line : undefined };
+      return { ok: false, error: msg, line: errorLine(e, msg, src) };
     } finally { sim.stopped = true; }
   }
 
@@ -588,5 +733,5 @@
     });
   }
 
-  window.VexSim = { Sim, run, translate, evaluate, FIELD_W, FIELD_H, drawRobot, normalizeLook, LOOK_OPTIONS, DEFAULT_LOOK };
+  window.VexSim = { Sim, run, translate, evaluate, FIELD_W, FIELD_H, drawRobot, normalizeLook, LOOK_OPTIONS, DEFAULT_LOOK, SETUP_JOBS, normalizeSetup, validateSetup, generatedConfig, adaptText, canonicalize };
 })();

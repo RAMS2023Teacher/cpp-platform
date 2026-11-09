@@ -22,7 +22,7 @@ module.exports = [
   {
     id: "u5l1",
     unit: 5,
-    order: 23,
+    order: 26,
     title: "Capstone: Design a Rescue Robot",
     minutes: 40,
     tags: ["build", "code", "algorithms", "ai"],
@@ -46,7 +46,7 @@ module.exports = [
       "VEX field board set up as the rescue scenario: 2-3 cubes (victims), colored tape safe zones, wall pieces as rubble",
       "Engineering notebooks or planning sheet",
       "Chart paper and markers",
-      "Your team's Robot Code of Ethics (from Lesson 22)"
+      "Your team's Robot Code of Ethics (if you did the AI Ethics lesson)"
     ],
     video: "",
     sections: [
@@ -119,7 +119,7 @@ void goToVictim1() {
 <li><strong>Decision matrix:</strong> score each strategy 1-5 on each criterion and add it up.</li>
 <li><strong>Draw the field</strong> on paper. Mark the start, cubes, zones, rubble, and draw your robot's path with arrows. Measure the distances on the real VEX board.</li>
 <li><strong>Write a flowchart or pseudocode</strong> for the whole mission. Circle subgoal 1.</li>
-<li><strong>Build plan:</strong> list what your robot needs (claw, Distance Sensor on the front, Optical sensor under it). Check it against your code of ethics: is it safe?</li>
+<li><strong>Build plan:</strong> list what your robot needs (claw, Distance Sensor on the front, Optical sensor under it). Is it safe? What could go wrong for people nearby?</li>
 </ol>
 </div>
 <h3>Example decision matrix</h3>
@@ -267,7 +267,7 @@ int main() {
           "Storing sensor values",
           "Scoring several ideas on the same criteria to choose fairly",
           "Drawing the robot",
-          "Timing the robot"
+          "Keeping a record of how long the robot takes to complete each part of the mission during every test"
         ],
         answer: 1,
         explain: "It compares ideas on the same criteria so the team chooses with reasons, not just opinions."
@@ -275,7 +275,7 @@ int main() {
       {
         q: "Why write function stubs before the real code?",
         choices: [
-          "They make the robot faster",
+          "They let the robot skip the empty functions, which makes the final program run faster during the mission",
           "They make the plan visible in the code and let you build and test one piece at a time",
           "C++ requires empty functions",
           "So you never have to finish them"
@@ -296,7 +296,7 @@ int main() {
   {
     id: "u5l2",
     unit: 5,
-    order: 24,
+    order: 27,
     title: "Capstone: Build, Code, Test",
     minutes: 40,
     tags: ["build", "code", "algorithms"],
@@ -544,7 +544,7 @@ int main() {
       {
         q: "What is print debugging?",
         choices: [
-          "Printing the code on paper",
+          "Printing the whole program on paper so that your team can cross out each line it thinks is not needed",
           "Printing values and step names so you can see what the program is really doing",
           "Deleting all print statements",
           "Using a 3D printer to fix the robot"
@@ -557,7 +557,7 @@ int main() {
         choices: [
           "The C++ syntax is wrong",
           "A real-world hardware issue like wheel slip, low battery or high turn speed",
-          "The simulator is broken",
+          "The simulator and the real robot use different C++ rules, so the same program always has to be rewritten",
           "The cube is the wrong color"
         ],
         answer: 1,
@@ -576,7 +576,7 @@ int main() {
   {
     id: "u5l3",
     unit: 5,
-    order: 25,
+    order: 28,
     title: "Capstone Showcase",
     minutes: 40,
     tags: ["code", "build", "ai"],
@@ -643,12 +643,12 @@ int main() {
         minutes: 7,
         html: `<p>Think back to Lesson 1, when the robot was a box of parts and C++ was a mystery. Answer on your own, then share one answer with your team:</p>
 <ol>
-<li>What can you do now that you couldn't do at the start? (Loops? Sensors? BFS? Machine learning?)</li>
+<li>What can you do now that you couldn't do at the start? (Loops? Functions? Using the claw?)</li>
 <li>What was the hardest moment in this course, and how did you get through it?</li>
 <li>Read your Glow &amp; Grow notes. Which Grow will you work on next?</li>
 <li>Where could you see yourself using robotics, coding or AI in the future?</li>
 </ol>
-<div class="callout think"><p><strong>Big picture:</strong> You have now built robots that sense, decide with decision trees and state machines, learn from data, and learn from trial and error. You also know AI's limits and why fairness matters. That puts you ahead of a lot of adults!</p></div>`
+<div class="callout think"><p><strong>Big picture:</strong> You started with a box of parts. Now you can plan, build, code and test a robot that completes a mission, which is what engineers do.</p></div>`
       },
       {
         kind: "code",
@@ -667,7 +667,7 @@ int main() {
         kind: "wrapup",
         title: "Celebration",
         minutes: 3,
-        html: `<p>Congratulations, engineers! Take a team photo with your robot, the certificate and your code of ethics poster. Thank your teammates: tell each one person something they did that helped the team.</p>`
+        html: `<p>Congratulations, engineers! Take a team photo with your robot, and the certificate. Thank your teammates: tell each one person something they did that helped the team.</p>`
       }
     ],
     challenge: {
@@ -786,7 +786,7 @@ int main() {
           "Cool robot",
           "Your claw grabbed every cube on the first try, and your code used clear function names",
           "Your robot was bad",
-          "I don't know"
+          "Your robot was really good and everybody liked it, so you probably do not need to change anything"
         ],
         answer: 1,
         explain: "Good feedback is specific and kind."
@@ -797,7 +797,7 @@ int main() {
           "Leave the stage",
           "Blame a teammate",
           "Explain what you think went wrong and how you would fix it",
-          "Pretend it worked"
+          "Run the same program again right away without changing anything until it finally works on its own"
         ],
         answer: 2,
         explain: "Explaining failures shows real engineering thinking."
@@ -808,7 +808,7 @@ int main() {
           "Functions run faster",
           "Each move has a name and is in one place, so you can reorder or reuse it easily",
           "C++ requires functions for dancing",
-          "Functions use less battery"
+          "Functions make each move run at the same speed, which the robot needs in order to keep the dance in time"
         ],
         answer: 1,
         explain: "Functions break a program into named, reusable pieces."

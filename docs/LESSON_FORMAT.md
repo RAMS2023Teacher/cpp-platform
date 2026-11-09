@@ -37,6 +37,11 @@ module.exports = [
 ];
 ```
 
+## Term plans
+`lessons/plans.js` lists which lessons form each 10-, 12- and 15-lesson term, and what each Go Further lesson needs first. A new lesson also needs a part in `public/js/quest.js`.
+
+Write lessons with the standard device names (`DistanceSensor`, `Optical`, `BumperA`, `TouchLED`, `ClawMotor`, `ArmMotor`, `BrainInertial`). Students see them adapted to their kit and their Robot Setup names, and auto-checks run against the standard names.
+
 ## HTML inside sections
 Plain HTML. Useful classes:
 - `<div class="callout tip">`, `<div class="callout warn">`, `<div class="callout robot">` (VEX board / hardware activity), `<div class="callout think">` (discussion)
