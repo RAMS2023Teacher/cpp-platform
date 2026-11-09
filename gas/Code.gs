@@ -11,6 +11,8 @@
 var CELL_SIZE = 40000;     // Sheets allows 50,000 characters in a cell
 var BODY_CELLS = 10;       // cells per Progress row for code, drafts and reflections
 var KEEP_SUBMISSIONS = 10; // newest code submissions kept per student per lesson
+var QUIZ_PASS = 0.7;       // share of an exit ticket needed to complete a lesson
+var QUIZ_TRIES = 3;        // answers stay hidden until these are used up or a perfect score
 var LOOK_CHOICES = {
   shape: ['rounded', 'box', 'wedge', 'round'],
   wheels: ['standard', 'big', 'treads'],
@@ -384,10 +386,17 @@ function placeIn_(path, l) {
 }
 
 // ---------------------------------------------------------------- lessons
+function quizBest_(p) { return p && p.quiz ? Math.max(p.quiz.score, p.quizBest || 0) : 0; }
+function quizPassed_(p) { return !!(p && p.quiz && (p.quiz.excused || quizBest_(p) >= QUIZ_PASS * p.quiz.total)); }
+function quizFinished_(p) { return !!(p && p.quiz && (p.quiz.excused || p.quizAttempts >= QUIZ_TRIES || quizBest_(p) >= p.quiz.total)); }
+function challengePassed_(p) { return !!(p && p.challenge && (p.challengePassed || p.challenge.passed)); }
+/** A lesson counts once the work shows learning, or the teacher has marked it complete. */
 function isComplete_(p) {
-  if (!p || !p.quiz) return false;
+  if (!p) return false;
+  if (p.approved) return true;
+  if (!quizPassed_(p)) return false;
   var l = lessonById_(p.lessonId);
-  if (!(p.challenge || !(l && l.challenge))) return false;
+  if (l && l.challenge && !challengePassed_(p)) return false;
   return !PHOTO_LESSONS[p.lessonId] || !!p.photoExcused || hasPhoto_(userById_(p.userId), p.lessonId);
 }
 function unlockedFor_(user) {
@@ -408,7 +417,8 @@ function lessonForClient_(l, revealAnswers, isTeacher) {
   var copy = JSON.parse(JSON.stringify(l));
   if (o.video !== undefined) copy.video = o.video;
   if (o.teacherNote) copy.teacherNote = o.teacherNote;
-  if (!revealAnswers) copy.quiz = (copy.quiz || []).map(function (q) { return { q: q.q, choices: q.choices }; });
+  if (!revealAnswers) copy.quiz = (copy.quiz || []).map(function (q) { return { q: q.q, code: q.code, choices: q.choices }; });
+  copy.quizRules = { tries: QUIZ_TRIES, pass: QUIZ_PASS };
   if (!isTeacher && copy.challenge) delete copy.challenge.solution;
   var withText = function (code) { return STANDARDS.filter(function (s) { return s.code === code; })[0]; };
   copy.standards = { anchor: l.standards.anchor.map(withText), supporting: l.standards.supporting.map(withText) };
@@ -451,7 +461,7 @@ function getLesson_(c) {
   }
   var path = pathOf_(user), idx = path.main.indexOf(l), teacher = user.role === 'teacher';
   return {
-    lesson: lessonForClient_(l, teacher || !!(p && p.quiz), teacher),
+    lesson: lessonForClient_(l, teacher || quizFinished_(p), teacher),
     progress: p ? merged_(p, workOf_(p)) : null,
     place: placeIn_(path, l),
     photo: PHOTO_LESSONS[l.id] && user.role === 'student' ? { prompt: PHOTO_LESSONS[l.id], photoId: (photoFor_(user, l.id) || {}).id || null, excused: !!(p && p.photoExcused) } : null,
@@ -478,22 +488,25 @@ function submitCode_(c) {
   var code = String(c.body.code || '').slice(0, 20000);
   work.submissions = (work.submissions || []).concat([{ at: now_(), code: code, checks: checks, output: String(c.body.output || '').slice(0, 4000) }]).slice(-KEEP_SUBMISSIONS);
   work.draft = code;
-  p.challenge = { at: now_(), passed: checks.every(function (x) { return x.pass; }), passCount: checks.filter(function (x) { return x.pass; }).length, total: checks.length };
+  p.challenge = { at: now_(), passed: checks.length > 0 && checks.every(function (x) { return x.pass; }), passCount: checks.filter(function (x) { return x.pass; }).length, total: checks.length };
+  if (p.challenge.passed) p.challengePassed = true; // a later experiment doesn't undo a pass
   markCompleted_(p);
   saveProgress_(p, work);
   return { progress: merged_(p, work) };
 }
 function submitQuiz_(c) {
   var l = lessonById_(c.params[0]), p = openProgress_(c), work = workOf_(p);
+  if (quizFinished_(p)) throw fail_(400, 'This exit ticket is finished. Talk to your teacher if you need more help.');
   var answers = Array.isArray(c.body.answers) ? c.body.answers.map(Number) : [];
-  var score = (l.quiz || []).reduce(function (s, q, i) { return s + (answers[i] === q.answer ? 1 : 0); }, 0);
+  var missed = [];
+  var score = (l.quiz || []).reduce(function (s, q, i) { if (answers[i] === q.answer) return s + 1; missed.push(i + 1); return s; }, 0);
   p.quizAttempts = (p.quizAttempts || 0) + 1;
-  p.quiz = { score: score, total: (l.quiz || []).length, answers: answers, at: now_() };
+  p.quiz = { score: score, total: (l.quiz || []).length, answers: answers, missed: missed, at: now_() };
   if (!p.quizBest || score > p.quizBest) p.quizBest = score;
   work.reflection = clean_(c.body.reflection, 3000);
   markCompleted_(p);
   saveProgress_(p, work);
-  return { progress: merged_(p, work), lesson: lessonForClient_(l, true) };
+  return { progress: merged_(p, work), lesson: lessonForClient_(l, quizFinished_(p)) };
 }
 
 // ---------------------------------------------------------------- learning map
@@ -597,7 +610,8 @@ function classProgress_(c) {
           quiz: p.quiz ? { score: p.quiz.score, total: p.quiz.total } : null,
           challenge: p.challenge || null, submissions: p.subs || 0,
           grade: p.grade === undefined ? null : p.grade,
-          needsReview: !!((p.subs || p.hasReflection) && !p.reviewedAt)
+          needsReview: !!((p.subs || p.hasReflection) && !p.reviewedAt),
+          stuck: !isComplete_(p) && p.quizAttempts >= QUIZ_TRIES && !quizPassed_(p)
         };
       });
       return Object.assign(publicUser_(s), { lastLogin: s.lastLogin || null, progress: progress });
@@ -627,6 +641,7 @@ function reviewWork_(c) {
     p.challenge = p.challenge || { at: now_(), passed: true, excused: true };
     p.completed = p.completed || now_();
     p.photoExcused = true;
+    p.approved = true;
   }
   p.reviewedAt = now_();
   saveProgress_(p, work);
@@ -976,14 +991,14 @@ function linkClassroom_(c) {
   saveClass_(k);
   return { courseName: course.name };
 }
-/** The teacher's grade if there is one. Otherwise a score from a completed lesson's exit ticket and code challenge. */
+/** The teacher's grade if there is one. Otherwise the score on an attempted exit ticket and code challenge. */
 function gradeFor_(p, l) {
   if (p && p.grade !== undefined && p.grade !== null) return p.grade;
-  if (!isComplete_(p) || p.quiz.excused || !p.quiz.total) return null;
-  var quiz = Math.max(p.quiz.score, p.quizBest || 0) / p.quiz.total * 100;
+  if (!p || !p.quiz || p.quiz.excused || !p.quiz.total || (l.challenge && !p.challenge)) return null;
+  var quiz = quizBest_(p) / p.quiz.total * 100;
   if (!l.challenge) return Math.round(quiz);
   var ch = p.challenge;
-  var code = ch.excused ? quiz : ch.passed ? 100 : ch.total ? ch.passCount / ch.total * 100 : 0;
+  var code = ch.excused ? quiz : challengePassed_(p) ? 100 : ch.total ? ch.passCount / ch.total * 100 : 0;
   return Math.round((quiz + code) / 2);
 }
 function pageOptions_(token) { return token ? { pageSize: 100, pageToken: token } : { pageSize: 100 }; }

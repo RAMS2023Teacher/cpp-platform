@@ -146,13 +146,13 @@ int main() {
     quiz: [
       {
         q: "Which part of the VEX IQ robot does the THINK step?",
-        choices: ["The Smart Motor", "The Brain running your program", "The battery", "The Distance Sensor"],
+        choices: ["The Smart Motor", "The Brain running your program", "The battery, because it gives every other part its power", "The Distance Sensor"],
         answer: 1,
         explain: "The Brain runs your C++ program, which makes the decisions."
       },
       {
         q: "Why do most people say a remote-control car is NOT a robot?",
-        choices: ["It has no wheels", "It is too small", "A human does all the sensing and thinking", "It uses batteries"],
+        choices: ["It has no wheels", "It is too small to hold a Brain, and only machines with a Brain are able to be controlled at all", "A human does all the sensing and thinking", "It uses batteries"],
         answer: 2,
         explain: "A robot senses and decides by itself. An RC car only acts on a human's commands."
       },
@@ -164,7 +164,7 @@ int main() {
       },
       {
         q: "Your robot starts driving off the table! What should you do?",
-        choices: ["Grab the wheels", "Pull the battery cable by the wire", "Press the X button on the Brain to stop the program", "Yell at it"],
+        choices: ["Grab the wheels", "Pull the battery cable by the wire", "Press the X button on the Brain to stop the program", "Wait for the program to end, since robots stop by themselves near edges"],
         answer: 2,
         explain: "The X button stops the program safely. Never yank cables, and keep robots on the field."
       }
@@ -277,7 +277,7 @@ int main() {
       },
       {
         q: "A pin will not go into a hole. What should you do first?",
-        choices: ["Push harder", "Use your teeth", "Check that the holes line up, then wiggle the part into place", "Throw that pin away"],
+        choices: ["Push the pin harder until it clicks, because a tight fit means the holes are lined up correctly", "Use your teeth", "Check that the holes line up, then wiggle the part into place", "Throw that pin away"],
         answer: 2,
         explain: "A stuck pin usually means the holes are not lined up. Forcing it can damage parts."
       },
@@ -289,7 +289,7 @@ int main() {
       },
       {
         q: "A joint held by a single pin swings back and forth. What is the simplest fix?",
-        choices: ["Add a sticker", "Use a shorter beam", "Remove the pin", "Add a second pin in another hole"],
+        choices: ["Replace the pin with a longer pin, since long pins stop joints from turning", "Use a shorter beam", "Remove the pin", "Add a second pin in another hole"],
         answer: 3,
         explain: "One pin acts like a hinge. Two pins in different holes lock the angle."
       }
@@ -386,13 +386,13 @@ int main() {
     quiz: [
       {
         q: "Why is a triangle more rigid than a square made the same way?",
-        choices: ["It can't change shape unless a side changes length", "It uses more pins", "It is heavier", "Its corners are sharper"],
+        choices: ["It can't change shape unless a side changes length", "It uses more pins", "A triangle uses fewer pins, and joints with fewer pins are always stronger than joints with more", "Its corners are sharper"],
         answer: 0,
         explain: "A square can lean into a diamond, but a triangle's three fixed sides allow only one shape."
       },
       {
         q: "Your robot's rectangular frame leans to one side when pushed. What is the best fix?",
-        choices: ["Add stickers to the frame", "Remove two pins", "Add a brace across a corner or attach a plate", "Use smaller wheels"],
+        choices: ["Add stickers to the frame", "Remove two pins so that the frame has more room to flex and absorb the push", "Add a brace across a corner or attach a plate", "Use smaller wheels"],
         answer: 2,
         explain: "Bracing creates triangles, and a plate does the same job across a whole surface."
       },
@@ -530,7 +530,7 @@ int main() {
       },
       {
         q: "A wheel feels stiff when you spin it by hand. What should you check?",
-        choices: ["The Brain's screen brightness", "Whether the program has comments", "The color of the wheel", "Whether a collar or shaft is rubbing or squeezed too tight"],
+        choices: ["The Brain's screen brightness", "Whether the program has comments", "Whether the program is telling the wheel to spin at a speed that is too slow for the motor", "Whether a collar or shaft is rubbing or squeezed too tight"],
         answer: 3,
         explain: "Stiffness means friction, which often comes from parts pressed together too tightly."
       },
@@ -684,13 +684,13 @@ int main() {
     quiz: [
       {
         q: "What is a Smart Port?",
-        choices: ["A USB charger", "One of the numbered sockets on the Brain for motors and sensors", "A type of wheel", "A port in Boston Harbor"],
+        choices: ["A USB charger", "One of the numbered sockets on the Brain for motors and sensors", "A special wheel mount on the chassis that lets the motors connect directly to the axles without any cables", "A port in Boston Harbor"],
         answer: 1,
         explain: "The Brain has 12 Smart Ports. Your configuration tells the program which device is in which port."
       },
       {
         q: "Your robot spins in a circle instead of driving straight. What is a likely cause?",
-        choices: ["The battery is too new", "The two sides were built identical instead of mirrored, or a motor is in the wrong port", "The screen is off", "The program is too short"],
+        choices: ["The battery is too new", "The two sides were built identical instead of mirrored, or a motor is in the wrong port", "The Brain's screen is turned off, so the robot cannot display which way it is supposed to be driving", "The program is too short"],
         answer: 1,
         explain: "If one motor is reversed or plugged into the wrong port, the wheels fight each other and the robot spins."
       },
@@ -702,7 +702,7 @@ int main() {
       },
       {
         q: "What is the Inspector's job?",
-        choices: ["Snap all the pieces together", "Check the robot against the instructions after every step", "Write all the code", "Charge the batteries"],
+        choices: ["Snap all the pieces together", "Check the robot against the instructions after every step", "Write all the code", "Collect the parts from the bin and lay them out in order before the builder needs each one"],
         answer: 1,
         explain: "The Inspector catches mistakes early by checking each step."
       }
@@ -902,7 +902,7 @@ int main() {
       },
       {
         q: "Why does  brain.Screen.print(\"Hi\");  cause an error?",
-        choices: ["C++ is case-sensitive; it must be Brain", "Screen is spelled wrong", "print needs numbers", "It needs two semicolons"],
+        choices: ["C++ is case-sensitive; it must be Brain", "Screen is spelled wrong", "print only works with numbers, so text has to be stored in a variable first", "It needs two semicolons"],
         answer: 0,
         explain: "Brain and brain are different names to C++. Capital letters matter."
       }

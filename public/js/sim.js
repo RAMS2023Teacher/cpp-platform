@@ -152,6 +152,19 @@
     if (col.on && col.kind === 'color') { const i = c.search(new RegExp('(?<![\\w.])' + col.name + '\\s*\\.\\s*color\\s*\\(')); if (i >= 0) return { error: `The Color Sensor reads colors with ${col.name}.colorname(), not color().`, line: at(i) }; }
     return null;
   }
+  /** Catches two beginner mistakes: moves with no units, and = where == was meant. */
+  function checkHabits(src) {
+    const c = codeOnly(src), at = i => c.slice(0, i).split('\n').length;
+    for (const m of c.matchAll(/\.(driveFor|turnFor|spinFor)\s*\(([^;]*)\)\s*;/g)) {
+      if (!/\b(inches|mm|degrees|turns|rev)\b/.test(m[2])) return { error: `${m[1]} needs units, like ${m[1] === 'driveFor' ? 'inches' : 'degrees'}. Example: Drivetrain.${m[1]}(${m[1] === 'driveFor' ? 'forward, 10, inches' : m[1] === 'turnFor' ? 'right, 90, degrees' : 'forward, 90, degrees'});`, line: at(m.index) };
+    }
+    for (const m of c.matchAll(/\b(if|while)\s*\(/g)) {
+      let depth = 1, i = m.index + m[0].length, start = i;
+      while (i < c.length && depth) { if (c[i] === '(') depth++; else if (c[i] === ')') depth--; i++; }
+      if (/(?<![=!<>+\-*/%])=(?!=)/.test(c.slice(start, i - 1))) return { error: 'Use == to compare two values. A single = changes the value instead of checking it.', line: at(m.index) };
+    }
+    return null;
+  }
   /** Rewrites a student's code into lesson names, so auto-checks work whatever they called their devices. */
   function canonicalize(src, s) {
     let c = src;
@@ -666,9 +679,19 @@
   def(Array, 'clear', function () { this.length = 0; });
   def(String, 'size', function () { return this.length; }); def(String, 'empty', function () { return this.length === 0; });
 
+  // Trusts the stack only if it points inside the student's code; otherwise finds the name the error mentions.
+  function errorLine(e, msg, src) {
+    const lm = /<anonymous>:(\d+)/.exec(e.stack || ''), total = src.split('\n').length, line = lm ? +lm[1] - 2 : 0;
+    if (line > 0 && line <= total) return line;
+    const name = /'([\w.]+)'/.exec(msg);
+    if (!name) return undefined;
+    const c = codeOnly(src), i = c.indexOf(name[1]);
+    return i < 0 ? undefined : c.slice(0, i).split('\n').length;
+  }
+
   async function run(sim, src, setup) {
     const robot = setup || fullSetup();
-    const problem = checkDevices(src, robot);
+    const problem = checkDevices(src, robot) || checkHabits(src);
     if (problem) return { ok: false, ...problem };
     const { api, names: deviceNames } = robotApi(sim, robot);
     let js;
@@ -691,8 +714,7 @@
       const m = /(\w+) is not defined/.exec(msg); if (m) msg = `'${m[1]}' was not declared in this scope — check the spelling or declare it first (e.g. int ${m[1]} = 0;)`;
       if (/is not a function/.test(msg)) msg = msg.replace(/(.+) is not a function/, "'$1' is not a function the robot knows — check the spelling/capital letters");
       if (/Assignment to constant/.test(msg)) msg = 'You tried to change a const variable.';
-      const lm = /<anonymous>:(\d+)/.exec(e.stack || ''); const line = lm ? +lm[1] - 2 : undefined;
-      return { ok: false, error: msg, line: line > 0 ? line : undefined };
+      return { ok: false, error: msg, line: errorLine(e, msg, src) };
     } finally { sim.stopped = true; }
   }
 

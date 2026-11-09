@@ -520,3 +520,5 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 [data-theme="eco"] table.tbl th { background: var(--light); box-shadow: none; }
 [data-theme="eco"] .timer { border-radius: 12px; background: var(--ide-bg); color: var(--ide-ink); box-shadow: none; }
 [data-theme="eco"] .timer b { color: var(--ide-str); }
+
+.cell.stuck { outline: 3px solid #c0261b; outline-offset: -2px; }

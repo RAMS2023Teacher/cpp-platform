@@ -27,7 +27,7 @@ Each lesson has an Engineer's Brief written for grades 7-8, with a guiding quest
 - **Grades:** teachers can send grades to Google Classroom, then use Classroom's SIS export to reach PowerSchool. See [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Term plans
-Each class has a **term length** of 10, 12 or 15 lessons, or the full 28. Every plan ends with the rescue capstone, and each shorter plan is contained in the next, so you can change a class's plan without losing work. The lists are in [`lessons/plans.js`](lessons/plans.js).
+Each class has a **term length** of 10, 12 or 15 lessons, or the full 28. Every plan includes an algorithms lesson and ends with the rescue capstone, the 12- and 15-lesson terms add AI, and each shorter plan is contained in the next, so you can change a class's plan without losing work. The lists are in [`lessons/plans.js`](lessons/plans.js).
 
 Everything outside the term becomes **Go Further** lessons. Anyone can try them. Each one opens when the lesson it builds on is finished, so a fast student can go deeper mid-term. Classmates can't see how many a student has done, but you can.
 

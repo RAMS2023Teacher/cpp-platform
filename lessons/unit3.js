@@ -194,7 +194,7 @@ int main() {
     quiz: [
       {
         q: "Which is the best definition of an algorithm?",
-        choices: ["Any computer program", "A precise, step-by-step set of instructions that solves a problem", "A type of robot sensor", "A math formula with letters"],
+        choices: ["Any computer program or app that a person can download and run on a phone, a tablet, or a robot", "A precise, step-by-step set of instructions that solves a problem", "A type of robot sensor", "A math formula with letters"],
         answer: 1,
         explain: "An algorithm is a precise list of steps. It can be written in English, pseudocode, a flowchart or code."
       },
@@ -206,7 +206,7 @@ int main() {
       },
       {
         q: "Why did 'put the peanut butter on the bread' fail with the teacher-robot?",
-        choices: ["Robots don't like peanut butter", "It was ambiguous: it didn't say to open the jar or use the knife", "It had too many steps", "It used a loop"],
+        choices: ["Robots don't like peanut butter", "It was ambiguous: it didn't say to open the jar or use the knife", "It had too many steps", "The instruction had too many words for a person to follow, so it needed to be split into several steps"],
         answer: 1,
         explain: "Computers take instructions literally. Every hidden step (open the jar, pick up the knife) must be written down."
       },
@@ -403,7 +403,7 @@ int main() {
       },
       {
         q: "Why is it called 'bang-bang' control?",
-        choices: ["It's loud", "It only has two states and switches hard between them", "It uses a bumper sensor", "It crashes into walls"],
+        choices: ["It makes a loud sound when the robot changes direction, which is how you know that it is working", "It only has two states and switches hard between them", "It uses a bumper sensor", "It crashes into walls"],
         answer: 1,
         explain: "The controller has only two outputs (turn left / turn right) and slams between them."
       },
@@ -814,7 +814,7 @@ int main() {
       },
       {
         q: "Why can a sorting network be faster than bubble sort done by one person?",
-        choices: ["It skips comparisons", "Many comparisons happen at the same time (in parallel)", "It uses smaller numbers", "It doesn't need to compare"],
+        choices: ["It only has to compare the smallest numbers, so the largest ones never need to be moved at all", "Many comparisons happen at the same time (in parallel)", "It uses smaller numbers", "It doesn't need to compare"],
         answer: 1,
         explain: "In a sorting network, pairs on different lanes compare simultaneously."
       }
@@ -1043,7 +1043,7 @@ int main() {
     quiz: [
       {
         q: "What does decomposition mean in programming?",
-        choices: ["Deleting old code", "Breaking a big problem into smaller pieces", "Making the robot go faster", "Sorting numbers"],
+        choices: ["Deleting old code", "Breaking a big problem into smaller pieces", "Making the robot go faster", "Sorting numbers or objects from smallest to largest before the program begins"],
         answer: 1,
         explain: "Decomposing a problem into helper functions makes each piece small and testable."
       },
@@ -1251,7 +1251,7 @@ int main() {
     quiz: [
       {
         q: "In BFS, a cell labeled 4 means...",
-        choices: ["It has 4 walls", "It's 4 steps from the start by the shortest route", "It was the 4th cell drawn", "The robot must turn 4 times"],
+        choices: ["It has 4 walls around it, so the robot can reach it from only one of its neighboring cells", "It's 4 steps from the start by the shortest route", "It was the 4th cell drawn", "The robot must turn 4 times"],
         answer: 1,
         explain: "BFS labels cells in rings, so the label is the shortest distance from the start."
       },
@@ -1269,7 +1269,7 @@ int main() {
       },
       {
         q: "Why is BFS better than the wall follower for finding the SHORTEST path?",
-        choices: ["It's always fewer lines of code", "It checks every route in order of length, so it can't miss a shorter one", "It doesn't need a map", "It drives faster"],
+        choices: ["It's always fewer lines of code", "It checks every route in order of length, so it can't miss a shorter one", "It doesn't need a map", "It makes the robot drive faster on every route, so it reaches the goal before the wall follower can"],
         answer: 1,
         explain: "The wall follower escapes, but it may take a long route. BFS explores in rings, guaranteeing the shortest path."
       }
@@ -1483,7 +1483,7 @@ int main() {
       },
       {
         q: "Why do we put wait(20, msec) inside the control loop?",
-        choices: ["To make the robot sleep", "To give the robot time to move before measuring again", "Because C++ requires it", "To turn the sensor off"],
+        choices: ["To make the robot sleep", "To give the robot time to move before measuring again", "Because C++ requires it", "To turn the sensor off between readings so that the battery lasts longer during the whole run"],
         answer: 1,
         explain: "The loop runs about 50 times per second, giving the robot time to move between readings."
       }

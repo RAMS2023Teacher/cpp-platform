@@ -588,7 +588,7 @@ int main() {
       },
       {
         q: "When is  (a && b)  true?",
-        choices: ["When a is true", "When b is true", "Only when both a and b are true", "When either is true"],
+        choices: ["When a is true", "When b is true", "Only when both a and b are true", "Whenever at least one of a or b happens to be true"],
         answer: 2,
         explain: "&& means AND: both sides must be true."
       },
@@ -771,7 +771,7 @@ int main() {
       },
       {
         q: "What does Drivetrain.drive(forward); do?",
-        choices: ["Drives 1 inch", "Starts driving and keeps going until told to stop", "Drives forward for 1 second", "Nothing until wait is called"],
+        choices: ["Drives forward a short distance, then stops by itself as soon as the next line of code runs", "Starts driving and keeps going until told to stop", "Drives forward for 1 second", "Nothing until wait is called"],
         answer: 1,
         explain: "drive() starts the motors and moves on immediately. You must call stop() later."
       },
@@ -783,7 +783,7 @@ int main() {
       },
       {
         q: "Why do we put wait(20, msec); inside the polling loop?",
-        choices: ["To make the robot faster", "To check the sensor at a steady, reasonable rate", "Because C++ requires it", "To turn the robot"],
+        choices: ["To make the robot faster", "To check the sensor at a steady, reasonable rate", "Because C++ requires it", "To stop the robot for a moment so that the wheels have time to cool down between each movement"],
         answer: 1,
         explain: "50 checks per second is plenty, and it keeps the loop from wasting the Brain's time."
       }
@@ -979,7 +979,7 @@ int main() {
     quiz: [
       {
         q: "In  drivePolygon(6, 12);  what is 6?",
-        choices: ["The return value", "An argument passed to the sides parameter", "The function's name", "The number of inches"],
+        choices: ["The value that the function sends back to main() after the robot has finished driving the shape", "An argument passed to the sides parameter", "The function's name", "The number of inches"],
         answer: 1,
         explain: "6 is the argument that fills the first parameter, sides."
       },
@@ -997,7 +997,7 @@ int main() {
       },
       {
         q: "What's the biggest benefit of functions?",
-        choices: ["They make the robot faster", "You write code once and reuse it with different values", "They remove the need for main", "They replace variables"],
+        choices: ["They make the robot faster", "You write code once and reuse it with different values", "They remove the need for main", "They let you skip main() so the robot can start running your code from whichever function is first"],
         answer: 1,
         explain: "Functions let you reuse and organize code, so programs are shorter and easier to fix."
       }

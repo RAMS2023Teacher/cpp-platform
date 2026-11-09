@@ -339,10 +339,10 @@
           unsaved = null; clearTimeout(ide._d);
           const r = await api(`/api/lessons/${L.id}/submit`, { body: { code, checks, output } });
           celebrate(L, r.progress);
-          toast(checks.every(c => c.pass) ? '🎉 Challenge passed and submitted!' : '📤 Submitted — keep improving and resubmit anytime.');
+          toast(checks.every(c => c.pass) ? '🎉 Challenge passed!' : '📤 Saved. Pass every check to complete this lesson.');
         }
       });
-      if (P?.challenge) ide.note(P.challenge.passed ? '✅ You already passed this challenge. You can keep experimenting and resubmit.' : `Last submission: ${P.challenge.passCount}/${P.challenge.total} checks passed.`);
+      if (P?.challenge) ide.note((P.challengePassed || P.challenge.passed) ? '✅ You already passed this challenge. You can keep experimenting and resubmit.' : `Last try: ${P.challenge.passCount}/${P.challenge.total} checks passed. Pass every check to complete this lesson.`);
       if (ME.robot) ide.sim.setLook(ME.robot);
       cleanup = () => { saveDraft(); ide.destroy(); };
     }
@@ -404,23 +404,31 @@
 
   function renderQuiz(L, P, teacher) {
     const box = document.getElementById('quizbox'); const done = !!P?.quiz && !teacher;
-    const quiz = L.quiz || [];
+    const quiz = L.quiz || [], rules = L.quizRules || { tries: 3, pass: .7 };
+    const revealed = quiz.some(q => q.answer !== undefined); // the server sends answers only when the ticket is finished
+    const needed = Math.ceil(rules.pass * quiz.length), tries = P?.quizAttempts || 0, left = Math.max(0, rules.tries - tries);
+    const best = done ? Math.max(P.quiz.score, P.quizBest || 0) : 0, passed = best >= needed;
+    const scoreNote = !done ? '' : P.quiz.score === P.quiz.total ? 'Perfect! 🌟'
+      : revealed && !passed ? `You've used all ${rules.tries} tries. Read the explanations below, then talk to your teacher so you can move on.`
+      : revealed ? 'Read the explanations below to see what you missed.'
+      : `${passed ? 'You passed. ' : `You need ${needed} correct to complete this lesson. `}Look again at question${P.quiz.missed?.length === 1 ? '' : 's'} ${(P.quiz.missed || []).join(', ')}. ${left} ${left === 1 ? 'try' : 'tries'} left.`;
     box.innerHTML = `
-      ${done ? `<div class="msg good" style="margin-bottom:12px">You scored <b>${P.quiz.score}/${P.quiz.total}</b>${P.quizAttempts > 1 ? ` (attempt ${P.quizAttempts})` : ''}. ${P.quiz.score < P.quiz.total ? 'Review the explanations below — you can retake it.' : 'Perfect! 🌟'}</div>` : ''}
+      ${teacher ? '' : `<p class="small muted" style="margin-top:0">Get at least ${needed} of ${quiz.length} correct. You have ${rules.tries} tries, and the answers appear when you finish.</p>`}
+      ${done ? `<div class="msg ${passed ? 'good' : 'bad'}" style="margin-bottom:12px">You scored <b>${P.quiz.score}/${P.quiz.total}</b>${tries > 1 ? ` (try ${tries})` : ''}. ${scoreNote}</div>` : ''}
       <form id="qf">
-        ${quiz.map((q, i) => `<div class="q" role="group" aria-labelledby="q${i}-label"><b id="q${i}-label">${i + 1}. ${esc(q.q)}</b><div class="opts">
+        ${quiz.map((q, i) => `<div class="q" role="group" aria-labelledby="q${i}-label"><b id="q${i}-label">${i + 1}. ${esc(q.q)}</b>${q.code ? `<pre class="code">${esc(q.code)}</pre>` : ''}<div class="opts">
           ${q.choices.map((c, j) => {
             const picked = done && Number(P.quiz.answers[i]) === j; const cls = (done || teacher) && q.answer !== undefined ? (j === q.answer ? (done || teacher ? 'right' : '') : picked ? 'wrong' : '') : '';
-            return `<label class="${done || teacher ? cls : ''}"><input type="radio" name="q${i}" value="${j}" ${picked ? 'checked' : ''} required> <span>${esc(c)}</span>${(done || teacher) && j === q.answer ? ' <b>✓ Correct answer</b>' : picked && j !== q.answer ? ' <b>✗ Your answer</b>' : ''}</label>`;
+            return `<label class="${done || teacher ? cls : ''}"><input type="radio" name="q${i}" value="${j}" ${picked ? 'checked' : ''} required> <span>${esc(c)}</span>${(done || teacher) && j === q.answer ? ' <b>✓ Correct answer</b>' : picked && q.answer !== undefined && j !== q.answer ? ' <b>✗ Your answer</b>' : ''}</label>`;
           }).join('')}</div>
           ${(done || teacher) && q.explain ? `<div class="explain">💡 ${esc(q.explain)}</div>` : ''}</div>`).join('')}
         ${L.reflection ? `<label class="f">✍️ Reflection: ${esc(L.reflection)}<textarea name="reflection" rows="3" required>${esc(P?.reflection || '')}</textarea></label>
           ${L.supports?.frames?.length ? `<p class="small muted" style="margin-top:-6px"><b>Need a start?</b> ${L.supports.frames.map(esc).join(' &nbsp;·&nbsp; ')}</p>` : ''}` : ''}
-        ${teacher ? '<p class="muted small">Teacher preview — correct answers are highlighted.</p>' : `<button class="btn primary">${done ? 'Retake & resubmit' : 'Submit exit ticket'}</button>`}
+        ${teacher ? '<p class="muted small">Teacher preview — correct answers are highlighted.</p>' : (revealed ? '' : `<button class="btn primary">${done ? 'Try again' : 'Submit exit ticket'}</button>`)}
         ${!teacher && document.getElementById('photobox') ? '<p class="muted small">This lesson also needs your team\'s build photo before it counts as complete.</p>' : ''}
         ${!teacher && L.challenge && !P?.challenge ? '<p class="muted small">Remember to <b>Check & Submit</b> the code challenge too — both are needed to complete the lesson.</p>' : ''}
       </form>`;
-    if (teacher) return;
+    if (teacher || revealed) return;
     box.querySelector('#qf').onsubmit = async e => {
       e.preventDefault(); const fd = new FormData(e.target);
       const answers = quiz.map((_, i) => Number(fd.get('q' + i)));
@@ -483,6 +491,35 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     return out;
   }
 
+  // VEXcode needs a few lines the simulator doesn't, so they're added here.
+  function forVexcode(source) {
+    let c = source.trim();
+    const includes = [], usings = [];
+    if (/\bcout\b/.test(c)) includes.push('#include <iostream>');
+    if (/\bstring\b/.test(c)) { includes.push('#include <string>'); if (!/std::string/.test(c)) usings.push('using std::string;'); }
+    if (/\bvector\b/.test(c)) { includes.push('#include <vector>'); if (!/std::vector/.test(c)) usings.push('using std::vector;'); }
+    if (/(^|[^:\w])cout\b/.test(c)) usings.push('using std::cout;', 'using std::endl;');
+    c = c.replace(/^[ \t]*#include\s*"vex\.h"[ \t]*\n?/m, '').replace(/^[ \t]*using\s+namespace\s+vex\s*;[ \t]*\n?/m, '').trim();
+    if (!/vexcodeInit/.test(c)) c = c.replace(/int\s+main\s*\(\s*\)\s*\{/, m => m + '\n  vexcodeInit();');
+    return ['#include "vex.h"', ...includes, 'using namespace vex;', ...usings, '', c, ''].join('\n');
+  }
+  function copyForVexcode(source, setup) {
+    const code = forVexcode(source);
+    const m = modal(`<h2 style="margin-top:0">📋 Copy for VEXcode</h2>
+      <ol class="small"><li>In VEXcode IQ, open a new C++ project for your robot's Brain.</li><li>In <b>Devices</b>, add the same devices, ports and names as your Robot Setup.</li><li>Replace everything in <b>main.cpp</b> with the code below, then download it to your robot.</li></ol>
+      <textarea id="vex-code" class="input" rows="12" readonly spellcheck="false" aria-label="Code to paste into VEXcode" style="font-family:var(--mono)">${esc(code)}</textarea>
+      <details style="margin-top:8px"><summary class="small">Devices to add in VEXcode</summary><pre class="code">${esc(VexSim.generatedConfig(setup))}</pre></details>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="do-copy">Copy code</button><span class="small" role="status" id="copy-state"></span><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
+    const area = m.querySelector('#vex-code'), state = m.querySelector('#copy-state');
+    m.querySelector('#cx').onclick = () => m.remove();
+    m.querySelector('#do-copy').onclick = async () => {
+      area.focus(); area.select();
+      let ok = false;
+      try { await navigator.clipboard.writeText(code); ok = true; } catch (e) { try { ok = document.execCommand('copy'); } catch (e2) {} } // Apps Script pages may block the newer clipboard
+      state.textContent = ok ? 'Copied ✔' : 'Press Ctrl+C to copy.';
+    };
+  }
+
   function createIDE(host, opts) {
     let prefs = loadEditorPrefs(), setup = opts.setup || mySetup();
     host.innerHTML = `
@@ -491,6 +528,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
         <button class="btn" data-a="reset">↺ Reset robot</button>
         <select class="input" data-a="speed" style="width:auto;margin:0"><option value="1">1× speed</option><option value="2">2×</option><option value="4">4×</option><option value="10">10×</option></select>
         <button class="btn" data-a="setup" aria-expanded="false">🔌 Robot Setup</button>
+        ${opts.setup ? '' : '<button class="btn" data-a="copy">📋 Copy for VEXcode</button>'}
         <button class="btn" data-a="settings" aria-expanded="false">⚙ Editor settings</button>
         <div class="spacer"></div>
         ${opts.starter ? '<button class="btn sm" data-a="restore">Restore starter code</button>' : ''}
@@ -623,6 +661,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     host.addEventListener('click', e => {
       const a = e.target.closest('[data-a]')?.dataset.a;
       if (a === 'setup') showSetup(setupBox.hidden);
+      if (a === 'copy') copyForVexcode(cm.getValue(), setup);
       if (a === 'settings') { settings.hidden = !settings.hidden; q('[data-a=settings]').setAttribute('aria-expanded', String(!settings.hidden)); }
       if (a === 'settings-reset') { prefs = { ...EDITOR_DEFAULTS }; try { localStorage.removeItem(editorKey()); } catch (e) {} syncSettingsForm(); applyPrefs(); }
       if (a === 'run') doRun(false);
@@ -759,7 +798,7 @@ int main() {
         <div class="stat"><span class="muted small">Progression</span><b style="font-size:1.1rem">${esc(PLANS[C.plan])} · ${esc(KITS[C.kit])}</b></div>
       </div>
       ${students.length ? `
-      <div class="legend"><span><span class="cell complete">8/10</span> complete (quiz score)</span><span><span class="cell started">…</span> started</span><span><span class="cell none">·</span> not started</span><span><span class="cell complete review">✓</span> blue outline = new work to review</span><span>★ = Go Further lesson</span><span>Click any cell to view the student's work.</span></div>
+      <div class="legend"><span><span class="cell complete">8/10</span> complete (quiz score)</span><span><span class="cell started">…</span> started</span><span><span class="cell none">·</span> not started</span><span><span class="cell complete review">✓</span> blue outline = new work to review</span><span><span class="cell started stuck">!</span> red outline = used all exit ticket tries, needs you</span><span>★ = Go Further lesson</span><span>Click any cell to view the student's work.</span></div>
       <div class="gridtbl"><table>
         <thead><tr><th class="l">Student</th><th>Done</th>${lessons.map(l => `<th class="vert" title="${esc(l.title)}">${l.track === 'extra' ? '★' : l.num + '.'} ${esc(l.title)}</th>`).join('')}</tr>
           <tr><th class="l small muted">Class quiz average</th><th></th>${lessons.map(l => { const a = avg(l); return `<th class="small muted">${a === null ? '' : a + '%'}</th>`; }).join('')}</tr></thead>
@@ -769,7 +808,7 @@ int main() {
             if (!p) return `<td><button class="cell none" data-s="${s.id}" data-l="${l.id}" aria-label="${esc(s.name)}, ${esc(l.title)}: not started">·</button></td>`;
             const label = p.grade != null ? p.grade : p.quiz ? `${p.quiz.score}/${p.quiz.total}` : '…';
             const ch = l.hasChallenge ? (p.challenge ? (p.challenge.passed ? '' : '⚠') : '') : '';
-            return `<td><button class="cell ${p.status} ${p.needsReview ? 'review' : ''}" data-s="${s.id}" data-l="${l.id}" aria-label="${esc(s.name)}, ${esc(l.title)}: ${p.status}, ${label}" title="${p.challenge ? 'Challenge: ' + (p.challenge.passed ? 'passed' : p.challenge.passCount + '/' + p.challenge.total) : 'No code submitted'}">${label}${ch}</button></td>`; }).join('')}
+            return `<td><button class="cell ${p.status} ${p.needsReview ? 'review' : ''} ${p.stuck ? 'stuck' : ''}" data-s="${s.id}" data-l="${l.id}" aria-label="${esc(s.name)}, ${esc(l.title)}: ${p.stuck ? 'needs help, ' : ''}${p.status}, ${label}" title="${p.challenge ? 'Challenge: ' + (p.challenge.passed ? 'passed' : p.challenge.passCount + '/' + p.challenge.total) : 'No code submitted'}">${label}${ch}</button></td>`; }).join('')}
         </tr>`).join('')}</tbody></table></div>` : `<div class="panel"><h3>No students yet</h3><p>Share the join code <span class="joincode">${esc(C.code)}</span> with your class. Students enter it the first time they open this website.</p></div>`}`;
     $app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => reviewModal(b.dataset.s, b.dataset.l, () => classPage(cid)));
     $app.querySelectorAll('[data-stu]').forEach(b => b.onclick = () => studentModal(students.find(s => s.id === b.dataset.stu), cid));
@@ -843,7 +882,7 @@ int main() {
       <h3 style="margin-top:16px">🧑‍🏫 Your feedback</h3>
       <div class="row"><label class="small">Grade (0–100) <input class="input" id="gr" type="number" min="0" max="100" value="${P?.grade ?? ''}" style="width:110px"></label></div>
       <textarea class="input" id="fb" rows="3" placeholder="Glow: … Grow: …">${esc(P?.feedback || '')}</textarea>
-      <div class="row" style="margin-top:10px"><button class="btn primary" id="save">Save feedback</button><label class="small row"><input type="checkbox" id="mc"> Mark lesson complete (excuse / unlock next)</label></div>`);
+      <div class="row" style="margin-top:10px"><button class="btn primary" id="save">Save feedback</button><label class="small row"><input type="checkbox" id="mc"> Mark lesson complete (lets this student move on)</label></div>`);
     m.querySelector('#cx').onclick = () => { m.remove(); };
     if (subs.length) {
       const show = i => { const s = subs[i]; m.querySelector('#vcode').textContent = s.code; m.querySelector('#vchecks').innerHTML = s.checks.map(c => `<li>${c.pass ? '✅' : '❌'} ${esc(c.message)}</li>`).join(''); };
@@ -926,7 +965,7 @@ int main() {
     const m = modal(`<h2 style="margin-top:0">🎓 Send grades to Google Classroom</h2>
       <label class="f">Google Classroom class<select id="course">${courses.map(c => `<option value="${esc(c.id)}" ${c.id === C.courseId ? 'selected' : ''}>${esc(c.name)}${c.section ? ' · ' + esc(c.section) : ''}</option>`).join('')}</select></label>
       <label class="f">Due date for new assignments <span class="muted small">(must be inside your PowerSchool grading period)</span><input id="due" type="date" value="${today}"></label>
-      <p class="small">Sends one assignment per main-path lesson, out of 100. Each grade is yours if you entered one. Otherwise it's the exit ticket and code challenge score for a completed lesson. Unfinished lessons and Go Further lessons aren't sent.</p>
+      <p class="small">Sends one assignment per main-path lesson, out of 100. Each grade is yours if you entered one. Otherwise it's the student's exit ticket and code challenge score once they've tried both. Lessons not yet tried and Go Further lessons aren't sent.</p>
       ${C.lastSync ? `<p class="small muted">Last sent: ${new Date(C.lastSync).toLocaleString()}</p>` : ''}
       <div class="err" id="gc-err"></div><div id="gc-result" role="status"></div>
       <div class="row"><button class="btn primary" id="go" ${courses.length ? '' : 'disabled'}>Send grades</button><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);

@@ -10,9 +10,9 @@ Standards are the Massachusetts Digital Literacy and Computer Science (2016) gra
 
 | Term | Standards assessed (anchor) | Standards addressed (anchor or supporting) |
 |---|---|---|
-| 10 lessons | 10 | 14 |
-| 12 lessons | 10 | 14 |
-| 15 lessons | 11 | 15 |
+| 10 lessons | 12 | 14 |
+| 12 lessons | 13 | 16 |
+| 15 lessons | 13 | 18 |
 | Full course (28 lessons) | 19 | 25 |
 
 The state list has 67 grades 6-8 standards.
@@ -24,7 +24,7 @@ The state list has 67 grades 6-8 standards.
 | 1 | What Is a Robot? | 10, 12, 15 | CS.a.4 | — |
 | 2 | Build Basics: Beams, Plates & Pins | 10, 12, 15 | CS.a.5 | — |
 | 3 | Build Basics: Strong Structures | Go Further | CT.d.6 | CS.a.5 |
-| 4 | Build Basics: Motors, Shafts & Gears | 15 | CS.a.4 | CT.b.2 |
+| 4 | Build Basics: Motors, Shafts & Gears | Go Further | CS.a.4 | CT.b.2 |
 | 5 | Build the BaseBot | 10, 12, 15 | CS.a.5, CS.a.7 | CS.a.4, CT.d.3 |
 | 6 | Hello, C++! | 10, 12, 15 | CT.d.5, CT.d.6 | CT.d.3 |
 | 7 | Drive & Turn | 10, 12, 15 | CT.d.3 | CT.b.2 |
@@ -33,14 +33,14 @@ The state list has 67 grades 6-8 standards.
 | 10 | Making Decisions | 12, 15 | CT.b.1, CS.a.4 | CT.b.2, CT.d.4 |
 | 11 | While Loops & Sensors | 15 | CT.b.1, CS.a.4 | CT.b.5, CT.d.4 |
 | 12 | Functions | 10, 12, 15 | CT.a.2, CT.d.2 | CT.d.4, CT.b.3 |
-| 13 | What Is an Algorithm? | Go Further | CT.b.4, CT.d.1 | CT.d.3 |
+| 13 | What Is an Algorithm? | 10, 12, 15 | CT.b.4, CT.d.1 | CT.d.3 |
 | 14 | Line Following | Go Further | CT.d.3, CS.a.6 | CT.b.5 |
 | 15 | Searching | Go Further | CT.d.1, CT.d.3 | CT.b.4 |
 | 16 | Sorting | Go Further | CT.d.3, CT.d.5 | CT.b.4 |
-| 17 | Cube Sorting Robot | 12, 15 | CT.b.3, CS.a.5 | CT.a.2, CT.d.2, CT.d.4 |
+| 17 | Cube Sorting Robot | Go Further | CT.b.3, CS.a.5 | CT.a.2, CT.d.2, CT.d.4 |
 | 18 | Pathfinding | Go Further | CT.d.3 | CT.e.1, CT.b.4 |
 | 19 | Smooth Moves: Proportional Control | Go Further | CS.a.4, CT.e.2 | CT.d.6 |
-| 20 | What Is AI? | Go Further | CS.a.4, CT.d.4 | CAS.c.1, CS.b.1 |
+| 20 | What Is AI? | 12, 15 | CS.a.4, CT.d.4 | CAS.c.1, CS.b.1 |
 | 21 | Decision Trees | Go Further | CT.a.3 | CT.b.2, CT.d.4 |
 | 22 | State Machines | Go Further | CT.d.3, CT.e.1 | CT.b.1 |
 | 23 | Machine Learning: Training Data | Go Further | CT.c.5 | CS.a.6, CS.b.2 |
@@ -48,7 +48,7 @@ The state list has 67 grades 6-8 standards.
 | 25 | AI Ethics & Bias | Go Further | CAS.c.1 | CAS.c.3, CT.e.2 |
 | 26 | Capstone: Design a Rescue Robot | 10, 12, 15 | CT.b.3, CS.a.5 | CT.d.1, CT.a.2 |
 | 27 | Capstone: Build, Code, Test | 10, 12, 15 | CT.d.6, CS.a.5 | CT.d.4, CS.a.7 |
-| 28 | Capstone Showcase | 10, 12, 15 | CS.a.5 | DTC.b.1, CT.d.2 |
+| 28 | Capstone Showcase | 15 | CS.a.5 | DTC.b.1, CT.d.2 |
 
 ## By standard
 

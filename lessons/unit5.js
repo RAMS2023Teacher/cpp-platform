@@ -267,7 +267,7 @@ int main() {
           "Storing sensor values",
           "Scoring several ideas on the same criteria to choose fairly",
           "Drawing the robot",
-          "Timing the robot"
+          "Keeping a record of how long the robot takes to complete each part of the mission during every test"
         ],
         answer: 1,
         explain: "It compares ideas on the same criteria so the team chooses with reasons, not just opinions."
@@ -275,7 +275,7 @@ int main() {
       {
         q: "Why write function stubs before the real code?",
         choices: [
-          "They make the robot faster",
+          "They let the robot skip the empty functions, which makes the final program run faster during the mission",
           "They make the plan visible in the code and let you build and test one piece at a time",
           "C++ requires empty functions",
           "So you never have to finish them"
@@ -544,7 +544,7 @@ int main() {
       {
         q: "What is print debugging?",
         choices: [
-          "Printing the code on paper",
+          "Printing the whole program on paper so that your team can cross out each line it thinks is not needed",
           "Printing values and step names so you can see what the program is really doing",
           "Deleting all print statements",
           "Using a 3D printer to fix the robot"
@@ -557,7 +557,7 @@ int main() {
         choices: [
           "The C++ syntax is wrong",
           "A real-world hardware issue like wheel slip, low battery or high turn speed",
-          "The simulator is broken",
+          "The simulator and the real robot use different C++ rules, so the same program always has to be rewritten",
           "The cube is the wrong color"
         ],
         answer: 1,
@@ -786,7 +786,7 @@ int main() {
           "Cool robot",
           "Your claw grabbed every cube on the first try, and your code used clear function names",
           "Your robot was bad",
-          "I don't know"
+          "Your robot was really good and everybody liked it, so you probably do not need to change anything"
         ],
         answer: 1,
         explain: "Good feedback is specific and kind."
@@ -797,7 +797,7 @@ int main() {
           "Leave the stage",
           "Blame a teammate",
           "Explain what you think went wrong and how you would fix it",
-          "Pretend it worked"
+          "Run the same program again right away without changing anything until it finally works on its own"
         ],
         answer: 2,
         explain: "Explaining failures shows real engineering thinking."
@@ -808,7 +808,7 @@ int main() {
           "Functions run faster",
           "Each move has a name and is in one place, so you can reorder or reuse it easily",
           "C++ requires functions for dancing",
-          "Functions use less battery"
+          "Functions make each move run at the same speed, which the robot needs in order to keep the dance in time"
         ],
         answer: 1,
         explain: "Functions break a program into named, reusable pieces."
