@@ -44,9 +44,6 @@ On 1st gen, lessons automatically show the Color Sensor (`colorname()`) and Gyro
 - **Rescue Mission:** the three capstone lessons are the mission stages. Finishing them earns *Rescue Certified*.
 - **Mission to the Moon map:** a flight from Earth to Moon Base through the course's units that shows each student's robot at the lesson they're on. Classmates appear as first name and last initial, with no grades or scores. Teachers see full names. A teacher can turn classmates off for a class in **Class settings**.
 
-## CAD Studio
-A **CAD Studio ↗** button in the top bar opens the class's VEX IQ CAD Studio in its own tab, the same way VEXcode IQ works, and ⧉ shows how to snap it side by side with RoboCode. The build lessons (Beams, Plates & Pins; Strong Structures; Motors, Shafts & Gears) and the rescue capstone ask students to design in CAD Studio before building. Its address is set once, in `APPS` near the top of `public/js/app.js`; lesson HTML links to it with `<a data-app="cad">`.
-
 ## VEX part pictures
 Lessons show pictures of VEX IQ parts (Brain, motors, sensors, beams, pins, shafts, claws and build views) from the VEX Library and vexrobotics.com. They load from VEX's own website, each with an "Image: VEX Robotics" credit, and aren't copied into this project. Pictures of 2nd gen-only parts are hidden for 1st gen classes, and the reverse. The list is in [`lessons/vex-images.js`](lessons/vex-images.js). If a school network blocks VEX's sites, the pictures simply don't appear.
 
