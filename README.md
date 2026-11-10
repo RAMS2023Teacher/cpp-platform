@@ -44,6 +44,18 @@ On 1st gen, lessons automatically show the Color Sensor (`colorname()`) and Gyro
 - **Rescue Mission:** the three capstone lessons are the mission stages. Finishing them earns *Rescue Certified*.
 - **Mission to the Moon map:** a flight from Earth to Moon Base through the course's units that shows each student's robot at the lesson they're on. Classmates appear as first name and last initial, with no grades or scores. Teachers see full names. A teacher can turn classmates off for a class in **Class settings**.
 
+## Class Screen
+Open a class and press **📺 Class Screen** to put it on the projector. It shows:
+- today's lesson (picked automatically as the first lesson most of the class hasn't finished, or chosen from the list and remembered for the class)
+- the **Question of the Day** (the lesson's guiding question)
+- **What to do today**, built from the lesson's steps; press **✏️ Edit** to write your own, one step per line, saved per class and lesson
+- the lesson's MA DLCS standards and learning goals
+- a large **class timer** with a button for each part of the lesson, +1 minute, and a chime when time is up
+- **class progress** on today's lesson and how many students are on each lesson
+- **recent achievements** from the last 7 days (finished lessons, robot parts, unit badges), shown as first name and last initial, or anonymously if classmates are hidden in Class settings
+
+Students never see a timer or lesson minutes; those are only on the teacher's views.
+
 ## Teacher workflow
 1. **Classes → New class** gives you a 6-letter join code.
 2. Students open the web app link and enter the code and their name, once.

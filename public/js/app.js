@@ -126,6 +126,7 @@
     if (parts[0] === 'map') return mapPage(parts[1]);
     if (ME.role === 'teacher') {
       if (parts[0] === 'teacher' && parts[1] === 'class' && parts[3] === 'event') return eventAdmin(parts[2], parts[4]);
+      if (parts[0] === 'teacher' && parts[1] === 'class' && parts[3] === 'screen') return classScreen(parts[2], parts[4]);
       if (parts[0] === 'teacher' && parts[1] === 'class') return classPage(parts[2]);
       if (parts[0] === 'teacher' && parts[1] === 'lessons') return lessonsAdmin();
       if (parts[0] === 'teacher' && parts[1] === 'standards') return standardsPage();
@@ -249,7 +250,7 @@
   function card(l) {
     const icon = !l.unlocked ? '🔒' : l.status === 'complete' ? '✅' : l.status === 'started' ? '🟡' : '';
     return `<a class="lcard ${l.unlocked ? '' : 'locked'} ${l.status}" href="#/lesson/${l.id}">
-      <span class="status" role="img" aria-label="${!l.unlocked ? 'Locked' : l.status === 'complete' ? 'Complete' : l.status === 'started' ? 'In progress' : 'Not started'}">${icon}</span><span class="num">${l.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + l.num} · ${l.minutes} MIN</span>
+      <span class="status" role="img" aria-label="${!l.unlocked ? 'Locked' : l.status === 'complete' ? 'Complete' : l.status === 'started' ? 'In progress' : 'Not started'}">${icon}</span><span class="num">${l.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + l.num}${ME.role === 'teacher' ? ` · ${l.minutes} MIN` : ''}</span>
       <h3>${esc(l.title)}</h3><p>${esc(l.summary)}</p><div>${tags(l.tags)}</div>
       ${l.requires?.length ? `<span class="small muted">Opens after: ${l.requires.map(esc).join(', ')}</span>` : ''}
       ${l.photo ? '<span class="small muted">📸 Team photo required</span>' : ''}
@@ -277,7 +278,7 @@
       <div class="lesson-head">
         <div style="flex:1;min-width:260px">
           <a href="${teacher ? '#/teacher/lessons' : '#/'}" class="small">← ${teacher ? 'All lessons' : 'My course'}</a>
-          <div class="muted small" style="margin-top:8px">UNIT ${L.unit} · ${esc(UNIT_NAMES[L.unit] || '')} · ${place.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + place.num} · ⏱ ${L.minutes} min</div>
+          <div class="muted small" style="margin-top:8px">UNIT ${L.unit} · ${esc(UNIT_NAMES[L.unit] || '')} · ${place.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + place.num}${teacher ? ` · ${L.minutes} min` : ''}</div>
           <h1>${esc(L.title)}</h1><div>${tags(L.tags)}</div>
         </div>
         <div class="row">${prev ? `<a class="btn sm" href="#/lesson/${prev}">← Prev</a>` : ''}${next ? `<a class="btn sm" href="#/lesson/${next}">Next →</a>` : ''}</div>
@@ -287,11 +288,11 @@
           <a href="#" data-jump="goals"><span>🎯 Goals</span></a>
           <a href="#" data-jump="brief"><span>📖 Engineer's Brief</span></a>
           ${L.video ? `<a href="#" data-jump="video"><span>🎬 Video</span></a>` : ''}
-          ${secs.map((s, i) => `<a href="#" data-jump="s${i}"><span>${(KIND[s.kind] || ['•'])[0]} ${esc(s.title)}</span><span class="min">${s.minutes || ''}′</span></a>`).join('')}
+          ${secs.map((s, i) => `<a href="#" data-jump="s${i}"><span>${(KIND[s.kind] || ['•'])[0]} ${esc(s.title)}</span>${teacher ? `<span class="min">${s.minutes || ''}′</span>` : ''}</a>`).join('')}
           ${L.challenge ? `<a href="#" data-jump="challenge"><span>🤖 Code Challenge</span></a>` : ''}
           ${photo ? '<a href="#" data-jump="photo"><span>📸 Team Photo</span></a>' : ''}
           <a href="#" data-jump="quiz"><span>📝 Exit Ticket</span></a>
-          <div class="timer"><span class="small">Class timer</span><b id="tmr">${String(L.minutes).padStart(2, '0')}:00</b><button class="btn sm" id="tmrb" style="margin-top:6px">Start</button></div>
+          ${teacher ? '<p class="small muted" style="margin:8px 6px 0">The class timer is on each class\'s 📺 Class Screen.</p>' : ''}
         </aside>
         <div>
           ${teacher && L.teacherNote ? `<div class="callout warn"><b>Teacher note:</b> ${esc(L.teacherNote)}</div>` : ''}
@@ -313,7 +314,7 @@
             <div data-read><p class="brief-text">${esc(L.supports.brief)}</p></div>
           </div>
           ${L.video ? `<div class="panel sec" id="video"><div class="sec-kind">🎬 Watch</div>${videoEmbed(L.video)}</div>` : ''}
-          ${secs.map((s, i) => `<div class="panel sec ${esc(s.kind)}" id="s${i}"><div class="sec-kind">${(KIND[s.kind] || ['•', s.kind]).join(' ')} <span class="m">· ${s.minutes || '?'} min</span></div><h2>${esc(s.title)}</h2><div class="body">${s.html}</div></div>`).join('')}
+          ${secs.map((s, i) => `<div class="panel sec ${esc(s.kind)}" id="s${i}"><div class="sec-kind">${(KIND[s.kind] || ['•', s.kind]).join(' ')}${teacher ? ` <span class="m">· ${s.minutes || '?'} min</span>` : ''}</div><h2>${esc(s.title)}</h2><div class="body">${s.html}</div></div>`).join('')}
           ${L.challenge ? `<div class="panel sec code" id="challenge"><div class="sec-kind">🤖 Code Challenge</div><h2>${esc(L.challenge.title)}</h2><div class="body">${L.challenge.prompt}</div>
               ${L.supports.worked ? `<details class="callout tip"><summary><b>👀 See a worked example</b></summary><p class="small">This solves a similar problem, not your challenge.</p><pre class="code">${esc(L.supports.worked.code)}</pre><ol class="small">${L.supports.worked.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ol></details>` : ''}
               <details class="callout think"><summary><b>🧗 Stuck? Try these in order</b></summary><ol class="small"><li>Read the error message and go to the line it names.</li><li>Read your code out loud, one line at a time. What does the robot do on each line?</li><li>Compare your code with the worked example.</li><li>Open one hint below.</li><li>Explain the problem to a partner, then ask your teacher.</li></ol></details>
@@ -329,13 +330,6 @@
     window.mountWidgets($app);
     addReadAloud($app);
     if (photo) mountPhoto(document.getElementById('photobox'), { checkpoint: L.id, prompt: photo.prompt, photoId: photo.photoId, excused: photo.excused, onDone: r => { if (r.progress) celebrate(L, r.progress); } });
-    // class timer
-    let left = L.minutes * 60, int = null; const tm = document.getElementById('tmr'), tb = document.getElementById('tmrb');
-    tb.onclick = () => {
-      if (int) { clearInterval(int); int = null; tb.textContent = 'Resume'; return; }
-      tb.textContent = 'Pause';
-      int = setInterval(() => { left = Math.max(0, left - 1); tm.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`; if (!left) { clearInterval(int); tm.textContent = "⏰ 00:00"; } }, 1000);
-    };
     let ide = null;
     if (L.challenge) {
       const ck = 'draft:' + ME.id + ':' + L.id;
@@ -643,7 +637,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     sim.on('screen', () => { scr.textContent = sim.screen.lines.join('\n'); scr.scrollTop = scr.scrollHeight; });
     let frame = 0;
     sim.on('frame', () => { if (frame++ % 6) return; const d = sim.rayDistance(); const [ox, oy] = sim.opticalPt();
-      hud.innerHTML = `<span>⏱ ${sim.t.toFixed(1)}s</span><span>🧭 ${sim.r.h.toFixed(0)}°</span><span>📍 (${sim.r.x.toFixed(1)}, ${sim.r.y.toFixed(1)}) in</span><span>📡 ${d === null ? '—' : d.toFixed(1) + ' in'}</span><span>🎨 ${sim.floorAt(ox, oy).color}</span>${sim.collisions ? `<span style="color:var(--bad)">💥 ${sim.collisions} bump${sim.collisions > 1 ? 's' : ''}</span>` : ''}`; });
+      hud.innerHTML = `<span title="How long the program has been running in the simulator">sim time ${sim.t.toFixed(1)}s</span><span>🧭 ${sim.r.h.toFixed(0)}°</span><span>📍 (${sim.r.x.toFixed(1)}, ${sim.r.y.toFixed(1)}) in</span><span>📡 ${d === null ? '—' : d.toFixed(1) + ' in'}</span><span>🎨 ${sim.floorAt(ox, oy).color}</span>${sim.collisions ? `<span style="color:var(--bad)">💥 ${sim.collisions} bump${sim.collisions > 1 ? 's' : ''}</span>` : ''}`; });
     let errMark = null;
     const setMsg = (t, kind) => { msg.className = 'msg ' + (kind || ''); msg.textContent = t || ''; };
     sim.on('error', e => setMsg(e.message, 'bad'));
@@ -809,7 +803,7 @@ int main() {
     $app.innerHTML = `
       <a href="#/teacher" class="small">← All classes</a>
       <div class="row" style="margin:6px 0 14px"><h1 style="margin:0">${esc(C.name)}</h1><span class="joincode" style="font-size:1.1rem">${esc(C.code)}</span><div class="spacer"></div>
-        ${data.events.map(e => `<a class="btn sm" href="#/teacher/class/${C.id}/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}<button class="btn sm" id="teams">👥 Teams</button><button class="btn sm" id="photos">📸 Photos</button><button class="btn sm" id="gc">🎓 Google Classroom</button><a class="btn sm" href="#/map/${C.id}">🚀 Moon map</a><button class="btn sm" id="export">📊 Export to Google Sheets</button><button class="btn sm" id="settings">⚙ Class settings</button></div>
+        ${data.events.map(e => `<a class="btn sm" href="#/teacher/class/${C.id}/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}<a class="btn sm primary" href="#/teacher/class/${C.id}/screen">📺 Class Screen</a><button class="btn sm" id="teams">👥 Teams</button><button class="btn sm" id="photos">📸 Photos</button><button class="btn sm" id="gc">🎓 Google Classroom</button><a class="btn sm" href="#/map/${C.id}">🚀 Moon map</a><button class="btn sm" id="export">📊 Export to Google Sheets</button><button class="btn sm" id="settings">⚙ Class settings</button></div>
       <div class="stats">
         <div class="stat"><span class="muted small">Students</span><b>${students.length}</b></div>
         <div class="stat"><span class="muted small">Lessons completed (all students)</span><b>${students.reduce((n, s) => n + Object.values(s.progress).filter(p => p.status === 'complete').length, 0)}</b></div>
@@ -975,6 +969,122 @@ int main() {
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelectorAll('[data-photo]').forEach(img => showPhoto(img, img.dataset.photo));
     m.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => { if (!confirm('Delete this photo?')) return; try { await api('/api/photos/' + b.dataset.del, { method: 'DELETE' }); b.closest('.photo-card').remove(); } catch (e) { toast(e.message); } });
+  }
+
+  // ---------------------------------------------------------------- class screen (for the projector)
+  // The timer lives outside the page, so it keeps running while the teacher looks at other pages.
+  const screenTimers = {};
+  const fmtClock = sec => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+  function chime() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.35, 0.7].forEach(t => { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 880; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(0.25, ctx.currentTime + t); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.3); o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.3); });
+    } catch (e) {}
+  }
+  const defaultInstructions = L => [
+    ...L.sections.map(sec => `${(KIND[sec.kind] || ['•'])[0]} ${sec.title}`),
+    L.hasChallenge ? '🤖 Finish the code challenge and press Check & Submit' : null,
+    L.hasPhoto ? '📸 Upload your team build photo' : null,
+    '📝 Turn in your exit ticket'
+  ].filter(Boolean).join('\n');
+  async function classScreen(cid, lessonId) {
+    const load = () => api(`/api/teacher/classes/${cid}/screen${lessonId ? '/' + lessonId : ''}`);
+    let d = await load();
+    const T = screenTimers[cid] = screenTimers[cid] || { total: d.lesson.sections[0]?.minutes * 60 || 300, left: d.lesson.sections[0]?.minutes * 60 || 300, endAt: null, label: d.lesson.sections[0]?.title || 'Timer' };
+    const L = d.lesson;
+    $app.innerHTML = `<div class="cscreen">
+      <div class="row cs-top">
+        <a class="small" href="#/teacher/class/${cid}">← ${esc(d.class.name)}</a>
+        <div class="spacer"></div>
+        <label class="small">Today's lesson <select class="input" id="cs-lesson" style="display:inline-block;width:auto;margin:0 0 0 6px">${d.lessons.map(l => `<option value="${l.id}" ${l.id === L.id ? 'selected' : ''}>${l.num}. ${esc(l.title)}</option>`).join('')}</select></label>
+        <button class="btn sm" id="cs-full" type="button">⛶ Full screen</button>
+      </div>
+      <div class="muted cs-kicker">Lesson ${L.num} · Unit ${L.unit}: ${esc(UNIT_NAMES[L.unit] || '')}</div>
+      <h1 class="cs-title">${esc(L.title)}</h1>
+      <div class="cs-grid">
+        <div class="cs-main">
+          <section class="panel cs-q"><div class="sec-kind">❓ Question of the Day</div><p>${esc(L.question || L.summary)}</p></section>
+          <section class="panel"><div class="row"><div class="sec-kind" style="margin:0">📋 What to do today</div><div class="spacer"></div><button class="btn sm" id="cs-edit" type="button">✏️ Edit</button></div>
+            <div id="cs-instr"></div></section>
+          <section class="panel"><div class="sec-kind">🎯 Today's standards (MA DLCS)</div>
+            ${L.standards.anchor.map(st => `<p class="cs-std"><b>${esc(st.code.replace('6-8.', ''))}</b> ${esc(st.text)}</p>`).join('')}
+            ${L.standards.supporting.length ? `<p class="small muted" style="margin:8px 0 2px">Also practicing</p>${L.standards.supporting.map(st => `<p class="cs-std small"><b>${esc(st.code.replace('6-8.', ''))}</b> ${esc(st.text)}</p>`).join('')}` : ''}
+            <p class="small muted" style="margin-bottom:0"><b>Goal:</b> ${L.objectives.map(esc).join(' ')}</p></section>
+        </div>
+        <div class="cs-side">
+          <section class="panel cs-timer" id="cs-timer">
+            <div class="sec-kind">⏲ Class timer</div>
+            <div class="cs-label" id="cs-tlabel"></div>
+            <div class="cs-clock" id="cs-clock" role="timer" aria-live="off"></div>
+            <div class="bar"><i id="cs-tbar"></i></div>
+            <div class="row" style="margin-top:10px"><button class="btn primary" id="cs-go" type="button"></button><button class="btn" id="cs-reset" type="button">↺ Reset</button><button class="btn" id="cs-plus" type="button">+1 min</button></div>
+            <div class="row small" style="margin-top:8px">${L.sections.map((sec, i) => `<button class="btn sm" type="button" data-preset="${i}" title="${esc(sec.title)}" aria-label="${esc(sec.title)}, ${sec.minutes} minutes">${(KIND[sec.kind] || ['•'])[0]} ${sec.minutes}′</button>`).join('')}
+              <button class="btn sm" type="button" data-preset="all">Whole lesson ${L.minutes}′</button>
+              <label class="small row">Other <input class="input" id="cs-mins" type="number" min="1" max="120" value="10" style="width:64px;margin:0"> min <button class="btn sm" type="button" id="cs-set">Set</button></label></div>
+          </section>
+          <section class="panel"><div class="sec-kind">📊 Class progress</div><div id="cs-progress"></div></section>
+          <section class="panel"><div class="sec-kind">🏆 Recent achievements</div><div id="cs-ach"></div></section>
+        </div>
+      </div></div>`;
+    const $ = sel => $app.querySelector(sel);
+    // --- instructions
+    const drawInstr = () => {
+      const lines = (d.instructions || defaultInstructions(L)).split('\n').map(x => x.trim()).filter(Boolean);
+      $('#cs-instr').innerHTML = `<ol class="cs-steps">${lines.map(x => `<li>${esc(x)}</li>`).join('')}</ol>`;
+    };
+    drawInstr();
+    $('#cs-edit').onclick = () => {
+      $('#cs-instr').innerHTML = `<textarea class="input" id="cs-text" rows="8" aria-label="Instructions for students, one step per line">${esc(d.instructions || defaultInstructions(L))}</textarea>
+        <div class="row" style="margin-top:8px"><button class="btn primary sm" id="cs-save" type="button">Save</button><button class="btn sm" id="cs-default" type="button">Use the lesson's steps</button><button class="btn sm" id="cs-cancel" type="button">Cancel</button><span class="small muted">One step per line. Saved for this class and lesson.</span></div>`;
+      const save = async text => { try { await api(`/api/teacher/classes/${cid}/screen`, { body: { lessonId: L.id, instructions: text } }); d.instructions = text.trim(); drawInstr(); toast('Instructions saved'); } catch (e) { toast(e.message); } };
+      $('#cs-save').onclick = () => save($('#cs-text').value);
+      $('#cs-default').onclick = () => save('');
+      $('#cs-cancel').onclick = drawInstr;
+    };
+    // --- lesson picker (remembered for the class)
+    $('#cs-lesson').onchange = async e => { try { await api(`/api/teacher/classes/${cid}/screen`, { body: { lessonId: e.target.value } }); } catch (err) {} delete screenTimers[cid]; Nav.go(`#/teacher/class/${cid}/screen/${e.target.value}`); };
+    $('#cs-full').onclick = () => { const el = document.documentElement; try { (document.fullscreenElement ? document.exitFullscreen() : el.requestFullscreen()).catch(() => toast('Press F11 (or the full screen key) instead.')); } catch (e) { toast('Press F11 (or the full screen key) instead.'); } };
+    // --- timer
+    const remaining = () => T.endAt ? Math.max(0, (T.endAt - Date.now()) / 1000) : T.left;
+    const drawTimer = () => {
+      const left = remaining(), box = $('#cs-timer'); if (!box) return;
+      $('#cs-clock').textContent = fmtClock(Math.ceil(left));
+      $('#cs-tlabel').textContent = T.label;
+      $('#cs-tbar').style.width = `${T.total ? 100 * left / T.total : 0}%`;
+      $('#cs-go').textContent = T.endAt ? '⏸ Pause' : left > 0 ? '▶ Start' : '▶ Start';
+      box.classList.toggle('done', left <= 0);
+      if (T.endAt && left <= 0) { T.endAt = null; T.left = 0; chime(); drawTimer(); }
+    };
+    const setTimer = (sec, label) => { T.total = T.left = sec; T.endAt = null; T.label = label; drawTimer(); };
+    $('#cs-go').onclick = () => { if (T.endAt) { T.left = remaining(); T.endAt = null; } else if (remaining() > 0) T.endAt = Date.now() + T.left * 1000; drawTimer(); };
+    $('#cs-reset').onclick = () => setTimer(T.total, T.label);
+    $('#cs-plus').onclick = () => { if (T.endAt) T.endAt += 60000; else T.left += 60; T.total += 60; drawTimer(); };
+    $app.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => {
+      const sec = b.dataset.preset === 'all' ? { minutes: L.minutes, title: 'Whole lesson' } : L.sections[+b.dataset.preset];
+      setTimer(sec.minutes * 60, sec.title);
+    });
+    $('#cs-set').onclick = () => { const m = Math.max(1, Math.min(120, +$('#cs-mins').value || 10)); setTimer(m * 60, `${m} minutes`); };
+    drawTimer();
+    const tick = setInterval(drawTimer, 250);
+    // --- progress and achievements, refreshed every minute
+    const drawLive = () => {
+      const p = d.progress, pct = n => p.total ? Math.round(100 * n / p.total) : 0;
+      $('#cs-progress').innerHTML = p.total ? `
+        <p class="small" style="margin-top:0">On <b>${esc(L.title)}</b>:</p>
+        <div class="cs-stack" role="img" aria-label="${p.complete} finished, ${p.started} working, ${p.notStarted} not started"><i class="c" style="width:${pct(p.complete)}%"></i><i class="w" style="width:${pct(p.started)}%"></i></div>
+        <div class="row small cs-legend"><span><i class="c"></i> ${p.complete} finished</span><span><i class="w"></i> ${p.started} working</span><span><i></i> ${p.notStarted} not started</span></div>
+        <p class="small" style="margin:12px 0 4px">Where everyone is:</p>
+        <div class="cs-where">${d.lessons.filter(l => d.at[l.id]).map(l => `<div><span>${l.num}. ${esc(l.title)}</span><b>${d.at[l.id]}</b></div>`).join('')}${d.at.done ? `<div><span>🏁 Finished the term</span><b>${d.at.done}</b></div>` : ''}</div>`
+        : '<p class="muted">No students have joined yet.</p>';
+      $('#cs-ach').innerHTML = d.achievements.length ? `<ul class="cs-ach">${d.achievements.map(a => {
+        if (a.unit) return `<li>🏅 <b>${esc(a.who)}</b> earned the Unit ${a.unit} badge: ${esc(UNIT_NAMES[a.unit] || '')}</li>`;
+        const part = Quest.part(a.lessonId);
+        return `<li>${part ? part.icon : '✅'} <b>${esc(a.who)}</b> finished ${a.extra ? 'Go Further: ' : ''}${esc(a.title)}${part && !part.mission ? ` <span class="muted">· installed the ${esc(part.name)}</span>` : ''}</li>`;
+      }).join('')}</ul>` : '<p class="muted">Finished lessons from the last 7 days show up here.</p>';
+    };
+    drawLive();
+    const refresh = setInterval(async () => { try { d = await load(); drawLive(); } catch (e) {} }, 60000);
+    cleanup = () => { clearInterval(tick); clearInterval(refresh); };
   }
 
   // ---------------------------------------------------------------- Google Classroom

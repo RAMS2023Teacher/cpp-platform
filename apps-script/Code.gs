@@ -107,6 +107,9 @@ function routes_() {
     R('PATCH', P('teacher/classes/:id'), 'teacher', true, updateClass_),
     R('DELETE', P('teacher/classes/:id'), 'teacher', true, deleteClass_),
     R('GET', P('teacher/classes/:id/progress'), 'teacher', false, classProgress_),
+    R('GET', P('teacher/classes/:id/screen'), 'teacher', false, classScreen_),
+    R('GET', P('teacher/classes/:id/screen/:id'), 'teacher', false, classScreen_),
+    R('POST', P('teacher/classes/:id/screen'), 'teacher', true, saveClassScreen_),
     R('POST', P('teacher/classes/:id/export'), 'teacher', true, exportClass_),
     R('GET', P('teacher/students/:id/lessons/:id'), 'teacher', false, studentWork_),
     R('POST', P('teacher/students/:id/lessons/:id/review'), 'teacher', true, reviewWork_),
@@ -622,6 +625,78 @@ function classProgress_(c) {
       return Object.assign(publicUser_(s), { lastLogin: s.lastLogin || null, progress: progress });
     })
   };
+}
+// ---------------------------------------------------------------- class screen (projected for the room)
+/** Today's lesson for the class screen: the one the teacher picked, or the first main lesson most students haven't finished. */
+function screenLesson_(k, students, path, wanted) {
+  var pick = function (id) { return path.main.filter(function (l) { return l.id === id; })[0]; };
+  var l = pick(wanted) || pick((k.screen || {}).lessonId);
+  if (l) return l;
+  return path.main.filter(function (x) {
+    var done = students.filter(function (s) { return isComplete_(progressOf_(s.id)[x.id]); }).length;
+    return done * 2 < students.length;
+  })[0] || path.main[0];
+}
+function classScreen_(c) {
+  var k = ownClass_(c.user, c.params[0]), path = pathOfClass_(k), students = studentsIn_(k);
+  var l = screenLesson_(k, students, path, c.params[1]);
+  var num = path.main.indexOf(l) + 1;
+  var withText = function (code) { return STANDARDS.filter(function (s) { return s.code === code; })[0]; };
+  // Names are shown to the whole room, so use first name and last initial, or no names if classmates are hidden.
+  var showNames = k.showPeers !== false;
+  var shown = function (s) { return showNames ? peerName_(s.name) : 'A classmate'; };
+  var counts = { total: students.length, complete: 0, started: 0, notStarted: 0 }, at = {};
+  var week = Date.now() - 7 * 864e5, achievements = [];
+  students.forEach(function (s) {
+    var mine = progressOf_(s.id), p = mine[l.id];
+    if (isComplete_(p)) counts.complete++; else if (p) counts.started++; else counts.notStarted++;
+    var current = path.main.filter(function (x) { return !isComplete_(mine[x.id]); })[0];
+    var key = current ? current.id : 'done';
+    at[key] = (at[key] || 0) + 1;
+    LESSONS.forEach(function (x) {
+      var q = mine[x.id];
+      if (!q || !q.completed || !isComplete_(q) || new Date(q.completed).getTime() < week) return;
+      achievements.push({ who: shown(s), lessonId: x.id, title: x.title, extra: path.main.indexOf(x) < 0, at: q.completed });
+    });
+    // A unit badge when every main lesson in a unit is complete
+    var units = {};
+    path.main.forEach(function (x) { (units[x.unit] = units[x.unit] || []).push(mine[x.id]); });
+    Object.keys(units).forEach(function (u) {
+      var list = units[u];
+      if (!list.every(isComplete_)) return;
+      var last = list.map(function (q) { return q.completed || ''; }).sort().pop();
+      if (last && new Date(last).getTime() >= week) achievements.push({ who: shown(s), unit: +u, at: last });
+    });
+  });
+  achievements.sort(function (a, b) { return a.at < b.at ? 1 : a.at > b.at ? -1 : 0; });
+  return {
+    'class': { id: k.id, name: k.name },
+    lessons: path.main.map(function (x, i) { return { id: x.id, num: i + 1, title: x.title, unit: x.unit }; }),
+    lesson: {
+      id: l.id, num: num, unit: l.unit, title: l.title, minutes: l.minutes, summary: l.summary, objectives: l.objectives,
+      question: (l.supports || {}).think || '',
+      sections: (l.sections || []).map(function (sec) { return { kind: sec.kind, title: sec.title, minutes: sec.minutes }; }),
+      hasChallenge: !!l.challenge, hasPhoto: !!PHOTO_LESSONS[l.id],
+      standards: { anchor: l.standards.anchor.map(withText), supporting: l.standards.supporting.map(withText) }
+    },
+    instructions: ((k.screen || {}).notes || {})[l.id] || '',
+    progress: counts, at: at,
+    achievements: achievements.slice(0, 12)
+  };
+}
+function saveClassScreen_(c) {
+  var k = ownClass_(c.user, c.params[0]), b = c.body;
+  var l = lessonById_(clean_(b.lessonId, 20));
+  if (!l) throw fail_(400, 'Choose a lesson.');
+  k.screen = k.screen || {};
+  k.screen.lessonId = l.id;
+  k.screen.notes = k.screen.notes || {};
+  if ('instructions' in b) {
+    var text = String(b.instructions || '').trim().slice(0, 1500);
+    if (text) k.screen.notes[l.id] = text; else delete k.screen.notes[l.id];
+  }
+  saveClass_(k);
+  return { ok: true };
 }
 function ownStudent_(user, id) {
   var s = users_().filter(function (u) { return u.id === id && u.role === 'student'; })[0];
