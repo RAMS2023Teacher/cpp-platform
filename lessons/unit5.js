@@ -105,7 +105,8 @@ void goToVictim1() {
         kind: "activity",
         title: "Team Planning Session",
         minutes: 15,
-        html: `<div data-vex="plowbot basebot"></div>
+        html: `<div class="callout tip"><p><strong>🧊 Design your rescue robot in CAD Studio.</strong> The Lead Builder opens <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and models the team's chosen design: drivetrain, claw and where each sensor mounts. Show the design to your teacher before you start building.</p></div>
+<div data-vex="plowbot basebot"></div>
 <div class="callout robot">
 <p><strong>Team activity (groups of 3-4):</strong></p>
 <ol class="steps">
@@ -366,7 +367,8 @@ int main() {
         kind: "build",
         title: "Build & Test Sprint",
         minutes: 18,
-        html: `<div class="callout robot">
+        html: `<div class="callout tip"><p><strong>🧊 Keep your CAD design up to date.</strong> When testing makes you change the robot, update it in <a class="btn sm" data-app="cad">CAD Studio ↗</a> too, so your design matches the real robot for the showcase.</p></div>
+<div class="callout robot">
 <p><strong>Team sprint on the VEX board:</strong></p>
 <ol class="steps">
 <li><strong>(Builder)</strong> Make sure the claw opens wide and grips a cube firmly. Mount the Distance Sensor on the front, low enough to see walls.</li>

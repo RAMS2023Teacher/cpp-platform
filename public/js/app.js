@@ -79,13 +79,23 @@
   const tags = t => (t || []).map(x => `<span class="tag ${esc(x)}">${esc(x)}</span>`).join(' ');
 
   // ---------------------------------------------------------------- nav + router
-  // VEXcode IQ always opens in the same tab (named "vexcode"), so students flip between the two instead of piling up tabs.
-  const VEXCODE_URL = 'https://codeiq.vex.com/';
-  const VEXCODE_LINK = (label, cls = '') => `<a class="${cls}" href="${VEXCODE_URL}" target="vexcode" rel="noopener" title="Open VEXcode IQ in its own tab">${label}</a>`;
-  function sideBySideHelp() {
-    const m = modal(`<h2 style="margin-top:0">⧉ VEXcode IQ + RoboCode, side by side</h2>
-      <div class="split-pic" aria-hidden="true"><div>VEXcode IQ</div><div>RoboCode</div></div>
-      <ol class="steps"><li>Click ${VEXCODE_LINK('VEXcode IQ ↗', 'btn sm')} to open VEXcode IQ.</li><li>In VEXcode, press <kbd>Alt</kbd> + <kbd>[</kbd> to snap it to the <b>left</b>.</li><li>Come back here and press <kbd>Alt</kbd> + <kbd>]</kbd> to snap RoboCode to the <b>right</b>.</li></ol>
+  // Companion apps. Each always opens in its own named tab, so students flip between it and RoboCode instead of piling up tabs.
+  const APPS = {
+    vexcode: { name: 'VEXcode IQ', url: 'https://codeiq.vex.com/', tab: 'vexcode' },
+    cad: { name: 'CAD Studio', url: 'https://script.google.com/a/macros/holliston.k12.ma.us/s/AKfycbwBgf4p4ZOCFAMai8HSgooMJF6lEl5Q1HkMNtp7_zfF8ZxqQruKpXK23X_z-u8CeOeo/exec', tab: 'cadstudio' }
+  };
+  const APP_LINK = (key, label, cls = '') => `<a class="${cls}" href="${APPS[key].url}" target="${APPS[key].tab}" rel="noopener" title="Open ${APPS[key].name} in its own tab">${label || APPS[key].name + ' ↗'}</a>`;
+  const VEXCODE_LINK = (label, cls = '') => APP_LINK('vexcode', label, cls);
+  /** Lesson HTML writes <a data-app="cad">…</a>; this points it at the right app and tab. */
+  function linkApps(root) {
+    root.querySelectorAll('a[data-app]').forEach(a => { const app = APPS[a.dataset.app]; if (!app) return; a.href = app.url; a.target = app.tab; a.rel = 'noopener'; });
+    root.querySelectorAll('button[data-side]').forEach(b => b.onclick = () => sideBySideHelp(b.dataset.side));
+  }
+  function sideBySideHelp(key = 'vexcode') {
+    const app = APPS[key] || APPS.vexcode;
+    const m = modal(`<h2 style="margin-top:0">⧉ ${esc(app.name)} + RoboCode, side by side</h2>
+      <div class="split-pic" aria-hidden="true"><div>${esc(app.name)}</div><div>RoboCode</div></div>
+      <ol class="steps"><li>Click ${APP_LINK(key, '', 'btn sm')} to open ${esc(app.name)}.</li><li>In ${esc(app.name)}, press <kbd>Alt</kbd> + <kbd>[</kbd> to snap it to the <b>left</b>.</li><li>Come back here and press <kbd>Alt</kbd> + <kbd>]</kbd> to snap RoboCode to the <b>right</b>.</li></ol>
       <p class="small muted">Not on a Chromebook? Windows: <kbd>⊞ Win</kbd> + <kbd>←</kbd> / <kbd>→</kbd>. Mac: drag the windows side by side.</p>
       <div class="row"><div class="spacer"></div><button class="btn primary" id="cx">Got it!</button></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
@@ -95,7 +105,7 @@
     const links = ME.role === 'teacher'
       ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/teacher/standards">Standards</a><a href="#/playground">Code Lab</a>`
       : `<a href="#/">My Course</a><a href="#/robot">My Robot</a><a href="#/team">Team</a><a href="#/map">Map</a><a href="#/playground">Code Lab</a>`;
-    $nav.innerHTML = `${links}${VEXCODE_LINK('VEXcode IQ ↗')}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
+    $nav.innerHTML = `${links}${VEXCODE_LINK('VEXcode IQ ↗')}${APP_LINK('cad', 'CAD Studio ↗')}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
     $nav.querySelectorAll('a').forEach(a => a.classList.toggle('active', Nav.hash === a.getAttribute('href')));
   }
   let cleanup = null;
@@ -329,6 +339,7 @@
     $app.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById(a.dataset.jump).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
     // VEX part pictures that belong to the other kit generation are hidden.
     $app.querySelectorAll('.vexpic[data-gen]').forEach(f => { if (+f.dataset.gen !== mySetup().gen) f.hidden = true; });
+    linkApps($app);
     window.mountWidgets($app);
     addReadAloud($app);
     if (photo) mountPhoto(document.getElementById('photobox'), { checkpoint: L.id, prompt: photo.prompt, photoId: photo.photoId, excused: photo.excused, onDone: r => { if (r.progress) celebrate(L, r.progress); } });
@@ -522,7 +533,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       <div class="row" style="margin-top:12px"><button class="btn primary" id="do-copy">Copy code</button><span class="small" role="status" id="copy-state"></span><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
     const area = m.querySelector('#vex-code'), state = m.querySelector('#copy-state');
     m.querySelector('#cx').onclick = () => m.remove();
-    m.querySelector('#split').onclick = sideBySideHelp;
+    m.querySelector('#split').onclick = () => sideBySideHelp('vexcode');
     m.querySelectorAll('a[href^="#"]').forEach(x => x.addEventListener('click', () => m.remove()));
     m.querySelector('#do-copy').onclick = async () => {
       area.focus(); area.select();
@@ -674,7 +685,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       const a = e.target.closest('[data-a]')?.dataset.a;
       if (a === 'setup') showSetup(setupBox.hidden);
       if (a === 'copy') copyForVexcode(cm.getValue(), setup);
-      if (a === 'split') sideBySideHelp();
+      if (a === 'split') sideBySideHelp('vexcode');
       if (a === 'settings') { settings.hidden = !settings.hidden; q('[data-a=settings]').setAttribute('aria-expanded', String(!settings.hidden)); }
       if (a === 'settings-reset') { prefs = { ...EDITOR_DEFAULTS }; try { localStorage.removeItem(editorKey()); } catch (e) {} syncSettingsForm(); applyPrefs(); }
       if (a === 'run') doRun(false);
