@@ -252,8 +252,7 @@ int main() {
         kind: "activity",
         title: "Build Challenge: Name Tag Stand",
         minutes: 12,
-        html: `<div class="callout tip"><p><strong>Design it first in CAD Studio.</strong> Before you grab parts, open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and sketch your stand. Count how many holes long each beam needs to be. Then build it for real and compare.</p></div>
-<div class="callout robot">
+        html: `<div class="callout robot">
 <p><strong>Team challenge:</strong> Build a stand that displays your team's name on a sticky note or index card. Your stand must:</p>
 <ul>
   <li>Stand up by itself on the table</li>
@@ -360,8 +359,7 @@ int main() {
         kind: "activity",
         title: "Bridge Challenge",
         minutes: 20,
-        html: `<div class="callout tip"><p><strong>Plan your bridge in CAD Studio.</strong> Open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and try two bridge designs before you build. Where would you add triangles or bracing? Build the one your team thinks is stronger.</p></div>
-<div class="callout robot">
+        html: `<div class="callout robot">
 <p><strong>Team challenge:</strong> Build a bridge that spans an 8-inch gap between two stacks of books and holds as much load as possible.</p>
 <p><strong>Rules:</strong> The bridge must rest on the books without being attached to them, and may use at most 12 beams or plates, plus any pins and standoffs.</p>
 <ol class="steps">
@@ -481,8 +479,7 @@ int main() {
         kind: "build",
         title: "Build a Gear Tester",
         minutes: 12,
-        html: `<div class="callout tip"><p><strong>Model it in CAD Studio.</strong> Open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and place the motor, shafts and the two gears so the teeth mesh. Check your spacing on screen, then build the tester.</p></div>
-<div class="callout robot">
+        html: `<div class="callout robot">
 <ol class="steps">
   <li>Attach a Smart Motor to a beam or plate.</li>
   <li>Slide a shaft into the motor and put a 12-tooth gear on it. This is your <strong>driving gear</strong>.</li>

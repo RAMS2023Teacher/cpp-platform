@@ -43,7 +43,7 @@ module.exports = [
 Write lessons with the standard device names (`DistanceSensor`, `Optical`, `BumperA`, `TouchLED`, `ClawMotor`, `ArmMotor`, `BrainInertial`). Students see them adapted to their kit and their Robot Setup names, and auto-checks run against the standard names.
 
 ## HTML inside sections
-- Companion apps: `<a class="btn sm" data-app="cad">CAD Studio ↗</a>` (or `data-app="vexcode"`) opens that app in its own tab, and `<button class="btn sm" type="button" data-side="cad">⧉</button>` shows the side-by-side help.
+- Companion apps: `<a class="btn sm" data-app="vexcode">VEXcode IQ ↗</a>` opens that app in its own tab, and `<button class="btn sm" type="button" data-side="vexcode">⧉</button>` shows the side-by-side help. Apps are listed in `APPS` near the top of `public/js/app.js`.
 - VEX part pictures: `<div data-vex="brain2 smartmotor"></div>` shows pictures listed in `lessons/vex-images.js`. They load from VEX's own website with an "Image: VEX Robotics" credit, and pictures marked for one kit generation are hidden for the other.
 - Screenshots: `<figure class="shot" data-shot="NAME"><figcaption>Caption</figcaption></figure>` shows `shots/NAME.webp` (see docs/SCREENSHOTS.md).
 Plain HTML. Useful classes:

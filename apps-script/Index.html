@@ -13419,12 +13419,11 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   // ---------------------------------------------------------------- nav + router
   // Companion apps. Each always opens in its own named tab, so students flip between it and RoboCode instead of piling up tabs.
   const APPS = {
-    vexcode: { name: 'VEXcode IQ', url: 'https://codeiq.vex.com/', tab: 'vexcode' },
-    cad: { name: 'CAD Studio', url: 'https://script.google.com/a/macros/holliston.k12.ma.us/s/AKfycbwBgf4p4ZOCFAMai8HSgooMJF6lEl5Q1HkMNtp7_zfF8ZxqQruKpXK23X_z-u8CeOeo/exec', tab: 'cadstudio' }
+    vexcode: { name: 'VEXcode IQ', url: 'https://codeiq.vex.com/', tab: 'vexcode' }
   };
   const APP_LINK = (key, label, cls = '') => `<a class="${cls}" href="${APPS[key].url}" target="${APPS[key].tab}" rel="noopener" title="Open ${APPS[key].name} in its own tab">${label || APPS[key].name + ' ↗'}</a>`;
   const VEXCODE_LINK = (label, cls = '') => APP_LINK('vexcode', label, cls);
-  /** Lesson HTML writes <a data-app="cad">…</a>; this points it at the right app and tab. */
+  /** Lesson HTML writes <a data-app="vexcode">…</a>; this points it at the right app and tab. */
   function linkApps(root) {
     root.querySelectorAll('a[data-app]').forEach(a => { const app = APPS[a.dataset.app]; if (!app) return; a.href = app.url; a.target = app.tab; a.rel = 'noopener'; });
     root.querySelectorAll('button[data-side]').forEach(b => b.onclick = () => sideBySideHelp(b.dataset.side));
@@ -13443,7 +13442,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     const links = ME.role === 'teacher'
       ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/teacher/standards">Standards</a><a href="#/playground">Code Lab</a>`
       : `<a href="#/">My Course</a><a href="#/robot">My Robot</a><a href="#/team">Team</a><a href="#/map">Map</a><a href="#/playground">Code Lab</a>`;
-    $nav.innerHTML = `${links}${VEXCODE_LINK('VEXcode IQ ↗')}${APP_LINK('cad', 'CAD Studio ↗')}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
+    $nav.innerHTML = `${links}${VEXCODE_LINK('VEXcode IQ ↗')}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
     $nav.querySelectorAll('a').forEach(a => a.classList.toggle('active', Nav.hash === a.getAttribute('href')));
   }
   let cleanup = null;
