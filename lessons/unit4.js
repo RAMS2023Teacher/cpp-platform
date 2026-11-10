@@ -4,7 +4,7 @@ module.exports = [
   {
     id: "u4l1",
     unit: 4,
-    order: 20,
+    order: 21,
     title: "What Is AI?",
     minutes: 35,
     tags: ["ai", "code"],
@@ -244,7 +244,7 @@ int main() {
   {
     id: "u4l2",
     unit: 4,
-    order: 21,
+    order: 22,
     title: "Decision Trees",
     minutes: 35,
     tags: ["ai", "code", "algorithms"],
@@ -468,7 +468,7 @@ int main() {
   {
     id: "u4l3",
     unit: 4,
-    order: 22,
+    order: 23,
     title: "State Machines",
     minutes: 35,
     tags: ["ai", "code", "algorithms"],
@@ -712,7 +712,7 @@ int main() {
   {
     id: "u4l4",
     unit: 4,
-    order: 23,
+    order: 24,
     title: "Machine Learning: Training Data",
     minutes: 40,
     tags: ["ai", "code", "algorithms"],
@@ -962,7 +962,7 @@ int main() {
   {
     id: "u4l5",
     unit: 4,
-    order: 24,
+    order: 25,
     title: "The Robot Learns: Trial & Error",
     minutes: 35,
     tags: ["ai", "code", "algorithms"],
@@ -1181,7 +1181,7 @@ int main() {
   {
     id: "u4l6",
     unit: 4,
-    order: 25,
+    order: 26,
     title: "AI Ethics & Bias",
     minutes: 40,
     tags: ["ai", "code"],

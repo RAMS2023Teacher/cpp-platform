@@ -2,6 +2,11 @@
 <html lang="en" data-theme="eco">
 <head>
 <meta charset="utf-8">
+<script>
+  // Collect script errors so they can be shown on the page (many school devices block developer tools).
+  window.__loadErrors = []; window.__loaded = [];
+  window.addEventListener('error', function (e) { window.__loadErrors.push((e.message || 'Unknown error') + (e.lineno ? ' (page line ' + e.lineno + ', column ' + e.colno + ')' : '')); });
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RoboCode Academy</title>
 <meta name="description" content="Learn C++, algorithms and AI with VEX IQ robots — a course for 8th graders.">
@@ -40,5 +45,25 @@
 <script src="/js/quest.js"></script>
 <script src="/js/app.js"></script>
 <script src="/js/desktop.js"></script>
+<script>
+  // If a part of the site failed to start, say so on screen with the browser's own error message.
+  (function () {
+    var parts = ['codemirror', 'sim.js', 'widgets.js', 'visuals.js', 'quest.js', 'app.js', 'desktop.js'];
+    var missing = parts.filter(function (p) { return p === 'codemirror' ? !window.CodeMirror : (p === 'sim.js' ? !window.VexSim : false); });
+    if (!missing.length && !window.__loadErrors.length) return;
+    var box = document.createElement('div');
+    box.setAttribute('role', 'alert');
+    box.style.cssText = 'position:fixed;left:12px;right:12px;bottom:60px;z-index:9999;background:#fde8e8;color:#5c1015;border:2px solid #d1343b;border-radius:12px;padding:12px 14px;font:14px/1.45 system-ui,sans-serif;max-height:40vh;overflow:auto';
+    var esc = function (t) { return String(t).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); };
+    box.innerHTML = '<b>Part of RoboCode Academy did not start.</b> Please send this whole message to your teacher.' +
+      (missing.length ? '<br>Not loaded: ' + esc(missing.join(', ')) : '') +
+      '<br>Started: ' + esc((window.__loaded || []).join(', ') || 'none recorded') +
+      '<br>Browser: ' + esc(navigator.userAgent) +
+      (window.__loadErrors.length ? '<br>Errors:<br>• ' + window.__loadErrors.map(esc).join('<br>• ') : '<br>No error was reported.') +
+      ' <button type="button" style="margin-left:8px">Hide</button>';
+    box.querySelector('button').onclick = function () { box.remove(); };
+    document.body.appendChild(box);
+  })();
+</script>
 </body>
 </html>

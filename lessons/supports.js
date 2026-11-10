@@ -54,6 +54,14 @@ module.exports = {
     frames: ['The most common error I made was…, and I can spot it by…', 'Order matters in a program because…'],
     worked: { code: `int main() {\n  // Say hello, then move\n  Brain.Screen.print("Hello!");\n  Drivetrain.driveFor(forward, 6, inches);\n  return 0;\n}`, notes: ['The line starting with // is a comment, so the robot ignores it.', 'Every statement ends with a semicolon.', 'The robot prints first and moves second, because that is the order of the lines.'] }
   },
+  u1v1: {
+    standards: { anchor: x('CS.a.7'), supporting: x('CS.a.2', 'CT.d.6') },
+    think: 'Why does code that worked perfectly on screen sometimes behave differently on a real machine?',
+    brief: `Engineers often test their ideas in a simulator before they build or run anything for real. A simulator is a program that imitates a machine, so it is fast, safe and cheap to use. However, a simulator only follows the rules it was given. A real robot also deals with things the simulator ignores, such as a low battery, a slippery floor or a wheel that rubs. To move a program onto the robot, you use VEXcode IQ, which turns your C++ into instructions the Brain can run and sends them through a cable. When the real robot does not match your plan, you test it, measure the result and adjust the numbers. This repeated testing is called calibration, and every robotics team depends on it.`,
+    visual: { type: 'flow', items: ['Write and test in the RoboCode simulator', 'Copy the code into VEXcode IQ', 'Download it to the Brain with a cable', 'Run, measure and adjust'], alt: 'Four steps in order: write and test in the RoboCode simulator, copy the code into VEXcode IQ, download it to the Brain with a cable, then run, measure and adjust.' },
+    frames: ['The real robot was different from the simulator because…', 'To fix the difference, my team changed… and then…'],
+    worked: { code: `int main() {\n  Brain.Screen.print("Test drive");\n  Drivetrain.driveFor(forward, 6, inches);\n  Drivetrain.turnFor(left, 90, degrees);\n  return 0;\n}`, notes: ['This program prints first, then drives, then turns.', 'turnFor(left, 90, degrees) turns left instead of right.', 'After it passes in RoboCode, Copy for VEXcode moves it to the real robot.'] }
+  },
   u1l4: {
     standards: { anchor: x('CT.d.3'), supporting: x('CT.b.2') },
     think: 'How could you check a path before the robot ever moves?',

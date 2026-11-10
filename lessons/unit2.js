@@ -4,7 +4,7 @@ module.exports = [
   {
     id: "u2l1",
     unit: 2,
-    order: 8,
+    order: 9,
     title: "Variables & Math",
     minutes: 35,
     tags: ["code"],
@@ -203,7 +203,7 @@ int main() {
   {
     id: "u2l2",
     unit: 2,
-    order: 9,
+    order: 10,
     title: "Loops",
     minutes: 35,
     tags: ["code", "algorithms"],
@@ -396,7 +396,7 @@ int main() {
   {
     id: "u2l3",
     unit: 2,
-    order: 10,
+    order: 11,
     title: "Making Decisions",
     minutes: 40,
     tags: ["code", "algorithms"],
@@ -475,7 +475,8 @@ if (Optical.color() == red) {      // color of the floor under the robot
         kind: "activity",
         title: "Bumper Tag",
         minutes: 13,
-        html: `<div class="callout robot">
+        html: `<div data-vex="bumper touchled"></div>
+<div class="callout robot">
 <p><strong>Bumper tag on the field board (2 teams per field).</strong> Each robot drives forward and must react when its bumper is tagged.</p>
 <ol class="steps">
   <li>Write a program: drive forward in short hops (<code>driveFor(forward, 4, inches)</code>) inside a <code>for</code> loop that repeats 20 times.</li>
@@ -492,7 +493,8 @@ if (Optical.color() == red) {      // color of the floor under the robot
         kind: "code",
         title: "Code It: Color Crossroads",
         minutes: 10,
-        html: `<p>Your robot drives to a crossroads and reads the colored tile under it. The color tells it which way to go:</p>
+        html: `<div data-vex="optical"></div>
+<p>Your robot drives to a crossroads and reads the colored tile under it. The color tells it which way to go:</p>
 <ul>
   <li><strong>Red</strong> → turn left</li>
   <li><strong>Green</strong> → turn right</li>
@@ -611,7 +613,7 @@ int main() {
   {
     id: "u2l4",
     unit: 2,
-    order: 11,
+    order: 12,
     title: "While Loops & Sensors",
     minutes: 40,
     tags: ["code", "algorithms"],
@@ -667,7 +669,8 @@ Drivetrain.stop();                                  // close enough: stop!</pre>
   <tr><th></th><th>for loop</th><th>while loop</th></tr>
   <tr><td>Use when</td><td>You know how many times</td><td>You repeat until something happens</td></tr>
   <tr><td>Example</td><td>Drive 6 sides of a hexagon</td><td>Drive until the wall is close</td></tr>
-</table>`
+</table>
+<div data-vex="distance"></div>`
       },
       {
         kind: "activity",
@@ -794,7 +797,7 @@ int main() {
   {
     id: "u2l5",
     unit: 2,
-    order: 12,
+    order: 13,
     title: "Functions",
     minutes: 40,
     tags: ["code", "algorithms"],

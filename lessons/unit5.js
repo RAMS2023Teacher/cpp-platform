@@ -22,7 +22,7 @@ module.exports = [
   {
     id: "u5l1",
     unit: 5,
-    order: 26,
+    order: 27,
     title: "Capstone: Design a Rescue Robot",
     minutes: 40,
     tags: ["build", "code", "algorithms", "ai"],
@@ -105,7 +105,9 @@ void goToVictim1() {
         kind: "activity",
         title: "Team Planning Session",
         minutes: 15,
-        html: `<div class="callout robot">
+        html: `<div class="callout tip"><p><strong>Design your rescue robot in CAD Studio.</strong> The Lead Builder opens <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and models the team's chosen design: drivetrain, claw and where each sensor mounts. Show the design to your teacher before you start building.</p></div>
+<div data-vex="plowbot basebot"></div>
+<div class="callout robot">
 <p><strong>Team activity (groups of 3-4):</strong></p>
 <ol class="steps">
 <li><strong>Assign roles</strong> (everyone still helps everywhere):
@@ -296,7 +298,7 @@ int main() {
   {
     id: "u5l2",
     unit: 5,
-    order: 27,
+    order: 28,
     title: "Capstone: Build, Code, Test",
     minutes: 40,
     tags: ["build", "code", "algorithms"],
@@ -365,7 +367,8 @@ int main() {
         kind: "build",
         title: "Build & Test Sprint",
         minutes: 18,
-        html: `<div class="callout robot">
+        html: `<div class="callout tip"><p><strong>Keep your CAD design up to date.</strong> When testing makes you change the robot, update it in <a class="btn sm" data-app="cad">CAD Studio ↗</a> too, so your design matches the real robot for the showcase.</p></div>
+<div class="callout robot">
 <p><strong>Team sprint on the VEX board:</strong></p>
 <ol class="steps">
 <li><strong>(Builder)</strong> Make sure the claw opens wide and grips a cube firmly. Mount the Distance Sensor on the front, low enough to see walls.</li>
@@ -576,7 +579,7 @@ int main() {
   {
     id: "u5l3",
     unit: 5,
-    order: 28,
+    order: 29,
     title: "Capstone Showcase",
     minutes: 40,
     tags: ["code", "build", "ai"],

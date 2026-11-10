@@ -65,7 +65,8 @@ module.exports = [
         kind: "activity",
         title: "Kit Tour Scavenger Hunt",
         minutes: 12,
-        html: `<div class="callout robot">
+        html: `<div data-vex="brain2 smartmotor battery controller2 omniwheel distance optical bumper touchled gyro"></div>
+<div class="callout robot">
 <p><strong>Team challenge (teams of 3):</strong> Find each part in your kit, hold it up, and have your teacher or a neighbor team check it off. First team to find all 10 correctly gets first pick of field time next class!</p>
 <ol class="steps">
   <li>Pick roles: <strong>Finder</strong> (searches the kit), <strong>Checker</strong> (compares with the picture/description), <strong>Recorder</strong> (writes it on the sheet).</li>
@@ -228,13 +229,15 @@ int main() {
   <tr><td><strong>Corner connector</strong></td><td>Joins parts at an angle</td><td>You want to turn a flat build into a 3D one</td></tr>
 </table>
 <div class="callout tip"><p><strong>Pins come in different lengths.</strong> A longer pin can reach through more layers. Check your kit's parts poster for the name of each one.</p></div>
-<div class="callout warn"><p><strong>Save your fingers and your parts:</strong> pull pins out with the <strong>pin tool</strong>, never your teeth or fingernails. Never force a pin. If it won't go in, the holes probably don't line up.</p></div>`
+<div class="callout warn"><p><strong>Save your fingers and your parts:</strong> pull pins out with the <strong>pin tool</strong>, never your teeth or fingernails. Never force a pin. If it won't go in, the holes probably don't line up.</p></div>
+<div data-vex="beams beamlengths"></div>`
       },
       {
         kind: "build",
         title: "Pin Practice",
         minutes: 7,
-        html: `<div class="callout robot">
+        html: `<div data-vex="pins connectors"></div>
+<div class="callout robot">
 <p><strong>Warm up your hands.</strong> Everyone on the team does each step.</p>
 <ol class="steps">
   <li>Find a beam and count its holes. Say its size out loud, then measure it with a ruler. Does the length match the number of holes times 12.7 mm, roughly?</li>
@@ -249,7 +252,8 @@ int main() {
         kind: "activity",
         title: "Build Challenge: Name Tag Stand",
         minutes: 12,
-        html: `<div class="callout robot">
+        html: `<div class="callout tip"><p><strong>Design it first in CAD Studio.</strong> Before you grab parts, open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and sketch your stand. Count how many holes long each beam needs to be. Then build it for real and compare.</p></div>
+<div class="callout robot">
 <p><strong>Team challenge:</strong> Build a stand that displays your team's name on a sticky note or index card. Your stand must:</p>
 <ul>
   <li>Stand up by itself on the table</li>
@@ -356,7 +360,8 @@ int main() {
         kind: "activity",
         title: "Bridge Challenge",
         minutes: 20,
-        html: `<div class="callout robot">
+        html: `<div class="callout tip"><p><strong>Plan your bridge in CAD Studio.</strong> Open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and try two bridge designs before you build. Where would you add triangles or bracing? Build the one your team thinks is stronger.</p></div>
+<div class="callout robot">
 <p><strong>Team challenge:</strong> Build a bridge that spans an 8-inch gap between two stacks of books and holds as much load as possible.</p>
 <p><strong>Rules:</strong> The bridge must rest on the books without being attached to them, and may use at most 12 beams or plates, plus any pins and standoffs.</p>
 <ol class="steps">
@@ -469,13 +474,15 @@ int main() {
   <tr><td>36 teeth</td><td>12 teeth</td><td>1:3</td><td>3 times the speed, 1/3 the torque</td></tr>
   <tr><td>36 teeth</td><td>36 teeth</td><td>1:1</td><td>Same speed and torque, opposite direction</td></tr>
 </table>
-<div class="callout tip"><p><strong>Two meshed gears spin in opposite directions.</strong> Remember that when a wheel turns the wrong way.</p></div>`
+<div class="callout tip"><p><strong>Two meshed gears spin in opposite directions.</strong> Remember that when a wheel turns the wrong way.</p></div>
+<div data-vex="smartmotor smartmotor1 shafts shaftlock"></div>`
       },
       {
         kind: "build",
         title: "Build a Gear Tester",
         minutes: 12,
-        html: `<div class="callout robot">
+        html: `<div class="callout tip"><p><strong>Model it in CAD Studio.</strong> Open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and place the motor, shafts and the two gears so the teeth mesh. Check your spacing on screen, then build the tester.</p></div>
+<div class="callout robot">
 <ol class="steps">
   <li>Attach a Smart Motor to a beam or plate.</li>
   <li>Slide a shaft into the motor and put a 12-tooth gear on it. This is your <strong>driving gear</strong>.</li>
@@ -608,7 +615,8 @@ int main() {
         kind: "build",
         title: "Build the BaseBot Drivetrain",
         minutes: 20,
-        html: `<div class="callout robot">
+        html: `<div data-vex="basebot basebotbuild"></div>
+<div class="callout robot">
 <p><strong>Build sprint:</strong> Follow the official VEX IQ BaseBot instructions. Use these checkpoints so your Inspector can sign off.</p>
 <ol class="steps">
   <li><strong>Lay out the parts.</strong> Parts Manager sorts beams, pins, shafts and wheels into piles before step 1.</li>
@@ -911,9 +919,170 @@ int main() {
 
   // ───────────────────────────────────────────── u1l4
   {
-    id: "u1l4",
+    id: "u1v1",
     unit: 1,
     order: 7,
+    title: "From Simulator to Robot: VEXcode IQ",
+    minutes: 40,
+    tags: ["code", "build"],
+    summary: "Move your code from RoboCode into VEXcode IQ, set up your robot's devices, download it to the Brain and see how the real robot compares with the simulator.",
+    objectives: [
+      "I can open VEXcode IQ next to RoboCode and move my code between them.",
+      "I can set up my robot's devices in VEXcode IQ to match my Robot Setup.",
+      "I can download a program to the Brain and run it.",
+      "I can compare what the real robot did with what the simulator predicted, and explain the difference."
+    ],
+    vocab: [
+      { term: "VEXcode IQ", def: "VEX's official app for writing robot code and downloading it to a real VEX IQ Brain." },
+      { term: "Download", def: "Sending a finished program from the computer to the robot's Brain over a cable." },
+      { term: "Slot", def: "One of the numbered places on the Brain where a downloaded program is stored." },
+      { term: "Devices", def: "The VEXcode IQ window where you tell the program which motors and sensors are plugged into which ports." },
+      { term: "Simulator", def: "A program that imitates the real robot on screen, so you can test ideas quickly." },
+      { term: "Calibrate", def: "To adjust numbers so the real robot matches what you planned, for example how far it drives." }
+    ],
+    materials: [
+      "Chromebooks or laptops with Google Chrome",
+      "Built BaseBots with charged batteries",
+      "One USB cable per team (the one that came with the Brain)",
+      "Rulers or tape measures",
+      "Masking tape to mark a start line on the field"
+    ],
+    video: "",
+    sections: [
+      {
+        kind: "warmup",
+        title: "Do Now: Will the Real Robot Match?",
+        minutes: 5,
+        html: `<p>So far your code has only run in the RoboCode simulator. Today it runs on your real robot.</p>
+<p>With your team, write down <strong>two things</strong> that might make the real robot act differently from the simulator. Think about the floor, the battery, the wheels and the people around it.</p>
+<div class="callout think"><p>The simulator says <code>driveFor(forward, 12, inches)</code> drives exactly 12 inches. Will your real robot? Make a prediction and keep it for later.</p></div>`
+      },
+      {
+        kind: "learn",
+        title: "Meet VEXcode IQ",
+        minutes: 8,
+        html: `<p><strong>RoboCode</strong> is where you learn, test in the simulator and turn in your work. <strong>VEXcode IQ</strong> is VEX's own app, and it is the only way to put a program on the real Brain. You will use them together, so open them <strong>side by side</strong>.</p>
+<ol class="steps">
+<li>Click <a class="btn sm" href="https://codeiq.vex.com/" target="vexcode" rel="noopener">VEXcode IQ ↗</a> at the top of RoboCode. It opens in its own tab, and the same tab is reused every time.</li>
+<li>On a Chromebook, press <kbd>Alt</kbd> + <kbd>[</kbd> in VEXcode to snap it to the <strong>left</strong>. Come back to RoboCode and press <kbd>Alt</kbd> + <kbd>]</kbd> to snap it to the <strong>right</strong>.</li>
+<li>Find these parts of VEXcode IQ: the <strong>File</strong> menu, the <strong>code area</strong>, the <strong>Devices</strong> button, the <strong>Brain</strong> connection icon, and the <strong>Download</strong> and <strong>Run</strong> buttons.</li>
+</ol>
+<figure class="shot" data-shot="vx-tour"><figcaption>The parts of VEXcode IQ you will use today</figcaption></figure>
+<div class="callout tip"><p>VEXcode IQ works in Google Chrome on Chromebooks. If your school installed the VEXcode IQ app instead, open that. The steps are the same.</p></div>`
+      },
+      {
+        kind: "code",
+        title: "Code in RoboCode, Then Move It to VEXcode",
+        minutes: 7,
+        html: `<p>First finish the code challenge at the bottom of this page, and press <strong>Check &amp; Submit</strong>. Then follow these steps to move your code into VEXcode IQ.</p>
+<ol class="steps">
+<li><strong>Copy your code.</strong> In the RoboCode editor, press <strong>Copy for VEXcode</strong>, then <strong>Copy code</strong>.</li>
+<li><strong>Start a C++ project.</strong> In VEXcode IQ, click <strong>File → New Text Project</strong>, then choose <strong>C++</strong>.
+<figure class="shot" data-shot="vx-new-project"><figcaption>File → New Text Project</figcaption></figure></li>
+<li><strong>Pick your Brain.</strong> Open <strong>Devices</strong>. At the top, next to <strong>IQ Robot Brain</strong>, click the generation that matches your kit (1st or 2nd). Your teacher can tell you which one your class uses.
+<figure class="shot" data-shot="vx-brain"><figcaption>In Devices, choose your Brain's generation</figcaption></figure></li>
+<li><strong>Add your devices.</strong> Still in <strong>Devices</strong>, click <strong>Add a device</strong> and add a <strong>Drivetrain</strong> on the same ports as your Robot Setup in RoboCode. Add any sensors the same way, using the <strong>same names</strong>. The <em>Devices to add in VEXcode</em> list in the Copy for VEXcode window shows you exactly what to add.
+<figure class="shot" data-shot="vx-devices"><figcaption>Click Add a device for each motor and sensor</figcaption></figure></li>
+<li><strong>Paste.</strong> At the top of <code>main.cpp</code> is a folded line, <code>#pragma region VEXcode Generated Robot Configuration</code>. That is the setup for your devices, so <strong>don't delete it</strong>. Select from <code>int main() {</code> down to the very bottom, then paste with <kbd>Ctrl</kbd> + <kbd>V</kbd>.
+<figure class="shot" data-shot="vx-paste"><figcaption>Keep the folded device block. Paste over int main() and everything below it.</figcaption></figure></li>
+<li><strong>Save.</strong> Click the project name at the top (it starts as <strong>VEXcode Project</strong>), type your team name and the lesson, like <code>TeamBolt-RobotCheck</code>, and click <strong>Save</strong>.
+<figure class="shot" data-shot="vx-save"><figcaption>Name your project, then click Save</figcaption></figure></li>
+</ol>
+<div class="callout warn"><p>If you change your code in VEXcode, copy it back into RoboCode before you submit. Your teacher only sees the code in RoboCode.</p></div>`
+      },
+      {
+        kind: "activity",
+        title: "Download, Run and Measure",
+        minutes: 15,
+        html: `<div class="callout robot"><ol class="steps">
+<li><strong>Connect.</strong> Turn on the Brain and plug the USB cable into the Brain and the Chromebook. Wait until the <strong>Brain</strong> icon in VEXcode shows it is connected. If Chrome asks to connect to a device, choose the VEX Brain.
+<figure class="shot" data-shot="vx-connect"><figcaption>The Brain icon shows when your robot is connected</figcaption></figure></li>
+<li><strong>Download.</strong> Press <strong>Download</strong>. Wait for it to finish. The program is now stored in a slot on the Brain.
+<figure class="shot" data-shot="vx-download"><figcaption>The Download and Run buttons</figcaption></figure></li>
+<li><strong>Get ready.</strong> Unplug the cable, set the robot on your tape start line and give it room. Everyone stands back.</li>
+<li><strong>Run.</strong> Press <strong>Run</strong> in VEXcode, or choose your program on the Brain's screen and press the check button.</li>
+<li><strong>Measure.</strong> Measure how far the robot really drove and how close to 90° it turned. Fill in the table below. Run it three times.</li>
+</ol></div>
+<table class="tbl"><tr><th>Run</th><th>Planned distance</th><th>Real distance</th><th>Planned turn</th><th>Real turn (about)</th></tr>
+<tr><td>1</td><td>12 in</td><td></td><td>90°</td><td></td></tr><tr><td>2</td><td>12 in</td><td></td><td>90°</td><td></td></tr><tr><td>3</td><td>12 in</td><td></td><td>90°</td><td></td></tr></table>
+<p><strong>Calibrate:</strong> if the robot is always short or long, change the number in your code a little, download again and test. Write down the number that works for <em>your</em> robot.</p>`
+      },
+      {
+        kind: "wrapup",
+        title: "Troubleshooting & Wrap-Up",
+        minutes: 5,
+        html: `<table class="tbl"><tr><th>Problem</th><th>Try this</th></tr>
+<tr><td>VEXcode can't find the Brain</td><td>Turn the Brain on, try the other end of the cable, and use Google Chrome. Close other tabs that might be connected to it.</td></tr>
+<tr><td>Lots of errors right after pasting</td><td>You probably pasted over the folded <code>#pragma region</code> device block. Press <kbd>Ctrl</kbd> + <kbd>Z</kbd> to undo, then paste again over <code>int main() {</code> and below only.</td></tr>
+<tr><td>An error says a device name is not declared</td><td>The name in your code does not match the name in <strong>Devices</strong>. Make them exactly the same, including capital letters.</td></tr>
+<tr><td>The robot drives backward or spins in place</td><td>A motor is on the wrong port or turns the wrong way. Check the ports in Devices, or swap the left and right ports.</td></tr>
+<tr><td>Nothing happens when I press Run</td><td>Check that the download finished and the battery is charged.</td></tr></table>
+<div class="callout think"><p>Was your prediction from the Do Now right? Why can't a simulator ever match a real robot perfectly?</p></div>`
+      }
+    ],
+    challenge: {
+      title: "Robot Check",
+      prompt: `<p>Write a short program that proves your robot is ready. It will be the first program you download to the real Brain.</p>
+<ol><li>Print <strong>Robot check</strong> on the Brain screen.</li><li>Drive forward 12 inches.</li><li>Turn right 90 degrees.</li><li>Drive forward 12 inches again.</li><li>Print <strong>Done</strong>.</li></ol>
+<p>When it passes, press <strong>Copy for VEXcode</strong> and follow the steps above to run it on your real robot.</p>`,
+      starterCode: `#include "vex.h"
+using namespace vex;
+
+int main() {
+  // 1. Print Robot check on the Brain screen
+  Brain.Screen.print("Robot check");
+  Brain.Screen.newLine();
+
+  // 2. TODO: drive forward 12 inches
+
+  // 3. TODO: turn right 90 degrees
+
+  // 4. TODO: drive forward 12 inches again
+
+  // 5. TODO: print Done
+
+  return 0;
+}
+`,
+      solution: `#include "vex.h"
+using namespace vex;
+
+int main() {
+  Brain.Screen.print("Robot check");
+  Brain.Screen.newLine();
+  Drivetrain.driveFor(forward, 12, inches);
+  Drivetrain.turnFor(right, 90, degrees);
+  Drivetrain.driveFor(forward, 12, inches);
+  Brain.Screen.print("Done");
+  return 0;
+}
+`,
+      hints: [
+        "Drive with Drivetrain.driveFor(forward, 12, inches); and turn with Drivetrain.turnFor(right, 90, degrees);",
+        "Print Done the same way the starter prints Robot check.",
+        "Each statement ends with a semicolon."
+      ],
+      field: { start: { x: 48, y: 50, heading: 0 }, goal: { x: 60, y: 38, r: 6 } },
+      checks: [
+        { type: "output", pattern: "Robot check", message: "Prints Robot check" },
+        { type: "output", pattern: "Done", message: "Prints Done" },
+        { type: "code", pattern: "turnFor\\s*\\(\\s*right", message: "Turns right with turnFor" },
+        { type: "goal", message: "Robot ends inside the green goal" },
+        { type: "noCollision", message: "Robot never hits a wall" }
+      ]
+    },
+    reflection: "Describe one way your real robot acted differently from the simulator, and explain what you think caused it.",
+    quiz: [
+      { q: "Why do you need VEXcode IQ if you can already write code in RoboCode?", choices: ["VEXcode IQ is what downloads the program to the real Brain", "RoboCode can't run C++ at all", "VEXcode IQ grades your work", "The simulator only works inside VEXcode IQ"], answer: 0, explain: "RoboCode tests your code in a simulator. Only VEXcode IQ can put the program on the real Brain." },
+      { q: "VEXcode says DistanceSensor was not declared, but it is plugged in. What is the most likely fix?", choices: ["Add it in Devices with the same name your code uses", "Charge the battery", "Press Run twice", "Delete #include \"vex.h\""], answer: 0, explain: "Every device in your code has to be set up in Devices with exactly the same name." },
+      { q: "The simulator drove exactly 12 inches but the real robot drove 11. What should you do?", choices: ["Test, adjust the number a little, and test again", "Give up, because the robot is broken", "Change the code in the simulator only", "Turn the robot off and on until it drives 12"], answer: 0, explain: "Real robots need calibrating. Small changes and repeated tests are how engineers match the plan." },
+      { q: "You fixed a bug in VEXcode IQ. What must you do before you submit in RoboCode?", choices: ["Copy the fixed code back into RoboCode", "Nothing, RoboCode updates by itself", "Download it again", "Email it to your teacher"], answer: 0, explain: "The two apps don't share code automatically. Your teacher only sees what is in RoboCode." }
+    ]
+  },
+  {
+    id: "u1l4",
+    unit: 1,
+    order: 8,
     title: "Drive & Turn",
     minutes: 40,
     tags: ["code", "algorithms"],

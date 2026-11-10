@@ -132,7 +132,7 @@
     lines.push(gyro ? `smartdrive Drivetrain = smartdrive(LeftDriveSmart, RightDriveSmart, ${gyro});` : 'drivetrain Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart);');
     return lines.join('\n');
   }
-  const codeOnly = src => src.replace(/\r/g, '').replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' ')).replace(/\/\/.*$/gm, '').replace(/"(?:[^"\\\n]|\\.)*"/g, '""');
+  const codeOnly = src => src.replace(/\r/g, '').replace(/\/\*[\s\S]*?\*[\/]/g, m => m.replace(/[^\n]/g, ' ')).replace(/\/\/.*$/gm, '').replace(/"(?:[^"\\\n]|\\.)*"/g, '""');
   /** Finds code that uses a device the robot doesn't have, the way a real build would fail. */
   function checkDevices(src, s) {
     const c = codeOnly(src), find = name => c.search(new RegExp('(?<![\\w.])' + name + '\\s*\\.'));
@@ -161,7 +161,7 @@
     for (const m of c.matchAll(/\b(if|while)\s*\(/g)) {
       let depth = 1, i = m.index + m[0].length, start = i;
       while (i < c.length && depth) { if (c[i] === '(') depth++; else if (c[i] === ')') depth--; i++; }
-      if (/(?<![=!<>+\-*/%])=(?!=)/.test(c.slice(start, i - 1))) return { error: 'Use == to compare two values. A single = changes the value instead of checking it.', line: at(m.index) };
+      if (/(?<![=!<>+\-*\/%])=(?!=)/.test(c.slice(start, i - 1))) return { error: 'Use == to compare two values. A single = changes the value instead of checking it.', line: at(m.index) };
     }
     return null;
   }
@@ -175,7 +175,7 @@
   function adaptText(text, s) {
     const d = s.devices, isColor = d.color.kind === 'color', gen1 = s.gen === 1;
     const rename = (from, to) => { if (from !== to) t = t.replace(new RegExp('\\b' + from + '(?=\\s*\\.|</code>)', 'g'), to); };
-    let t = text.split('Our simulator already has these devices set up with the same names.').join('Then set up the same devices in 🔌 Robot Setup, next to the Run button.');
+    let t = text.split('Our simulator already has these devices set up with the same names.').join('Then set up the same devices in Robot Setup, next to the Run button.');
     t = t.replace(/\bOptical\s*\.\s*color\(\)/g, d.color.name + (isColor ? '.colorname()' : '.color()'));
     rename('Optical', d.color.name); rename('DistanceSensor', d.distance.name); rename('BumperA', d.bumper.name);
     rename('TouchLED', d.touchled.name); rename('ClawMotor', d.claw.name); rename('ArmMotor', d.arm.name);
@@ -209,7 +209,7 @@
 
     // casts
     c = c.replace(/static_cast\s*<\s*(int|long|short)\s*>\s*\(/g, '__int(').replace(/static_cast\s*<\s*(double|float)\s*>\s*\(/g, 'Number(');
-    c = c.replace(/\(\s*(int|long)\s*\)\s*([\w.]+(?:\([^()]*\))?)/g, '__int($2)').replace(/\(\s*(double|float)\s*\)\s*/g, '');
+    c = c.replace(/\(\s*(int|long)\s*\)\s*([\w.]+(?:\([^()]*\))?)/g, '__int($2)').replace(/\(\s*(double|float)\s*\)(?:\s*)/g, '');
     c = c.replace(/\b(int|long)\s*\(/g, '__int(').replace(/\b(double|float)\s*\(/g, 'Number(');
 
     // forward declarations  void f(int x);
@@ -229,17 +229,17 @@
 
     // vectors
     c = c.replace(/\b(?:const\s+)?vector\s*<[^;{=()]*?>\s*&?\s*(\w+)\s*(\(([^()]*)\))?\s*(?=[;={])/g, (m, name, _p, args) =>
-      args !== undefined ? `let ${name} = __vec(${args})` : `let/*T:vector*/ ${name}`);
+      args !== undefined ? `let ${name} = __vec(${args})` : `let@T:vector@ ${name}`);
     // range-for
     c = c.replace(new RegExp('for\\s*\\(\\s*(?:const\\s+)?' + TYPES + '\\s*&?\\s*(\\w+)\\s*:', 'g'), 'for (let $1 of ');
     // typed declarations
-    c = c.replace(new RegExp('\\b((?:const|static|unsigned|signed)\\s+)*(' + TYPES + ')\\b\\s*&?\\s+(?=[A-Za-z_]\\w*\\s*(?:[=;,\\[)]|$))', 'gm'), (m, q, t) => `let/*T:${t.split(/\s+/)[0]}*/ `);
+    c = c.replace(new RegExp('\\b((?:const|static|unsigned|signed)\\s+)*(' + TYPES + ')\\b\\s*&?\\s+(?=[A-Za-z_]\\w*\\s*(?:[=;,\\[)]|$))', 'gm'), (m, q, t) => `let@T:${t.split(/\s+/)[0]}@ `);
     // multiple declarators  int a = 1, b;  -> keep type marker for each
     // arrays  let x[3][4] = {...}   /   let x[5];
-    c = c.replace(/let\/\*T:(\w+)\*\/ (\w+)((?:\s*\[[^\]]*\])+)\s*(=|;)/g, (m, t, name, dims, op) => {
-      if (op === '=') return `let/*T:arr*/ ${name} =`;
+    c = c.replace(/let@T:(\w+)@ (\w+)((?:\s*\[[^\]]*\])+)\s*(=|;)/g, (m, t, name, dims, op) => {
+      if (op === '=') return `let@T:arr@ ${name} =`;
       const ds = dims.match(/\[([^\]]*)\]/g).map(d => d.slice(1, -1) || '0');
-      return `let/*T:arr*/ ${name} = __arr([${ds.join(',')}], ${t === 'string' ? '""' : t === 'bool' ? 'false' : '0'});`;
+      return `let@T:arr@ ${name} = __arr([${ds.join(',')}], ${t === 'string' ? '""' : t === 'bool' ? 'false' : '0'});`;
     });
     // brace initialisers  = { ... }  ->  [ ... ]
     let idx;
@@ -250,9 +250,9 @@
     }
     // default values for uninitialised scalars
     const ints = new Set(); const INT_T = /^(int|long|short|size_t|uint8_t|uint32_t|int32_t)$/;
-    c = c.replace(/let\/\*T:(\w+)\*\/ (\w+)\s*(?=[;,])/g, (m, t, n) => { if (INT_T.test(t)) ints.add(n); return `let ${n} = ${t === 'string' ? '""' : t === 'bool' ? 'false' : t === 'vector' ? '[]' : t === 'char' ? '""' : '0'}`; });
+    c = c.replace(/let@T:(\w+)@ (\w+)\s*(?=[;,])/g, (m, t, n) => { if (INT_T.test(t)) ints.add(n); return `let ${n} = ${t === 'string' ? '""' : t === 'bool' ? 'false' : t === 'vector' ? '[]' : t === 'char' ? '""' : '0'}`; });
     // integer semantics:  int x = 7 / 2;  ->  3
-    const declRe = /let\/\*T:(int|long|short|size_t|uint8_t|uint32_t|int32_t)\*\/ (\w+)\s*=\s*/g; let dm; let rebuilt = '', last = 0;
+    const declRe = /let@T:(int|long|short|size_t|uint8_t|uint32_t|int32_t)@ (\w+)\s*=\s{0,}/g; let dm; let rebuilt = '', last = 0;
     while ((dm = declRe.exec(c))) {
       let k = declRe.lastIndex, d = 0;
       while (k < c.length) { const ch = c[k]; if ('([{'.includes(ch)) d++; else if (')]}'.includes(ch)) { if (d === 0) break; d--; } else if ((ch === ';' || ch === ',') && d === 0) break; k++; }
@@ -265,7 +265,7 @@
       c = c.replace(new RegExp('(^|[;{}\\s])' + n + '\\s*=(?!=)\\s*([^;]+);', 'g'), (m, pre, e) => /^-?\d+$/.test(e.trim()) || e.trim().startsWith("__int(") ? m : `${pre}${n} = __int(${e});`);
       c = c.replace(new RegExp('\\b' + n + '\\s*\\/=\\s*([^;]+);', 'g'), `${n} = __int(${n} / ($1));`);
     });
-    c = c.replace(/let\/\*T:\w+\*\//g, 'let');
+    c = c.replace(/let@T:\w+@/g, 'let');
 
     // strings: s.length()
     c = c.replace(/\.length\(\)/g, '.length');
@@ -459,7 +459,7 @@
       }
       const [ox, oy] = this.opticalPt(); const f = this.floorAt(ox, oy); if (f.tile !== undefined) this.visited.add(f.tile);
       this.waiters = this.waiters.filter(w => { if (this.t >= w.until) { w.resolve(); this._woke = true; return false; } return true; });
-      if (this.t > 180) this.halt('⏱️ Time limit reached (3 simulated minutes) — program stopped. Is there an endless loop?');
+      if (this.t > 180) this.halt('Time limit reached (3 simulated minutes) — program stopped. Is there an endless loop?');
     }
     _finishMotion() { const m = this.motion; this.motion = null; this._woke = true; if (m && m.done) m.done(); }
     _carry() { const [fx, fy] = this.frontPt(FRONT + 1.6); this.holding.x = fx; this.holding.y = fy; }
@@ -725,7 +725,7 @@
         if (ch.type === 'goal') { const g = sim.field.goal; pass = !!g && Math.hypot(sim.r.x - g.x, sim.r.y - g.y) <= g.r; }
         else if (ch.type === 'noCollision') pass = sim.collisions === 0;
         else if (ch.type === 'output') pass = new RegExp(ch.pattern, ch.flags || 'i').test(sim.output);
-        else if (ch.type === 'code') pass = new RegExp(ch.pattern, ch.flags || '').test(src.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ''));
+        else if (ch.type === 'code') pass = new RegExp(ch.pattern, ch.flags || '').test(src.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*[\/]/g, ''));
         else if (ch.type === 'cubesInZones') pass = sim.cubes.length > 0 && !sim.holding && sim.cubes.every(c => (sim.field.zones || []).some(Z => Z.color === c.color && c.x >= Z.x && c.x <= Z.x + Z.w && c.y >= Z.y && c.y <= Z.y + Z.h));
         else if (ch.type === 'visitedTiles') pass = (sim.field.tiles || []).length > 0 && sim.visited.size === sim.field.tiles.length;
       } catch (e) { pass = false; }

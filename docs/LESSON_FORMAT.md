@@ -38,11 +38,14 @@ module.exports = [
 ```
 
 ## Term plans
-`lessons/plans.js` lists which lessons form each 10-, 12- and 15-lesson term, and what each Go Further lesson needs first. A new lesson also needs a part in `public/js/quest.js`.
+`lessons/plans.js` lists which lessons form each term (the plan keys 10, 12 and 15 now hold 11, 13 and 16 lessons), and what each Go Further lesson needs first. A new lesson also needs a part in `public/js/quest.js`.
 
 Write lessons with the standard device names (`DistanceSensor`, `Optical`, `BumperA`, `TouchLED`, `ClawMotor`, `ArmMotor`, `BrainInertial`). Students see them adapted to their kit and their Robot Setup names, and auto-checks run against the standard names.
 
 ## HTML inside sections
+- Companion apps: `<a class="btn sm" data-app="cad">CAD Studio ↗</a>` (or `data-app="vexcode"`) opens that app in its own tab, and `<button class="btn sm" type="button" data-side="cad">⧉</button>` shows the side-by-side help.
+- VEX part pictures: `<div data-vex="brain2 smartmotor"></div>` shows pictures listed in `lessons/vex-images.js`. They load from VEX's own website with an "Image: VEX Robotics" credit, and pictures marked for one kit generation are hidden for the other.
+- Screenshots: `<figure class="shot" data-shot="NAME"><figcaption>Caption</figcaption></figure>` shows `shots/NAME.webp` (see docs/SCREENSHOTS.md).
 Plain HTML. Useful classes:
 - `<div class="callout tip">`, `<div class="callout warn">`, `<div class="callout robot">` (VEX board / hardware activity), `<div class="callout think">` (discussion)
 - `<pre class="code">` for C++ snippets (escape `<` as `&lt;` !)

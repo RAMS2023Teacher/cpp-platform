@@ -6,7 +6,7 @@
   setInterval(tick, 10000);
 
   // Look of the whole site, remembered in this browser. The button moves on to the next one.
-  const THEMES = { eco: '🌿 Eco', classic: '🖥 Windows 95', future: '🚀 Retro-Future' }, ORDER = Object.keys(THEMES);
+  const THEMES = { eco: 'Eco', classic: 'Windows 95', future: 'Retro-Future' }, ORDER = Object.keys(THEMES);
   const themeBtn = document.getElementById('theme');
   const setTheme = name => {
     document.documentElement.dataset.theme = name;
