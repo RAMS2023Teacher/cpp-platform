@@ -1,6 +1,6 @@
 # Screenshots for "From Simulator to Robot: VEXcode IQ"
 
-The lesson has seven "where to look" pictures of VEXcode IQ. Until a picture exists, students see a "Picture coming soon" box in its place.
+The lesson has eight "where to look" pictures of VEXcode IQ. `vx-new-project`, `vx-brain`, `vx-devices`, `vx-paste` and `vx-save` are done; `vx-tour`, `vx-connect` and `vx-download` are still needed. Until a picture exists, students see a "Picture coming soon" box in its place.
 
 ## Taking them
 1. Open VEXcode IQ in Chrome (codeiq.vex.com) at a normal window size.
@@ -11,10 +11,11 @@ The lesson has seven "where to look" pictures of VEXcode IQ. Until a picture exi
 | File name | What to show |
 |---|---|
 | `vx-tour` | VEXcode IQ with a C++ project open: File menu, code area, Devices button, Brain icon, Download and Run buttons all visible. |
-| `vx-new-project` | The File menu open, pointing at starting a new text project in C++. |
-| `vx-brain` | Where you choose IQ (1st generation) or IQ (2nd generation). |
-| `vx-devices` | The Devices window with a Drivetrain added on ports 1 and 6. |
-| `vx-paste` | `main.cpp` with the Robot Check program pasted in. |
+| `vx-new-project` | The File menu open, pointing at New Text Project. ✅ |
+| `vx-brain` | The IQ Robot Brain 1st gen / 2nd gen switch in Devices. ✅ |
+| `vx-devices` | The Add a device button in Devices. ✅ |
+| `vx-paste` | `main.cpp`, showing the folded device block to keep and `int main()` to paste over. ✅ |
+| `vx-save` | The project name box and Save button. ✅ |
 | `vx-connect` | The Brain icon showing a connected Brain. |
 | `vx-download` | The Download and Run buttons. |
 

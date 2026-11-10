@@ -519,14 +519,16 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     if (/\bstring\b/.test(c)) { includes.push('#include <string>'); if (!/std::string/.test(c)) usings.push('using std::string;'); }
     if (/\bvector\b/.test(c)) { includes.push('#include <vector>'); if (!/std::vector/.test(c)) usings.push('using std::vector;'); }
     if (/(^|[^:\w])cout\b/.test(c)) usings.push('using std::cout;', 'using std::endl;');
-    c = c.replace(/^[ \t]*#include\s*"vex\.h"[ \t]*\n?/m, '').replace(/^[ \t]*using\s+namespace\s+vex\s*;[ \t]*\n?/m, '').trim();
-    if (!/vexcodeInit/.test(c)) c = c.replace(/int\s+main\s*\(\s*\)\s*\{/, m => m + '\n  vexcodeInit();');
-    return ['#include "vex.h"', ...includes, 'using namespace vex;', ...usings, '', c, ''].join('\n');
+    // VEXcode IQ's main.cpp already starts with the device setup, #include "iq_cpp.h" and using namespace vex,
+    // so the copy is only what goes from int main() down (plus anything the code needs from the C++ library).
+    c = c.replace(/^[ \t]*#include\s*"(vex|iq_cpp)\.h"[ \t]*\n?/gm, '').replace(/^[ \t]*using\s+namespace\s+vex\s*;[ \t]*\n?/m, '').trim();
+    if (!/vexcodeInit/.test(c)) c = c.replace(/int\s+main\s*\(\s*\)\s*\{/, m => m + '\n  // Initializing Robot Configuration. DO NOT REMOVE!\n  vexcodeInit();');
+    return ['// From RoboCode: paste this over int main() and everything below it.', ...includes, ...usings, '', c, ''].join('\n');
   }
   function copyForVexcode(source, setup) {
     const code = forVexcode(source);
     const m = modal(`<h2 style="margin-top:0">📋 Copy for VEXcode</h2>
-      <ol class="small"><li>Press <b>Copy code</b>, then open ${VEXCODE_LINK('VEXcode IQ ↗', 'btn sm')} <button class="btn sm" type="button" id="split" title="Put VEXcode IQ and RoboCode side by side">⧉ Side by side</button></li><li>In VEXcode IQ, open a new C++ text project for your robot's Brain.</li><li>In <b>Devices</b>, add the same devices, ports and names as your Robot Setup.</li><li>Replace everything in <b>main.cpp</b> with your code, then download it to your robot.</li></ol>
+      <ol class="small"><li>Press <b>Copy code</b>, then open ${VEXCODE_LINK('VEXcode IQ ↗', 'btn sm')} <button class="btn sm" type="button" id="split" title="Put VEXcode IQ and RoboCode side by side">⧉ Side by side</button></li><li>In VEXcode IQ, choose <b>File → New Text Project</b> and pick C++.</li><li>In <b>Devices</b>, choose your <b>IQ Robot Brain</b> (1st or 2nd gen), then add the same devices, ports and names as your Robot Setup.</li><li>In <b>main.cpp</b>, keep the folded <code>#pragma region VEXcode Generated Robot Configuration</code> block at the top. Select from <code>int main() {</code> to the bottom, paste, then download it to your robot.</li></ol>
       <p class="small muted">First time? The lesson <a href="#/lesson/u1v1">From Simulator to Robot: VEXcode IQ</a> shows every step with pictures.</p>
       <textarea id="vex-code" class="input" rows="12" readonly spellcheck="false" aria-label="Code to paste into VEXcode" style="font-family:var(--mono)">${esc(code)}</textarea>
       <details style="margin-top:8px"><summary class="small">Devices to add in VEXcode</summary><pre class="code">${esc(VexSim.generatedConfig(setup))}</pre></details>

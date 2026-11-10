@@ -977,15 +977,16 @@ int main() {
         html: `<p>First finish the code challenge at the bottom of this page, and press <strong>Check &amp; Submit</strong>. Then follow these steps to move your code into VEXcode IQ.</p>
 <ol class="steps">
 <li><strong>Copy your code.</strong> In the RoboCode editor, press <strong>📋 Copy for VEXcode</strong>, then <strong>Copy code</strong>.</li>
-<li><strong>Start a C++ project.</strong> In VEXcode IQ, use the <strong>File</strong> menu to start a new <strong>text</strong> project and choose <strong>C++</strong>.
-<figure class="shot" data-shot="vx-new-project"><figcaption>File menu: start a new text project in C++</figcaption></figure></li>
-<li><strong>Pick your Brain.</strong> Make sure VEXcode is set to the same Brain as your kit, <strong>IQ (1st generation)</strong> or <strong>IQ (2nd generation)</strong>. Your teacher can tell you which one your class uses.
-<figure class="shot" data-shot="vx-brain"><figcaption>Choosing the IQ Brain generation</figcaption></figure></li>
-<li><strong>Add your devices.</strong> Open <strong>Devices</strong> and add a <strong>Drivetrain</strong> on the same ports as your Robot Setup in RoboCode. Add any sensors the same way, using the <strong>same names</strong>. The <em>Devices to add in VEXcode</em> list in the Copy for VEXcode window shows you exactly what to add.
-<figure class="shot" data-shot="vx-devices"><figcaption>The Devices window with a drivetrain added</figcaption></figure></li>
-<li><strong>Paste.</strong> Click in the code area, select everything inside <code>main.cpp</code> with <kbd>Ctrl</kbd> + <kbd>A</kbd>, and paste with <kbd>Ctrl</kbd> + <kbd>V</kbd>.
-<figure class="shot" data-shot="vx-paste"><figcaption>Your code pasted into main.cpp</figcaption></figure></li>
-<li><strong>Save.</strong> Use <strong>File → Save</strong> and name it with your team name and the lesson, like <code>TeamBolt-RobotCheck</code>.</li>
+<li><strong>Start a C++ project.</strong> In VEXcode IQ, click <strong>File → New Text Project</strong>, then choose <strong>C++</strong>.
+<figure class="shot" data-shot="vx-new-project"><figcaption>File → New Text Project</figcaption></figure></li>
+<li><strong>Pick your Brain.</strong> Open <strong>Devices</strong>. At the top, next to <strong>IQ Robot Brain</strong>, click the generation that matches your kit (1st or 2nd). Your teacher can tell you which one your class uses.
+<figure class="shot" data-shot="vx-brain"><figcaption>In Devices, choose your Brain's generation</figcaption></figure></li>
+<li><strong>Add your devices.</strong> Still in <strong>Devices</strong>, click <strong>Add a device</strong> and add a <strong>Drivetrain</strong> on the same ports as your Robot Setup in RoboCode. Add any sensors the same way, using the <strong>same names</strong>. The <em>Devices to add in VEXcode</em> list in the Copy for VEXcode window shows you exactly what to add.
+<figure class="shot" data-shot="vx-devices"><figcaption>Click Add a device for each motor and sensor</figcaption></figure></li>
+<li><strong>Paste.</strong> At the top of <code>main.cpp</code> is a folded line, <code>#pragma region VEXcode Generated Robot Configuration</code>. That is the setup for your devices, so <strong>don't delete it</strong>. Select from <code>int main() {</code> down to the very bottom, then paste with <kbd>Ctrl</kbd> + <kbd>V</kbd>.
+<figure class="shot" data-shot="vx-paste"><figcaption>Keep the folded device block. Paste over int main() and everything below it.</figcaption></figure></li>
+<li><strong>Save.</strong> Click the project name at the top (it starts as <strong>VEXcode Project</strong>), type your team name and the lesson, like <code>TeamBolt-RobotCheck</code>, and click <strong>Save</strong>.
+<figure class="shot" data-shot="vx-save"><figcaption>Name your project, then click Save</figcaption></figure></li>
 </ol>
 <div class="callout warn"><p>If you change your code in VEXcode, copy it back into RoboCode before you submit. Your teacher only sees the code in RoboCode.</p></div>`
       },
@@ -1012,6 +1013,7 @@ int main() {
         minutes: 5,
         html: `<table class="tbl"><tr><th>Problem</th><th>Try this</th></tr>
 <tr><td>VEXcode can't find the Brain</td><td>Turn the Brain on, try the other end of the cable, and use Google Chrome. Close other tabs that might be connected to it.</td></tr>
+<tr><td>Lots of errors right after pasting</td><td>You probably pasted over the folded <code>#pragma region</code> device block. Press <kbd>Ctrl</kbd> + <kbd>Z</kbd> to undo, then paste again over <code>int main() {</code> and below only.</td></tr>
 <tr><td>An error says a device name is not declared</td><td>The name in your code does not match the name in <strong>Devices</strong>. Make them exactly the same, including capital letters.</td></tr>
 <tr><td>The robot drives backward or spins in place</td><td>A motor is on the wrong port or turns the wrong way. Check the ports in Devices, or swap the left and right ports.</td></tr>
 <tr><td>Nothing happens when I press Run</td><td>Check that the download finished and the battery is charged.</td></tr></table>
