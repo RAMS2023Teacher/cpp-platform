@@ -65,7 +65,8 @@ module.exports = [
         kind: "activity",
         title: "Kit Tour Scavenger Hunt",
         minutes: 12,
-        html: `<div class="callout robot">
+        html: `<div data-vex="brain2 smartmotor battery controller2 omniwheel distance optical bumper touchled gyro"></div>
+<div class="callout robot">
 <p><strong>Team challenge (teams of 3):</strong> Find each part in your kit, hold it up, and have your teacher or a neighbor team check it off. First team to find all 10 correctly gets first pick of field time next class!</p>
 <ol class="steps">
   <li>Pick roles: <strong>Finder</strong> (searches the kit), <strong>Checker</strong> (compares with the picture/description), <strong>Recorder</strong> (writes it on the sheet).</li>
@@ -228,13 +229,15 @@ int main() {
   <tr><td><strong>Corner connector</strong></td><td>Joins parts at an angle</td><td>You want to turn a flat build into a 3D one</td></tr>
 </table>
 <div class="callout tip"><p><strong>Pins come in different lengths.</strong> A longer pin can reach through more layers. Check your kit's parts poster for the name of each one.</p></div>
-<div class="callout warn"><p><strong>Save your fingers and your parts:</strong> pull pins out with the <strong>pin tool</strong>, never your teeth or fingernails. Never force a pin. If it won't go in, the holes probably don't line up.</p></div>`
+<div class="callout warn"><p><strong>Save your fingers and your parts:</strong> pull pins out with the <strong>pin tool</strong>, never your teeth or fingernails. Never force a pin. If it won't go in, the holes probably don't line up.</p></div>
+<div data-vex="beams beamlengths"></div>`
       },
       {
         kind: "build",
         title: "Pin Practice",
         minutes: 7,
-        html: `<div class="callout robot">
+        html: `<div data-vex="pins connectors"></div>
+<div class="callout robot">
 <p><strong>Warm up your hands.</strong> Everyone on the team does each step.</p>
 <ol class="steps">
   <li>Find a beam and count its holes. Say its size out loud, then measure it with a ruler. Does the length match the number of holes times 12.7 mm, roughly?</li>
@@ -469,7 +472,8 @@ int main() {
   <tr><td>36 teeth</td><td>12 teeth</td><td>1:3</td><td>3 times the speed, 1/3 the torque</td></tr>
   <tr><td>36 teeth</td><td>36 teeth</td><td>1:1</td><td>Same speed and torque, opposite direction</td></tr>
 </table>
-<div class="callout tip"><p><strong>Two meshed gears spin in opposite directions.</strong> Remember that when a wheel turns the wrong way.</p></div>`
+<div class="callout tip"><p><strong>Two meshed gears spin in opposite directions.</strong> Remember that when a wheel turns the wrong way.</p></div>
+<div data-vex="smartmotor smartmotor1 shafts shaftlock"></div>`
       },
       {
         kind: "build",
@@ -608,7 +612,8 @@ int main() {
         kind: "build",
         title: "Build the BaseBot Drivetrain",
         minutes: 20,
-        html: `<div class="callout robot">
+        html: `<div data-vex="basebot basebotbuild"></div>
+<div class="callout robot">
 <p><strong>Build sprint:</strong> Follow the official VEX IQ BaseBot instructions. Use these checkpoints so your Inspector can sign off.</p>
 <ol class="steps">
   <li><strong>Lay out the parts.</strong> Parts Manager sorts beams, pins, shafts and wheels into piles before step 1.</li>

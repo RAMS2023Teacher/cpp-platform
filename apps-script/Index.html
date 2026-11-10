@@ -925,6 +925,13 @@ figure.shot .shot-missing { display: grid; place-items: center; min-height: 90px
 .cs-ach li { padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.08); }
 @media (max-width: 960px) { .cs-grid { grid-template-columns: 1fr; } .cs-clock { font-size: 4rem; } }
 
+/* VEX part pictures (linked from VEX's servers) */
+.vexgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin: 12px 0; }
+.vexpic { margin: 0; padding: 8px; background: #fff; border: 1px solid #dde2ec; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
+.vexpic img { width: 100%; height: 150px; object-fit: contain; }
+.vexpic figcaption { font-size: .85rem; font-weight: 600; color: #1b1f2a; }
+.vexpic .credit { display: block; font-weight: 400; font-size: .72rem; color: #5d6475; }
+
 </style>
 </head>
 <body>
@@ -13655,6 +13662,8 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
         </div>
       </div>`;
     $app.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById(a.dataset.jump).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
+    // VEX part pictures that belong to the other kit generation are hidden.
+    $app.querySelectorAll('.vexpic[data-gen]').forEach(f => { if (+f.dataset.gen !== mySetup().gen) f.hidden = true; });
     window.mountWidgets($app);
     addReadAloud($app);
     if (photo) mountPhoto(document.getElementById('photobox'), { checkpoint: L.id, prompt: photo.prompt, photoId: photo.photoId, excused: photo.excused, onDone: r => { if (r.progress) celebrate(L, r.progress); } });

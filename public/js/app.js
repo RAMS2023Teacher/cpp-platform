@@ -327,6 +327,8 @@
         </div>
       </div>`;
     $app.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById(a.dataset.jump).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
+    // VEX part pictures that belong to the other kit generation are hidden.
+    $app.querySelectorAll('.vexpic[data-gen]').forEach(f => { if (+f.dataset.gen !== mySetup().gen) f.hidden = true; });
     window.mountWidgets($app);
     addReadAloud($app);
     if (photo) mountPhoto(document.getElementById('photobox'), { checkpoint: L.id, prompt: photo.prompt, photoId: photo.photoId, excused: photo.excused, onDone: r => { if (r.progress) celebrate(L, r.progress); } });

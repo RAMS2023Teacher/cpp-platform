@@ -43,6 +43,7 @@ module.exports = [
 Write lessons with the standard device names (`DistanceSensor`, `Optical`, `BumperA`, `TouchLED`, `ClawMotor`, `ArmMotor`, `BrainInertial`). Students see them adapted to their kit and their Robot Setup names, and auto-checks run against the standard names.
 
 ## HTML inside sections
+- VEX part pictures: `<div data-vex="brain2 smartmotor"></div>` shows pictures listed in `lessons/vex-images.js`. They load from VEX's own website with an "Image: VEX Robotics" credit, and pictures marked for one kit generation are hidden for the other.
 - Screenshots: `<figure class="shot" data-shot="NAME"><figcaption>Caption</figcaption></figure>` shows `shots/NAME.webp` (see docs/SCREENSHOTS.md).
 Plain HTML. Useful classes:
 - `<div class="callout tip">`, `<div class="callout warn">`, `<div class="callout robot">` (VEX board / hardware activity), `<div class="callout think">` (discussion)

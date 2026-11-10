@@ -105,7 +105,8 @@ void goToVictim1() {
         kind: "activity",
         title: "Team Planning Session",
         minutes: 15,
-        html: `<div class="callout robot">
+        html: `<div data-vex="plowbot basebot"></div>
+<div class="callout robot">
 <p><strong>Team activity (groups of 3-4):</strong></p>
 <ol class="steps">
 <li><strong>Assign roles</strong> (everyone still helps everywhere):

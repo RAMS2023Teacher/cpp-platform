@@ -106,7 +106,15 @@ const withShots = html => html.replace(/<figure class="shot" data-shot="([\w-]+)
   shotBytes += bytes.length;
   return `<figure class="shot"><img src="data:${shotTypes[ext]};base64,${bytes.toString('base64')}" alt="${alt}" loading="lazy"><figcaption>${caption}</figcaption></figure>`;
 });
+// VEX pictures: <div data-vex="name name"></div> links to VEX's own images (see lessons/vex-images.js).
+const VEX_IMAGES = require(path.join(root, 'lessons/vex-images.js'));
+const withVex = html => html.replace(/<div data-vex="([\w ]+)"><\/div>/g, (_, names) => `<div class="vexgrid">${names.trim().split(/\s+/).map(n => {
+  if (!VEX_IMAGES[n]) throw new Error(`lessons/vex-images.js has no picture called ${n}`);
+  const [url, alt, caption, gen] = VEX_IMAGES[n];
+  return `<figure class="vexpic"${gen ? ` data-gen="${gen}"` : ''}><img src="${url}" alt="${alt.replace(/"/g, '&quot;')}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.hidden=true"><figcaption>${caption} <a class="credit" href="${url}" target="_blank" rel="noopener">Image: VEX Robotics</a></figcaption></figure>`;
+}).join('')}</div>`);
 for (const l of lessons) {
+  for (const sec of l.sections || []) sec.html = withVex(sec.html);
   for (const sec of l.sections || []) sec.html = withShots(sec.html);
   if (l.challenge) l.challenge.prompt = withShots(l.challenge.prompt);
 }

@@ -282,7 +282,8 @@ int main() {
   Drivetrain.driveFor(forward, 1, inches);
 }</pre>
 <p>This is called <strong>bang-bang control</strong> because it only has two states and bangs back and forth between them. The robot wiggles along the edge like a snake, but it gets there!</p>
-<div class="callout tip"><p>Smaller turns = smoother but slower to react at corners. Bigger turns = reacts fast but wiggles wildly. Engineers always balance this trade-off.</p></div>`
+<div class="callout tip"><p>Smaller turns = smoother but slower to react at corners. Bigger turns = reacts fast but wiggles wildly. Engineers always balance this trade-off.</p></div>
+<div data-vex="optical"></div>`
       },
       {
         kind: "activity",
@@ -893,7 +894,8 @@ same decision again</pre>
   <li><strong>Swap test (2 min):</strong> Swap the cubes AND their pads. Does your robot still sort correctly without changing the code? That proves the sensor decision works!</li>
 </ol>
 </div>
-<p><strong>Team roles:</strong> Driver/Coder, Field Manager (resets cubes), Measurer (checks distances with a ruler), Recorder (writes down what changed each run).</p>`
+<p><strong>Team roles:</strong> Driver/Coder, Field Manager (resets cubes), Measurer (checks distances with a ruler), Recorder (writes down what changed each run).</p>
+<div data-vex="claw clawarm armbuild clawbuild"></div>`
       },
       {
         kind: "code",
