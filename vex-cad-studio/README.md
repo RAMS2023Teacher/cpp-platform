@@ -1,5 +1,7 @@
 # VEX IQ CAD Studio
 
+> **Status: shelved (November 10, 2026).** The teacher decided not to use CAD Studio and to keep everything in RoboCode Academy. This branch was never merged, and nothing outside `vex-cad-studio/` changes. It's kept so the work isn't lost: `parts/library.json` holds all 449 VEX IQ parts already converted from the STEP files, so the editor can be revived without redoing the conversion.
+
 A 3D editor where students build VEX IQ models from the **real VEX IQ CAD parts**. It runs on **Google Apps Script**, like RoboCode Academy, so it lives in your school's Google Workspace and needs no other server.
 
 - **449 official parts** (beams, plates, pins, connectors, standoffs, shafts, gears, wheels, panels and more), converted from VEX's STEP files, plus simple stand-in blocks for the Brain, Smart Motor, battery and sensors.
