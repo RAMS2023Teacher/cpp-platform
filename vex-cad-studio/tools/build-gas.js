@@ -1,6 +1,9 @@
 // Builds the files you copy into Google Apps Script, in apps-script/:
-//   Code.gs, appsscript.json, Index.html (the whole editor) and Parts01.html, Parts02.html, ...
-// (the part shapes, loaded by the page as needed).
+//   CadStudio.gs, CadStudioPage.html (the whole editor) and CadParts01.html, CadParts02.html, ...
+//   (the part shapes, loaded by the page as needed). These names don't clash with RoboCode
+//   Academy's files, so they can go in the same project.
+// apps-script/separate-project/ holds the extra Code.gs and appsscript.json needed only when
+// the studio gets an Apps Script project of its own.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -20,7 +23,7 @@ const chunks = [];
 let cur = null;
 for (const p of parts) {
   const size = p.v.length + p.i.length + 60;
-  if (!cur || cur.size + size > CHUNK_BYTES) { cur = { name: 'Parts' + String(chunks.length + 1).padStart(2, '0'), size: 0, list: [] }; chunks.push(cur); }
+  if (!cur || cur.size + size > CHUNK_BYTES) { cur = { name: 'CadParts' + String(chunks.length + 1).padStart(2, '0'), size: 0, list: [] }; chunks.push(cur); }
   cur.list.push({ id: p.id, vc: p.vc, ic: p.ic, v: p.v, i: p.i });
   cur.size += size;
   p.chunk = cur.name;
@@ -55,12 +58,14 @@ const html = read('src/index.html')
 
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
-fs.writeFileSync(path.join(out, 'Index.html'), html);
-fs.copyFileSync(path.join(root, 'gas/Code.gs'), path.join(out, 'Code.gs'));
-fs.copyFileSync(path.join(root, 'gas/appsscript.json'), path.join(out, 'appsscript.json'));
+fs.writeFileSync(path.join(out, 'CadStudioPage.html'), html);
+fs.copyFileSync(path.join(root, 'gas/CadStudio.gs'), path.join(out, 'CadStudio.gs'));
+fs.mkdirSync(path.join(out, 'separate-project'));
+fs.copyFileSync(path.join(root, 'gas/Code.gs'), path.join(out, 'separate-project', 'Code.gs'));
+fs.copyFileSync(path.join(root, 'gas/appsscript.json'), path.join(out, 'separate-project', 'appsscript.json'));
 for (const c of chunks) fs.writeFileSync(path.join(out, c.name + '.html'), JSON.stringify(c.list));
 
 const kb = f => Math.round(fs.statSync(path.join(out, f)).size / 1024) + ' KB';
 console.log(`Built apps-script/ for ${parts.length} parts (library version ${version}):`);
-console.log(`  Index.html  ${kb('Index.html')}`);
+console.log(`  CadStudio.gs, CadStudioPage.html  ${kb('CadStudioPage.html')}`);
 for (const c of chunks) console.log(`  ${c.name}.html  ${kb(c.name + '.html')}  (${c.list.length} parts)`);

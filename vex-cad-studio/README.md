@@ -16,28 +16,33 @@ The server stores nothing. Students keep their own model files, so there's no da
 
 ## Put it on Google Apps Script
 
-Do this signed in to your school Google account. You'll copy the files in [`apps-script/`](apps-script/). They're already built, so you don't need Node unless you change something.
+The easiest way is to add CAD Studio to your **RoboCode Academy** Apps Script project. Then it shares RoboCode's link, and a **CAD Studio ↗** button appears in RoboCode's menu bar. The files are in [`apps-script/`](apps-script/), already built.
 
+> **Don't paste anything over RoboCode's `Code.gs` or `Index`.** CAD Studio's files all start with `Cad`, so they go in as new files next to RoboCode's.
+
+### Add it to RoboCode Academy (recommended)
+1. Update RoboCode first, so it knows about CAD Studio: paste the repo's top-level [`apps-script/Code.gs`](../apps-script/Code.gs) over RoboCode's `Code.gs`, and [`apps-script/Index.html`](../apps-script/Index.html) over `Index`.
+2. Click **+** next to Files → **Script**, name it `CadStudio`, and paste in [`apps-script/CadStudio.gs`](apps-script/CadStudio.gs).
+3. Click **+** → **HTML**, name it `CadStudioPage`, and paste in [`apps-script/CadStudioPage.html`](apps-script/CadStudioPage.html).
+4. Add the part shape files the same way: **+** → **HTML**, named exactly `CadParts01`, `CadParts02`, … `CadParts09`, each with the matching file. Apps Script adds `.html` for you.
+5. Click **Save**, then **Deploy → Manage deployments → pencil icon → Version: New version → Deploy**.
+
+Open RoboCode and click **CAD Studio ↗** in the menu bar. It opens in a new tab, at your RoboCode link with `?page=cad` on the end, which you can also share directly. Leave RoboCode's `appsscript.json` as it is.
+
+### Or give it a project of its own
 1. Go to [script.google.com](https://script.google.com), click **New project** and name it `VEX IQ CAD Studio`.
-2. Replace everything in `Code.gs` with [`apps-script/Code.gs`](apps-script/Code.gs).
-3. Click **+** next to Files → **HTML**, name it `Index`, and paste in [`apps-script/Index.html`](apps-script/Index.html).
-4. Add the part shape files the same way: **+** → **HTML**, named exactly `Parts01`, `Parts02`, … `Parts09`, each with the matching file from `apps-script/`. Apps Script adds `.html` for you.
-5. Open **Project Settings** (gear icon), tick **Show "appsscript.json" manifest file in editor**, and replace its contents with [`apps-script/appsscript.json`](apps-script/appsscript.json).
-6. Click **Save**.
-7. Click **Deploy → New deployment**, then the gear icon → **Web app**. Set **Execute as** to **Me** and **Who has access** to **Anyone within [your school]**. Click **Deploy** and copy the **Web app URL**.
+2. Replace everything in `Code.gs` with [`apps-script/separate-project/Code.gs`](apps-script/separate-project/Code.gs).
+3. Add `CadStudio` (Script), `CadStudioPage` (HTML) and `CadParts01` … `CadParts09` (HTML) as in steps 2–4 above.
+4. Open **Project Settings** (gear icon), tick **Show "appsscript.json" manifest file in editor**, and replace its contents with [`apps-script/separate-project/appsscript.json`](apps-script/separate-project/appsscript.json).
+5. Click **Deploy → New deployment**, then the gear icon → **Web app**. Set **Execute as** to **Me** and **Who has access** to **Anyone within [your school]**. Click **Deploy** and copy the **Web app URL**.
 
-Open the link to try it. The first visit takes a few seconds while the part shapes load. After that the browser keeps a copy, so it opens quickly.
-
-**Shortcut with clasp:** if you use [clasp](https://github.com/google/clasp), run `clasp create --type webapp --rootDir apps-script` in this folder, then `clasp push`, and deploy as in step 7.
-
-### Link it from RoboCode Academy
-Add a link or button to the Web app URL in your course site. Apps Script pages run inside a frame, so open the link in a new tab:
+To link a separate project from RoboCode, add a link that opens in a new tab, because Apps Script pages run inside a frame:
 
 ```html
 <a href="YOUR_CAD_STUDIO_URL" target="_blank" rel="noopener">Open VEX IQ CAD Studio</a>
 ```
 
-The studio also allows being shown inside an `<iframe>` if you'd rather embed it on a page.
+The first visit takes a few seconds while the part shapes load. After that the browser keeps a copy, so it opens quickly.
 
 ### Updating later
 Paste in the changed files, then **Deploy → Manage deployments → pencil icon → Version: New version → Deploy**. The link stays the same.
@@ -66,10 +71,10 @@ The full list is under **More → Help & shortcuts** in the app.
 ## For developers
 ```
 src/            the editor: index.html, style.css, app.js, electronics.js, examples.js
-gas/            Code.gs and appsscript.json
+gas/            CadStudio.gs, plus Code.gs and appsscript.json for a stand-alone project
 parts/          library.json, the converted part shapes (source for the build)
 tools/          convert-parts.js (STEP → shapes), build-gas.js, preview.js, categories.js
-apps-script/    built files to copy into Apps Script (generated)
+apps-script/    built files to copy into Apps Script (generated); separate-project/ is only for a stand-alone project
 ```
 
 ```bash
@@ -92,4 +97,4 @@ It tessellates each STEP file with OpenCascade, simplifies and compresses it, an
 
 Saved files are JSON: `{ "format": "vex-iq-cad", "version": 1, "name", "parts": [{ "p": part id, "t": [x, y, z] mm, "q": quaternion, "c": color }] }`. Y is up and part ids are the last digits of the VEX part number (`228-2500-005` → `"005"`).
 
-The 3D view uses [three.js](https://threejs.org) r147 and [meshoptimizer](https://github.com/zeux/meshoptimizer), both MIT licensed and bundled into `Index.html`. Part shapes come from VEX Robotics' public VEX IQ CAD files.
+The 3D view uses [three.js](https://threejs.org) r147 and [meshoptimizer](https://github.com/zeux/meshoptimizer), both MIT licensed and bundled into `CadStudioPage.html`. Part shapes come from VEX Robotics' public VEX IQ CAD files.

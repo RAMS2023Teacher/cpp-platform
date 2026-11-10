@@ -37,6 +37,9 @@ Open the link yourself. You'll land on the Teacher Dashboard. Create a class, ch
 
 RoboCode creates its own assignments, because Google only lets an app grade assignments that app made. Don't delete them or re-create them by hand. Your district may also require a grade category on each assignment, which you can set in Classroom. Only the teacher who deployed the app can send grades.
 
+## Adding VEX IQ CAD Studio (optional)
+CAD Studio, the 3D model editor, can live in this same project. Add its files as **new** files next to RoboCode's (they all start with `Cad`), and never paste them over `Code.gs` or `Index`. When they're there, a **CAD Studio ↗** button appears in the menu bar. See [vex-cad-studio/README.md](../vex-cad-studio/README.md).
+
 ## Updating later
 Paste in the changed files, then **Deploy → Manage deployments → pencil icon → Version: New version → Deploy**. The link stays the same. Saving alone doesn't change what students see.
 

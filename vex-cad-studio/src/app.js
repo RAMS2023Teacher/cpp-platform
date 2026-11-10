@@ -111,7 +111,7 @@
   let chunksDone = 0;
   function fetchChunk(name) {
     if (window.google && google.script && google.script.run) {
-      return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej).partsChunk(name));
+      return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej).cadPartsChunk(name));
     }
     return fetch('chunks/' + name + '.html').then(r => { if (!r.ok) throw new Error(r.status); return r.text(); });
   }
