@@ -33,9 +33,7 @@ var cache_ = {};      // per-request copy of sheet data
 var heldLock_ = null;
 
 // ---------------------------------------------------------------- entry points
-function doGet(e) {
-  // VEX IQ CAD Studio, if its files (CadStudio.gs and friends) are in this project.
-  if (e && e.parameter && e.parameter.page === 'cad' && typeof cadStudioPage_ === 'function') return cadStudioPage_();
+function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('RoboCode Academy')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
@@ -329,14 +327,9 @@ function me_() {
     u.lastLogin = now_();
     saveUser_(u);
   }
-  var out = { user: publicUser_(u), cadUrl: cadUrl_() };
+  var out = { user: publicUser_(u) };
   if (u.classId) out['class'] = classInfo_(classById_(u.classId));
   return out;
-}
-/** Link to VEX IQ CAD Studio when its files are in this project, otherwise ''. */
-function cadUrl_() {
-  if (typeof cadStudioPage_ !== 'function') return '';
-  try { return ScriptApp.getService().getUrl() + '?page=cad'; } catch (e) { return ''; }
 }
 function join_(c) {
   var email = email_();

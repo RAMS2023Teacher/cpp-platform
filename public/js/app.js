@@ -1,7 +1,7 @@
 /* RoboCode Academy – single page app */
 (function () {
   const $app = document.getElementById('app'), $nav = document.getElementById('nav');
-  let ME = null, MYCLASS = null, ACCOUNT = '', CAD_URL = '';
+  let ME = null, MYCLASS = null, ACCOUNT = '';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const UNIT_NAMES = { 1: 'Meet Your Robot', 2: 'C++ Foundations', 3: 'Algorithms', 4: 'Artificial Intelligence', 5: 'Capstone' };
   const UNIT_ICONS = { 1: '🔧', 2: '💻', 3: '🧩', 4: '🧠', 5: '🏆' };
@@ -82,9 +82,7 @@
     const links = ME.role === 'teacher'
       ? `<a href="#/teacher">Classes</a><a href="#/map">Map</a><a href="#/teacher/lessons">Lessons</a><a href="#/teacher/standards">Standards</a><a href="#/playground">Code Lab</a>`
       : `<a href="#/">My Course</a><a href="#/robot">My Robot</a><a href="#/team">Team</a><a href="#/map">Map</a><a href="#/playground">Code Lab</a>`;
-    // CAD Studio opens in a new tab: Apps Script pages run in a frame that can't navigate itself.
-    const cad = CAD_URL ? `<a href="${esc(CAD_URL)}" target="_blank" rel="noopener" title="Design VEX IQ models in 3D (opens a new tab)">CAD Studio ↗</a>` : '';
-    $nav.innerHTML = `${links}${cad}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
+    $nav.innerHTML = `${links}<span class="who">${esc(ME.name)}${ME.role === 'teacher' ? ' (teacher)' : ''}</span>`;
     $nav.querySelectorAll('a').forEach(a => a.classList.toggle('active', Nav.hash === a.getAttribute('href')));
   }
   let cleanup = null;
@@ -137,7 +135,7 @@
     catch (e) { $app.innerHTML = `<div class="panel"><h2>Oops</h2><p>${esc(e.message)}</p><a class="btn" href="#/">Back home</a></div>`; }
   }
   async function boot() {
-    try { const r = await api('/api/me'); ME = r.user; MYCLASS = r.class || null; ACCOUNT = r.email || ''; CAD_URL = r.cadUrl || ''; route(); }
+    try { const r = await api('/api/me'); ME = r.user; MYCLASS = r.class || null; ACCOUNT = r.email || ''; route(); }
     catch (e) { $app.innerHTML = `<div class="panel"><h2>Can't open RoboCode Academy</h2><p>${esc(e.message)}</p></div>`; }
   }
 

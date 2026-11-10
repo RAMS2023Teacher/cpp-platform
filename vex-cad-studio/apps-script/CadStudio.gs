@@ -1,9 +1,8 @@
 /**
  * VEX IQ CAD Studio — Google Apps Script server code.
  *
- * Works two ways:
- *  - Inside your RoboCode Academy project: RoboCode's doGet shows the studio for ?page=cad.
- *  - In a project of its own: add a Code.gs containing doGet() { return cadStudioPage_(); }.
+ * Goes in CAD Studio's own Apps Script project, next to a Code.gs whose doGet() returns
+ * cadStudioPage_() (see apps-script/separate-project/Code.gs).
  *
  * The editor runs in the student's browser. This file only serves the page and the
  * part shape files (CadParts01, CadParts02, ...). It stores nothing.

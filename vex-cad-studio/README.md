@@ -16,31 +16,25 @@ The server stores nothing. Students keep their own model files, so there's no da
 
 ## Put it on Google Apps Script
 
-The easiest way is to add CAD Studio to your **RoboCode Academy** Apps Script project. Then it shares RoboCode's link, and a **CAD Studio ↗** button appears in RoboCode's menu bar. The files are in [`apps-script/`](apps-script/), already built.
+CAD Studio gets **its own Apps Script project**, separate from RoboCode Academy. RoboCode's menu bar already has a **CAD Studio ↗** button that opens CAD Studio's web app link in a new tab. The files are in [`apps-script/`](apps-script/), already built.
 
-> **Don't paste anything over RoboCode's `Code.gs` or `Index`.** CAD Studio's files all start with `Cad`, so they go in as new files next to RoboCode's.
+> **Don't put CAD Studio's files in the RoboCode project.** In particular, CAD Studio's `Code.gs` would replace RoboCode's and break it ("api is not a function").
 
-### Add it to RoboCode Academy (recommended)
-1. Update RoboCode first, so it knows about CAD Studio: paste the repo's top-level [`apps-script/Code.gs`](../apps-script/Code.gs) over RoboCode's `Code.gs`, and [`apps-script/Index.html`](../apps-script/Index.html) over `Index`.
-2. Click **+** next to Files → **Script**, name it `CadStudio`, and paste in [`apps-script/CadStudio.gs`](apps-script/CadStudio.gs).
-3. Click **+** → **HTML**, name it `CadStudioPage`, and paste in [`apps-script/CadStudioPage.html`](apps-script/CadStudioPage.html).
-4. Add the part shape files the same way: **+** → **HTML**, named exactly `CadParts01`, `CadParts02`, … `CadParts09`, each with the matching file. Apps Script adds `.html` for you.
-5. Click **Save**, then **Deploy → Manage deployments → pencil icon → Version: New version → Deploy**.
-
-Open RoboCode and click **CAD Studio ↗** in the menu bar. It opens in a new tab, at your RoboCode link with `?page=cad` on the end, which you can also share directly. Leave RoboCode's `appsscript.json` as it is.
-
-### Or give it a project of its own
-1. Go to [script.google.com](https://script.google.com), click **New project** and name it `VEX IQ CAD Studio`.
+1. Go to [script.google.com](https://script.google.com), click **New project** and name it `VEX IQ CAD Studio`. (If you already made one, open it and delete any old `Index` and `Parts01`–`Parts09` files.)
 2. Replace everything in `Code.gs` with [`apps-script/separate-project/Code.gs`](apps-script/separate-project/Code.gs).
-3. Add `CadStudio` (Script), `CadStudioPage` (HTML) and `CadParts01` … `CadParts09` (HTML) as in steps 2–4 above.
-4. Open **Project Settings** (gear icon), tick **Show "appsscript.json" manifest file in editor**, and replace its contents with [`apps-script/separate-project/appsscript.json`](apps-script/separate-project/appsscript.json).
-5. Click **Deploy → New deployment**, then the gear icon → **Web app**. Set **Execute as** to **Me** and **Who has access** to **Anyone within [your school]**. Click **Deploy** and copy the **Web app URL**.
+3. Click **+** next to Files → **Script**, name it `CadStudio`, and paste in [`apps-script/CadStudio.gs`](apps-script/CadStudio.gs).
+4. Click **+** → **HTML**, name it `CadStudioPage`, and paste in [`apps-script/CadStudioPage.html`](apps-script/CadStudioPage.html).
+5. Add the part shape files the same way: **+** → **HTML**, named exactly `CadParts01`, `CadParts02`, … `CadParts09`, each with the matching file. Apps Script adds `.html` for you.
+6. Open **Project Settings** (gear icon), tick **Show "appsscript.json" manifest file in editor**, and replace its contents with [`apps-script/separate-project/appsscript.json`](apps-script/separate-project/appsscript.json).
+7. Click **Deploy → New deployment**, then the gear icon → **Web app**. Set **Execute as** to **Me** and **Who has access** to **Anyone within [your school]**. Click **Deploy** and copy the **Web app URL**. If you already have a deployment, use **Manage deployments → pencil icon → New version** instead, so the URL stays the same.
 
-To link a separate project from RoboCode, add a link that opens in a new tab, because Apps Script pages run inside a frame:
+RoboCode Academy links to that URL from the `APPS` list near the top of its `public/js/app.js`. If your CAD Studio URL changes, update it there. Apps Script pages run inside a frame, so any other link to CAD Studio should open in a new tab:
 
 ```html
 <a href="YOUR_CAD_STUDIO_URL" target="_blank" rel="noopener">Open VEX IQ CAD Studio</a>
 ```
+
+CAD Studio's files all start with `Cad`, and its server functions are `cadStudioPage_` and `cadPartsChunk`, so they could share a project with another app later. Only `separate-project/Code.gs` defines `doGet`.
 
 The first visit takes a few seconds while the part shapes load. After that the browser keeps a copy, so it opens quickly.
 
