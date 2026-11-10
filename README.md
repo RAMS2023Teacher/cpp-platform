@@ -4,6 +4,9 @@ A course website for 8th graders that runs on **Google Apps Script**, so it need
 
 To put it online, follow **[docs/DEPLOY.md](docs/DEPLOY.md)**.
 
+## VEX IQ CAD Studio
+A separate 3D editor where students build VEX IQ models from the official CAD parts, also on Google Apps Script. It's in [`vex-cad-studio/`](vex-cad-studio/README.md), with its own setup steps. Link to it from the course site.
+
 ## Course map
 | Unit | Lessons |
 |---|---|

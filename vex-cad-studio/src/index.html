@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VEX IQ CAD Studio</title>
+<!-- STYLE -->
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="logo" aria-hidden="true">◆</span><span>VEX IQ <b>CAD Studio</b></span></div>
+    <input id="modelName" class="model-name" value="My Robot" aria-label="Model name" maxlength="60" spellcheck="false">
+    <div class="tools" role="toolbar" aria-label="File">
+      <button data-act="new" title="Start a new model">New</button>
+      <button data-act="open" title="Open a model file from your Chromebook (Ctrl+O)">Open…</button>
+      <button data-act="save" class="primary" title="Save the model file to your Chromebook (Ctrl+S)">Save</button>
+      <div class="menu">
+        <button class="menu-btn" aria-haspopup="true" title="More">More ▾</button>
+        <div class="menu-list" role="menu">
+          <button data-act="examples" role="menuitem">Example models…</button>
+          <button data-act="stl" role="menuitem">Export STL (3D print)</button>
+          <button data-act="png" role="menuitem">Save picture (PNG)</button>
+          <button data-act="csv" role="menuitem">Download parts list (CSV)</button>
+          <button data-act="help" role="menuitem">Help &amp; shortcuts</button>
+        </div>
+      </div>
+    </div>
+    <input id="fileInput" type="file" accept=".json,.vexiq,application/json" hidden>
+  </header>
+
+  <aside class="library" aria-label="Parts library">
+    <div class="lib-head">
+      <input id="search" type="search" placeholder="Search 450+ parts…" aria-label="Search parts" autocomplete="off">
+      <select id="catFilter" aria-label="Category"></select>
+    </div>
+    <div id="libList" class="lib-list"></div>
+    <div class="lib-foot" id="libFoot">Click a part, then click in the 3D view to place it.</div>
+  </aside>
+
+  <main class="stage">
+    <div class="stage-bar" role="toolbar" aria-label="Edit tools">
+      <div class="seg" id="modeSeg">
+        <button data-mode="translate" class="on" title="Move (W)">✥ Move</button>
+        <button data-mode="rotate" title="Rotate (E)">⟳ Rotate</button>
+      </div>
+      <span class="sep"></span>
+      <button data-act="rotY" title="Turn 90° (R)">↻ Turn</button>
+      <button data-act="rotX" title="Tilt 90° (T)">⤵ Tilt</button>
+      <button data-act="rotZ" title="Roll 90° (Y)">⤴ Roll</button>
+      <span class="sep"></span>
+      <button data-act="dup" title="Duplicate (Ctrl+D)">⧉ Copy</button>
+      <button data-act="del" title="Delete (Del)">🗑 Delete</button>
+      <span class="sep"></span>
+      <button data-act="undo" title="Undo (Ctrl+Z)">↶</button>
+      <button data-act="redo" title="Redo (Ctrl+Y)">↷</button>
+      <span class="grow"></span>
+      <label class="snap" title="How far parts jump when moved. 1 pitch keeps holes lined up.">Snap
+        <select id="snapMove">
+          <option value="12.7" selected>1 pitch</option>
+          <option value="6.35">½ pitch</option>
+          <option value="1">1 mm</option>
+          <option value="0">Off</option>
+        </select>
+      </label>
+      <label class="snap" title="How far parts turn when rotated">
+        <select id="snapRot">
+          <option value="90">90°</option>
+          <option value="45">45°</option>
+          <option value="15" selected>15°</option>
+          <option value="0">Free</option>
+        </select>
+      </label>
+    </div>
+    <div id="viewport" class="viewport" tabindex="0" aria-label="3D view">
+      <div class="views" role="toolbar" aria-label="Camera">
+        <button data-view="iso" title="3D view">3D</button>
+        <button data-view="top" title="Top view">Top</button>
+        <button data-view="front" title="Front view">Front</button>
+        <button data-view="side" title="Side view">Side</button>
+        <button data-act="frame" title="Zoom to fit (F)">⤢ Fit</button>
+        <button data-act="grid" title="Show or hide the grid (G)" class="on">#</button>
+      </div>
+      <div id="placeHint" class="place-hint" hidden></div>
+      <div id="emptyHint" class="empty-hint">
+        <h2>Start building</h2>
+        <p>Pick a part from the library on the left, then click on the grid to place it. Click a placed part to select it and drag the arrows to move it.</p>
+        <p><button data-act="examples">Open an example model</button></p>
+      </div>
+    </div>
+    <footer class="status">
+      <span id="stCount">0 parts</span>
+      <span id="stSel"></span>
+      <span class="grow"></span>
+      <span id="stLoad"></span>
+    </footer>
+  </main>
+
+  <aside class="inspector" aria-label="Properties">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="props" class="on">Selected</button>
+      <button role="tab" data-tab="bom">Parts list</button>
+    </div>
+    <section id="tab-props" class="tab-body"></section>
+    <section id="tab-bom" class="tab-body" hidden></section>
+  </aside>
+</div>
+
+<div id="loading" class="loading"><div class="spinner"></div><p>Loading CAD Studio…</p></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<dialog id="dialog"><form method="dialog"><div id="dialogBody"></div><menu id="dialogMenu"></menu></form></dialog>
+
+<!-- SCRIPTS -->
+</body>
+</html>
