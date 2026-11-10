@@ -252,7 +252,7 @@ int main() {
         kind: "activity",
         title: "Build Challenge: Name Tag Stand",
         minutes: 12,
-        html: `<div class="callout tip"><p><strong>🧊 Design it first in CAD Studio.</strong> Before you grab parts, open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and sketch your stand. Count how many holes long each beam needs to be. Then build it for real and compare.</p></div>
+        html: `<div class="callout tip"><p><strong>Design it first in CAD Studio.</strong> Before you grab parts, open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and sketch your stand. Count how many holes long each beam needs to be. Then build it for real and compare.</p></div>
 <div class="callout robot">
 <p><strong>Team challenge:</strong> Build a stand that displays your team's name on a sticky note or index card. Your stand must:</p>
 <ul>
@@ -360,7 +360,7 @@ int main() {
         kind: "activity",
         title: "Bridge Challenge",
         minutes: 20,
-        html: `<div class="callout tip"><p><strong>🧊 Plan your bridge in CAD Studio.</strong> Open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and try two bridge designs before you build. Where would you add triangles or bracing? Build the one your team thinks is stronger.</p></div>
+        html: `<div class="callout tip"><p><strong>Plan your bridge in CAD Studio.</strong> Open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and try two bridge designs before you build. Where would you add triangles or bracing? Build the one your team thinks is stronger.</p></div>
 <div class="callout robot">
 <p><strong>Team challenge:</strong> Build a bridge that spans an 8-inch gap between two stacks of books and holds as much load as possible.</p>
 <p><strong>Rules:</strong> The bridge must rest on the books without being attached to them, and may use at most 12 beams or plates, plus any pins and standoffs.</p>
@@ -481,7 +481,7 @@ int main() {
         kind: "build",
         title: "Build a Gear Tester",
         minutes: 12,
-        html: `<div class="callout tip"><p><strong>🧊 Model it in CAD Studio.</strong> Open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and place the motor, shafts and the two gears so the teeth mesh. Check your spacing on screen, then build the tester.</p></div>
+        html: `<div class="callout tip"><p><strong>Model it in CAD Studio.</strong> Open <a class="btn sm" data-app="cad">CAD Studio ↗</a> <button class="btn sm" type="button" data-side="cad" title="Put CAD Studio and RoboCode side by side">⧉</button> and place the motor, shafts and the two gears so the teeth mesh. Check your spacing on screen, then build the tester.</p></div>
 <div class="callout robot">
 <ol class="steps">
   <li>Attach a Smart Motor to a beam or plate.</li>
@@ -976,7 +976,7 @@ int main() {
         minutes: 7,
         html: `<p>First finish the code challenge at the bottom of this page, and press <strong>Check &amp; Submit</strong>. Then follow these steps to move your code into VEXcode IQ.</p>
 <ol class="steps">
-<li><strong>Copy your code.</strong> In the RoboCode editor, press <strong>📋 Copy for VEXcode</strong>, then <strong>Copy code</strong>.</li>
+<li><strong>Copy your code.</strong> In the RoboCode editor, press <strong>Copy for VEXcode</strong>, then <strong>Copy code</strong>.</li>
 <li><strong>Start a C++ project.</strong> In VEXcode IQ, click <strong>File → New Text Project</strong>, then choose <strong>C++</strong>.
 <figure class="shot" data-shot="vx-new-project"><figcaption>File → New Text Project</figcaption></figure></li>
 <li><strong>Pick your Brain.</strong> Open <strong>Devices</strong>. At the top, next to <strong>IQ Robot Brain</strong>, click the generation that matches your kit (1st or 2nd). Your teacher can tell you which one your class uses.
@@ -1024,7 +1024,7 @@ int main() {
       title: "Robot Check",
       prompt: `<p>Write a short program that proves your robot is ready. It will be the first program you download to the real Brain.</p>
 <ol><li>Print <strong>Robot check</strong> on the Brain screen.</li><li>Drive forward 12 inches.</li><li>Turn right 90 degrees.</li><li>Drive forward 12 inches again.</li><li>Print <strong>Done</strong>.</li></ol>
-<p>When it passes, press <strong>📋 Copy for VEXcode</strong> and follow the steps above to run it on your real robot.</p>`,
+<p>When it passes, press <strong>Copy for VEXcode</strong> and follow the steps above to run it on your real robot.</p>`,
       starterCode: `#include "vex.h"
 using namespace vex;
 

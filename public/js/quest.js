@@ -2,37 +2,37 @@
    robot is drawn, and the learning map. Parts are keyed by lesson id, so they work with any term plan. */
 (function () {
   const PARTS = [
-    { id: 'u1l1', icon: '🔩', name: 'Chassis frame', does: 'The skeleton everything else bolts onto.' },
-    { id: 'u1b1', icon: '📐', name: 'Corner brackets', does: 'Pin the frame together so it holds its shape.' },
-    { id: 'u1b2', icon: '🏗️', name: 'Cross braces', does: 'Stiffen the frame for rough terrain.' },
-    { id: 'u1b3', icon: '⚙️', name: 'Gearbox', does: 'Trades speed for the strength to climb rubble.' },
-    { id: 'u1l2', icon: '🛞', name: 'Drive wheels', does: 'Four wheels to cross rough ground.' },
-    { id: 'u1l3', icon: '🖥️', name: 'Robot Brain', does: 'Runs every line of code you write.' },
-    { id: 'u1v1', icon: '📶', name: 'Data link', does: 'Carries your code from the computer to the Brain.' },
-    { id: 'u1l4', icon: '🔌', name: 'Drive motors', does: 'Turn your commands into movement.' },
-    { id: 'u2l1', icon: '💾', name: 'Memory bank', does: 'Stores the values your robot keeps track of.' },
-    { id: 'u2l2', icon: '🔋', name: 'Battery pack', does: 'Keeps the loops running through a long search.' },
-    { id: 'u2l3', icon: '🚨', name: 'Touch LED', does: 'Signals what the robot has decided.' },
-    { id: 'u2l4', icon: '📡', name: 'Distance sensor', does: 'Sees walls and rubble before hitting them.' },
-    { id: 'u2l5', icon: '🧰', name: 'Function board', does: 'Packages skills the robot can reuse.' },
-    { id: 'u3l1', icon: '🛡️', name: 'Front bumper', does: 'Feels its way through a collapsed maze.' },
-    { id: 'u3l2', icon: '👁️', name: 'Optical sensor', does: 'Follows marked evacuation routes.' },
-    { id: 'u3l3', icon: '🔦', name: 'Searchlight', does: 'Scans each zone for survivors.' },
-    { id: 'u3l4', icon: '📦', name: 'Cargo rack', does: 'Keeps supplies sorted and ready.' },
-    { id: 'u3l5', icon: '🦾', name: 'Rescue claw', does: 'Picks up and carries what matters.' },
-    { id: 'u3l6', icon: '🛰️', name: 'Navigation antenna', does: 'Finds the shortest safe path.' },
-    { id: 'u3l7', icon: '🧭', name: 'Stabilizer', does: 'Smooths out every stop and turn.' },
-    { id: 'u4l1', icon: '🧠', name: 'AI core', does: 'Lets the robot act on what it senses.' },
-    { id: 'u4l2', icon: '🌳', name: 'Decision module', does: 'Works through choices step by step.' },
-    { id: 'u4l3', icon: '🎛️', name: 'Mode switch', does: 'Moves between search, carry and return.' },
-    { id: 'u4l4', icon: '📷', name: 'Training camera', does: 'Collects the examples the AI learns from.' },
-    { id: 'u4l5', icon: '✨', name: 'Learning chip', does: 'Improves through trial and error.' },
-    { id: 'u4l6', icon: '⚖️', name: 'Safety governor', does: 'Keeps decisions fair and people safe.' }
+    { id: 'u1l1', icon: '', name: 'Chassis frame', does: 'The skeleton everything else bolts onto.' },
+    { id: 'u1b1', icon: '', name: 'Corner brackets', does: 'Pin the frame together so it holds its shape.' },
+    { id: 'u1b2', icon: '', name: 'Cross braces', does: 'Stiffen the frame for rough terrain.' },
+    { id: 'u1b3', icon: '', name: 'Gearbox', does: 'Trades speed for the strength to climb rubble.' },
+    { id: 'u1l2', icon: '', name: 'Drive wheels', does: 'Four wheels to cross rough ground.' },
+    { id: 'u1l3', icon: '', name: 'Robot Brain', does: 'Runs every line of code you write.' },
+    { id: 'u1v1', icon: '', name: 'Data link', does: 'Carries your code from the computer to the Brain.' },
+    { id: 'u1l4', icon: '', name: 'Drive motors', does: 'Turn your commands into movement.' },
+    { id: 'u2l1', icon: '', name: 'Memory bank', does: 'Stores the values your robot keeps track of.' },
+    { id: 'u2l2', icon: '', name: 'Battery pack', does: 'Keeps the loops running through a long search.' },
+    { id: 'u2l3', icon: '', name: 'Touch LED', does: 'Signals what the robot has decided.' },
+    { id: 'u2l4', icon: '', name: 'Distance sensor', does: 'Sees walls and rubble before hitting them.' },
+    { id: 'u2l5', icon: '', name: 'Function board', does: 'Packages skills the robot can reuse.' },
+    { id: 'u3l1', icon: '', name: 'Front bumper', does: 'Feels its way through a collapsed maze.' },
+    { id: 'u3l2', icon: '', name: 'Optical sensor', does: 'Follows marked evacuation routes.' },
+    { id: 'u3l3', icon: '', name: 'Searchlight', does: 'Scans each zone for survivors.' },
+    { id: 'u3l4', icon: '', name: 'Cargo rack', does: 'Keeps supplies sorted and ready.' },
+    { id: 'u3l5', icon: '', name: 'Rescue claw', does: 'Picks up and carries what matters.' },
+    { id: 'u3l6', icon: '', name: 'Navigation antenna', does: 'Finds the shortest safe path.' },
+    { id: 'u3l7', icon: '', name: 'Stabilizer', does: 'Smooths out every stop and turn.' },
+    { id: 'u4l1', icon: '', name: 'AI core', does: 'Lets the robot act on what it senses.' },
+    { id: 'u4l2', icon: '', name: 'Decision module', does: 'Works through choices step by step.' },
+    { id: 'u4l3', icon: '', name: 'Mode switch', does: 'Moves between search, carry and return.' },
+    { id: 'u4l4', icon: '', name: 'Training camera', does: 'Collects the examples the AI learns from.' },
+    { id: 'u4l5', icon: '', name: 'Learning chip', does: 'Improves through trial and error.' },
+    { id: 'u4l6', icon: '', name: 'Safety governor', does: 'Keeps decisions fair and people safe.' }
   ];
   const MISSION = [
-    { id: 'u5l1', icon: '🗺️', name: 'Plan the rescue', mission: true, does: 'Fit the rescue claw and design your strategy.' },
-    { id: 'u5l2', icon: '🧪', name: 'Field test', mission: true, does: 'Build, code and test on the rescue field.' },
-    { id: 'u5l3', icon: '🏅', name: 'Rescue day', mission: true, does: 'Show what your finished robot can do.' }
+    { id: 'u5l1', icon: '', name: 'Plan the rescue', mission: true, does: 'Fit the rescue claw and design your strategy.' },
+    { id: 'u5l2', icon: '', name: 'Field test', mission: true, does: 'Build, code and test on the rescue field.' },
+    { id: 'u5l3', icon: '', name: 'Rescue day', mission: true, does: 'Show what your finished robot can do.' }
   ];
   const ALL = PARTS.concat(MISSION);
   // Parts that sim.js draws itself; everything else is added on top in drawExtras.
@@ -104,11 +104,11 @@
   // ---- learning map: a flight from Earth (bottom) to Moon Base (top), one row per unit
   const W = 1000, ROW = 156, MARGIN = 86, SKY = 44, GROUND = 104;
   const ZONES = {
-    1: { icon: '🌍', name: 'Earth', story: 'Build your robot at the launch site.' },
-    2: { icon: '☁️', name: 'The Sky', story: 'Teach your robot to think on the climb.' },
-    3: { icon: '🛰️', name: 'Orbit', story: 'Plot a course with smarter algorithms.' },
-    4: { icon: '✨', name: 'Deep Space', story: 'Far from home, your robot learns to decide alone.' },
-    5: { icon: '🌕', name: 'Moon Base', story: 'Land and carry out the rescue.' }
+    1: { icon: '', name: 'Earth', story: 'Build your robot at the launch site.' },
+    2: { icon: '', name: 'The Sky', story: 'Teach your robot to think on the climb.' },
+    3: { icon: '', name: 'Orbit', story: 'Plot a course with smarter algorithms.' },
+    4: { icon: '', name: 'Deep Space', story: 'Far from home, your robot learns to decide alone.' },
+    5: { icon: '', name: 'Moon Base', story: 'Land and carry out the rescue.' }
   };
   const EVENT_STORY = { sumo: 'Launch trials: every robot must prove it is ready to fly.', maze: 'Asteroid field: find the fastest safe way through.' };
   const MOON_KM = 384400;
@@ -174,7 +174,7 @@
       return `<g class="map-stop ${state}" data-stop="${i}" role="button" tabindex="0" aria-label="${esc(label)}, ${people.length} here">
         <title>${esc(label)}</title>
         <circle cx="${s.x}" cy="${s.y}" r="21"/>
-        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🚩' : l.complete ? '✓' : l.event ? l.icon : l.num}</text>
+        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '★' : l.complete ? '✓' : l.event ? '★' : l.num}</text>
         ${you ? `<image href="${tokenImage(you.look, you.built)}" x="${s.x - 42}" y="${s.y - 52}" width="84" height="84" class="map-you"/>` : ''}
         ${lines}${more}</g>`;
     }).join('');
@@ -184,7 +184,7 @@
       svg: `<svg class="learning-map" viewBox="0 0 ${W} ${height}" role="group" aria-label="Mission map from Earth to Moon Base">
         ${backdrop(stops, height)}${labels}
         <path d="${road(stops)}" class="map-road"/><path d="${road(stops)}" class="map-lane"/>
-        <text x="${launch.x + 2}" y="${height - 22}" font-size="30" text-anchor="middle" aria-hidden="true">🚀</text>
+        <text x="${launch.x + 2}" y="${height - 22}" font-size="30" text-anchor="middle" aria-hidden="true"></text>
         ${nodes}</svg>`
     };
   }

@@ -11,11 +11,11 @@ The lesson has eight "where to look" pictures of VEXcode IQ. `vx-new-project`, `
 | File name | What to show |
 |---|---|
 | `vx-tour` | VEXcode IQ with a C++ project open: File menu, code area, Devices button, Brain icon, Download and Run buttons all visible. |
-| `vx-new-project` | The File menu open, pointing at New Text Project. ✅ |
-| `vx-brain` | The IQ Robot Brain 1st gen / 2nd gen switch in Devices. ✅ |
-| `vx-devices` | The Add a device button in Devices. ✅ |
-| `vx-paste` | `main.cpp`, showing the folded device block to keep and `int main()` to paste over. ✅ |
-| `vx-save` | The project name box and Save button. ✅ |
+| `vx-new-project` | The File menu open, pointing at New Text Project. |
+| `vx-brain` | The IQ Robot Brain 1st gen / 2nd gen switch in Devices. |
+| `vx-devices` | The Add a device button in Devices. |
+| `vx-paste` | `main.cpp`, showing the folded device block to keep and `int main()` to paste over. |
+| `vx-save` | The project name box and Save button. |
 | `vx-connect` | The Brain icon showing a connected Brain. |
 | `vx-download` | The Download and Run buttons. |
 

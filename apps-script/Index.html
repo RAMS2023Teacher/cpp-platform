@@ -532,10 +532,10 @@ a.lcard:hover h3 { color: var(--title); text-decoration: underline; }
 .callout.tip, .callout.warn, .callout.think, .callout.robot { background: var(--tip); box-shadow: none; border: 1px solid #000; }
 .callout.warn { background: var(--warn-soft); } .callout.robot { background: #ffe8d4; } .callout.think { background: #f4e4f4; }
 .callout.robot::before, .callout.think::before, .callout.tip::before, .callout.warn::before { display: block; font-weight: 700; margin-bottom: 4px; font-size: .84rem; }
-.callout.robot::before { content: "🤖 With your VEX robot"; color: #7a3000; }
-.callout.think::before { content: "💬 Think & discuss"; color: var(--algo); }
-.callout.tip::before { content: "💡 Tip"; color: var(--title); }
-.callout.warn::before { content: "⚠️ Heads up"; color: var(--warn); }
+.callout.robot::before { content: "With your VEX robot"; color: #7a3000; }
+.callout.think::before { content: "Think & discuss"; color: var(--algo); }
+.callout.tip::before { content: "Tip"; color: var(--title); }
+.callout.warn::before { content: "Heads up"; color: var(--warn); }
 pre.code, .body pre { background: var(--ide-bg); color: var(--ide-ink); padding: 12px 14px; border: 2px solid var(--face); box-shadow: 0 0 0 1px var(--shade); overflow-x: auto; font-family: var(--mono); font-size: .86rem; line-height: 1.5; }
 .body code { font-family: var(--mono); font-size: .92em; font-weight: 700; color: var(--title); }
 .lead code { font-family: var(--mono); font-weight: 700; color: var(--title); }
@@ -931,6 +931,10 @@ figure.shot .shot-missing { display: grid; place-items: center; min-height: 90px
 .vexpic img { width: 100%; height: 150px; object-fit: contain; }
 .vexpic figcaption { font-size: .85rem; font-weight: 600; color: #1b1f2a; }
 .vexpic .credit { display: block; font-weight: 400; font-size: .72rem; color: #5d6475; }
+
+/* Lesson card status as a small text label */
+.lcard .status { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.lcard.complete .status { color: #1f7a45; }
 
 </style>
 </head>
@@ -12334,7 +12338,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   function adaptText(text, s) {
     const d = s.devices, isColor = d.color.kind === 'color', gen1 = s.gen === 1;
     const rename = (from, to) => { if (from !== to) t = t.replace(new RegExp('\\b' + from + '(?=\\s*\\.|</code>)', 'g'), to); };
-    let t = text.split('Our simulator already has these devices set up with the same names.').join('Then set up the same devices in 🔌 Robot Setup, next to the Run button.');
+    let t = text.split('Our simulator already has these devices set up with the same names.').join('Then set up the same devices in Robot Setup, next to the Run button.');
     t = t.replace(/\bOptical\s*\.\s*color\(\)/g, d.color.name + (isColor ? '.colorname()' : '.color()'));
     rename('Optical', d.color.name); rename('DistanceSensor', d.distance.name); rename('BumperA', d.bumper.name);
     rename('TouchLED', d.touchled.name); rename('ClawMotor', d.claw.name); rename('ArmMotor', d.arm.name);
@@ -12618,7 +12622,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       }
       const [ox, oy] = this.opticalPt(); const f = this.floorAt(ox, oy); if (f.tile !== undefined) this.visited.add(f.tile);
       this.waiters = this.waiters.filter(w => { if (this.t >= w.until) { w.resolve(); this._woke = true; return false; } return true; });
-      if (this.t > 180) this.halt('⏱️ Time limit reached (3 simulated minutes) — program stopped. Is there an endless loop?');
+      if (this.t > 180) this.halt('Time limit reached (3 simulated minutes) — program stopped. Is there an endless loop?');
     }
     _finishMotion() { const m = this.motion; this.motion = null; this._woke = true; if (m && m.done) m.done(); }
     _carry() { const [fx, fy] = this.frontPt(FRONT + 1.6); this.holding.x = fx; this.holding.y = fy; }
@@ -12917,14 +12921,14 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     function upd() { range.textContent = `Possible range: ${lo.toLocaleString()} – ${hi.toLocaleString()}   ·   Guesses: ${guesses}   ·   Binary search would need at most ${Math.ceil(Math.log2(max + 1))}`; }
     function guess(g) {
       if (!Number.isFinite(g)) return; guesses++;
-      if (g === secret) msg.textContent = `🎉 Got it in ${guesses} guesses! The number was ${secret.toLocaleString()}.`;
-      else if (g < secret) { msg.textContent = `${g.toLocaleString()} is too LOW ⬆️`; lo = Math.max(lo, g + 1); }
-      else { msg.textContent = `${g.toLocaleString()} is too HIGH ⬇️`; hi = Math.min(hi, g - 1); }
+      if (g === secret) msg.textContent = `Got it in ${guesses} guesses! The number was ${secret.toLocaleString()}.`;
+      else if (g < secret) { msg.textContent = `${g.toLocaleString()} is too LOW`; lo = Math.max(lo, g + 1); }
+      else { msg.textContent = `${g.toLocaleString()} is too HIGH`; hi = Math.min(hi, g - 1); }
       upd();
     }
-    el.append(h('h4', {}, '🔎 Binary Search Challenge'), h('div', { class: 'row' }, sel, h('button', { class: 'btn sm', onclick: start }, 'New game')), msg,
+    el.append(h('h4', {}, 'Binary Search Challenge'), h('div', { class: 'row' }, sel, h('button', { class: 'btn sm', onclick: start }, 'New game')), msg,
       h('div', { class: 'row' }, input, h('button', { class: 'btn primary sm', onclick: () => { guess(+input.value); input.select(); } }, 'Guess'),
-        h('button', { class: 'btn sm', onclick: () => { const m = Math.floor((lo + hi) / 2); input.value = m; guess(m); } }, '🤖 Let the robot guess the middle')), range);
+        h('button', { class: 'btn sm', onclick: () => { const m = Math.floor((lo + hi) / 2); input.value = m; guess(m); } }, 'Let the robot guess the middle')), range);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') { guess(+input.value); input.select(); } });
     start();
   };
@@ -12937,7 +12941,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       bars.innerHTML = '';
       const sortedFrom = arr.length - i;
       arr.forEach((v, k) => bars.append(h('div', { class: (cmp && (k === j || k === j + 1) ? 'cmp' : '') + (k >= sortedFrom || done ? ' done' : ''), style: `height:${v * 1.5}px` }, String(v))));
-      info.textContent = done ? `✅ Sorted! ${comps} comparisons, ${swaps} swaps.` : `Pass ${i + 1}: comparing positions ${j} and ${j + 1}.  Comparisons: ${comps}  Swaps: ${swaps}`;
+      info.textContent = done ? `Sorted! ${comps} comparisons, ${swaps} swaps.` : `Pass ${i + 1}: comparing positions ${j} and ${j + 1}.  Comparisons: ${comps}  Swaps: ${swaps}`;
       code.textContent = `if (arr[${j}] > arr[${j + 1}])   // ${arr[j]} > ${arr[j + 1]} ?  ${arr[j] > arr[j + 1] ? 'YES → swap' : 'no'}`;
     }
     function step() {
@@ -12950,10 +12954,10 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       draw(true);
     }
     let timer = null;
-    el.append(h('h4', {}, '🫧 Bubble Sort, step by step'), bars, code, info,
+    el.append(h('h4', {}, 'Bubble Sort, step by step'), bars, code, info,
       h('div', { class: 'row' }, h('button', { class: 'btn primary sm', onclick: step }, 'Step ▶'),
-        h('button', { class: 'btn sm', onclick: () => { clearInterval(timer); timer = setInterval(() => { step(); if (done) clearInterval(timer); }, 350); } }, 'Auto ⏩'),
-        h('button', { class: 'btn sm', onclick: () => { clearInterval(timer); reset(); } }, 'Shuffle 🔀')));
+        h('button', { class: 'btn sm', onclick: () => { clearInterval(timer); timer = setInterval(() => { step(); if (done) clearInterval(timer); }, 350); } }, 'Auto'),
+        h('button', { class: 'btn sm', onclick: () => { clearInterval(timer); reset(); } }, 'Shuffle')));
     reset();
   };
 
@@ -12987,13 +12991,13 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
           prev[nk] = k; q.push([nr, nc]);
         }
       }
-      if (!(G.join() in prev)) { info.textContent = '🚫 No path! The goal is walled off.'; return; }
+      if (!(G.join() in prev)) { info.textContent = 'No path! The goal is walled off.'; return; }
       let k = prev[G.join()], len = 1; while (k && k !== S.join()) { cells[k].className = 'p'; k = prev[k]; len++; }
-      info.textContent = `✅ Shortest path: ${len} moves. BFS explored ${order} squares (light blue) — it searches in rings, nearest first.`;
+      info.textContent = `Shortest path: ${len} moves. BFS explored ${order} squares (light blue) — it searches in rings, nearest first.`;
     }
-    el.append(h('h4', {}, '🧭 Breadth-First Search Maze'), h('p', { class: 'small' }, '🟩 robot start   🟥 goal   ⬛ wall   🟦 explored   🟨 shortest path'), grid, info,
-      h('div', { class: 'row' }, h('button', { class: 'btn primary sm', onclick: bfs }, 'Find Path 🔍'), h('button', { class: 'btn sm', onclick: () => { walls = new Set(); paint(); } }, 'Clear walls'),
-        h('button', { class: 'btn sm', onclick: () => { walls = new Set(); for (let i = 0; i < 38; i++) { const k = Math.floor(Math.random() * R) + ',' + Math.floor(Math.random() * C); if (k !== S.join() && k !== G.join()) walls.add(k); } paint(); } }, 'Random walls 🎲')));
+    el.append(h('h4', {}, 'Breadth-First Search Maze'), h('p', { class: 'small' }, 'Green: robot start · Red: goal · Dark gray: wall · Light blue: explored · Yellow: shortest path'), grid, info,
+      h('div', { class: 'row' }, h('button', { class: 'btn primary sm', onclick: bfs }, 'Find Path'), h('button', { class: 'btn sm', onclick: () => { walls = new Set(); paint(); } }, 'Clear walls'),
+        h('button', { class: 'btn sm', onclick: () => { walls = new Set(); for (let i = 0; i < 38; i++) { const k = Math.floor(Math.random() * R) + ',' + Math.floor(Math.random() * C); if (k !== S.join() && k !== G.join()) walls.add(k); } paint(); } }, 'Random walls')));
     paint();
   };
 
@@ -13013,8 +13017,8 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     cv.addEventListener('click', e => { const r = cv.getBoundingClientRect(); pts.push({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height, l: label }); draw(); });
     function train(n = 1) { for (let k = 0; k < n; k++) { epochs++; pts.forEach(p => { const err = p.l - pred(p.x, p.y); if (err) { w[0] += 0.1 * err * p.x; w[1] += 0.1 * err * p.y; w[2] += 0.1 * err; } }); } draw(); }
     const lbl = h('span', { class: 'tag' }, 'Adding: RED');
-    el.append(h('h4', {}, '🧠 Train a Perceptron (a tiny neural network)'), h('p', { class: 'small' }, 'Each dot is a training example (think: Optical sensor readings). The line is the AI\'s decision boundary. Train it and watch it learn!'), cv,
-      h('div', { class: 'row', style: 'margin-top:8px' }, h('button', { class: 'btn sm', onclick: () => { label = 1; lbl.textContent = 'Adding: RED'; } }, '🔴 Red'), h('button', { class: 'btn sm', onclick: () => { label = -1; lbl.textContent = 'Adding: BLUE'; } }, '🔵 Blue'), lbl,
+    el.append(h('h4', {}, 'Train a Perceptron (a tiny neural network)'), h('p', { class: 'small' }, 'Each dot is a training example (think: Optical sensor readings). The line is the AI\'s decision boundary. Train it and watch it learn!'), cv,
+      h('div', { class: 'row', style: 'margin-top:8px' }, h('button', { class: 'btn sm', onclick: () => { label = 1; lbl.textContent = 'Adding: RED'; } }, 'Red'), h('button', { class: 'btn sm', onclick: () => { label = -1; lbl.textContent = 'Adding: BLUE'; } }, 'Blue'), lbl,
         h('button', { class: 'btn sm', onclick: () => { pts.push({ x: Math.random(), y: Math.random(), l: label }); draw(); } }, 'Add a point for me'),
         h('button', { class: 'btn primary sm', onclick: () => train(1) }, 'Train 1 round'), h('button', { class: 'btn sm', onclick: () => train(25) }, 'Train ×25'),
         h('button', { class: 'btn sm', onclick: () => { w = [Math.random() - .5, Math.random() - .5, Math.random() - .5]; epochs = 0; draw(); } }, 'Forget (reset weights)'),
@@ -13028,12 +13032,12 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     const box = h('div'); const path = h('p', { class: 'small muted' });
     function show(node, trail) {
       box.innerHTML = ''; path.textContent = trail.length ? 'Path: ' + trail.join(' → ') : 'Answer the questions like the robot\'s "brain" would.';
-      if (typeof node === 'string') { box.append(h('div', { class: 'tree-node tree-leaf' }, '🤖 Decision: ' + node), h('button', { class: 'btn sm', onclick: () => show(tree, []) }, 'Start over ↺')); return; }
-      box.append(h('div', { class: 'tree-node' }, '❓ ' + node.q), h('div', { class: 'row', style: 'justify-content:center' },
+      if (typeof node === 'string') { box.append(h('div', { class: 'tree-node tree-leaf' }, 'Decision: ' + node), h('button', { class: 'btn sm', onclick: () => show(tree, []) }, 'Start over ↺')); return; }
+      box.append(h('div', { class: 'tree-node' }, '' + node.q), h('div', { class: 'row', style: 'justify-content:center' },
         h('button', { class: 'btn go sm', onclick: () => show(node.yes, [...trail, node.q + ' YES']) }, 'Yes'),
         h('button', { class: 'btn stop sm', onclick: () => show(node.no, [...trail, node.q + ' NO']) }, 'No')));
     }
-    el.append(h('h4', {}, '🌳 Decision Tree'), box, path); show(tree, []);
+    el.append(h('h4', {}, 'Decision Tree'), box, path); show(tree, []);
   };
 
   window.mountWidgets = root => root.querySelectorAll('[data-widget]').forEach(el => {
@@ -13140,37 +13144,37 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
    robot is drawn, and the learning map. Parts are keyed by lesson id, so they work with any term plan. */
 (function () {
   const PARTS = [
-    { id: 'u1l1', icon: '🔩', name: 'Chassis frame', does: 'The skeleton everything else bolts onto.' },
-    { id: 'u1b1', icon: '📐', name: 'Corner brackets', does: 'Pin the frame together so it holds its shape.' },
-    { id: 'u1b2', icon: '🏗️', name: 'Cross braces', does: 'Stiffen the frame for rough terrain.' },
-    { id: 'u1b3', icon: '⚙️', name: 'Gearbox', does: 'Trades speed for the strength to climb rubble.' },
-    { id: 'u1l2', icon: '🛞', name: 'Drive wheels', does: 'Four wheels to cross rough ground.' },
-    { id: 'u1l3', icon: '🖥️', name: 'Robot Brain', does: 'Runs every line of code you write.' },
-    { id: 'u1v1', icon: '📶', name: 'Data link', does: 'Carries your code from the computer to the Brain.' },
-    { id: 'u1l4', icon: '🔌', name: 'Drive motors', does: 'Turn your commands into movement.' },
-    { id: 'u2l1', icon: '💾', name: 'Memory bank', does: 'Stores the values your robot keeps track of.' },
-    { id: 'u2l2', icon: '🔋', name: 'Battery pack', does: 'Keeps the loops running through a long search.' },
-    { id: 'u2l3', icon: '🚨', name: 'Touch LED', does: 'Signals what the robot has decided.' },
-    { id: 'u2l4', icon: '📡', name: 'Distance sensor', does: 'Sees walls and rubble before hitting them.' },
-    { id: 'u2l5', icon: '🧰', name: 'Function board', does: 'Packages skills the robot can reuse.' },
-    { id: 'u3l1', icon: '🛡️', name: 'Front bumper', does: 'Feels its way through a collapsed maze.' },
-    { id: 'u3l2', icon: '👁️', name: 'Optical sensor', does: 'Follows marked evacuation routes.' },
-    { id: 'u3l3', icon: '🔦', name: 'Searchlight', does: 'Scans each zone for survivors.' },
-    { id: 'u3l4', icon: '📦', name: 'Cargo rack', does: 'Keeps supplies sorted and ready.' },
-    { id: 'u3l5', icon: '🦾', name: 'Rescue claw', does: 'Picks up and carries what matters.' },
-    { id: 'u3l6', icon: '🛰️', name: 'Navigation antenna', does: 'Finds the shortest safe path.' },
-    { id: 'u3l7', icon: '🧭', name: 'Stabilizer', does: 'Smooths out every stop and turn.' },
-    { id: 'u4l1', icon: '🧠', name: 'AI core', does: 'Lets the robot act on what it senses.' },
-    { id: 'u4l2', icon: '🌳', name: 'Decision module', does: 'Works through choices step by step.' },
-    { id: 'u4l3', icon: '🎛️', name: 'Mode switch', does: 'Moves between search, carry and return.' },
-    { id: 'u4l4', icon: '📷', name: 'Training camera', does: 'Collects the examples the AI learns from.' },
-    { id: 'u4l5', icon: '✨', name: 'Learning chip', does: 'Improves through trial and error.' },
-    { id: 'u4l6', icon: '⚖️', name: 'Safety governor', does: 'Keeps decisions fair and people safe.' }
+    { id: 'u1l1', icon: '', name: 'Chassis frame', does: 'The skeleton everything else bolts onto.' },
+    { id: 'u1b1', icon: '', name: 'Corner brackets', does: 'Pin the frame together so it holds its shape.' },
+    { id: 'u1b2', icon: '', name: 'Cross braces', does: 'Stiffen the frame for rough terrain.' },
+    { id: 'u1b3', icon: '', name: 'Gearbox', does: 'Trades speed for the strength to climb rubble.' },
+    { id: 'u1l2', icon: '', name: 'Drive wheels', does: 'Four wheels to cross rough ground.' },
+    { id: 'u1l3', icon: '', name: 'Robot Brain', does: 'Runs every line of code you write.' },
+    { id: 'u1v1', icon: '', name: 'Data link', does: 'Carries your code from the computer to the Brain.' },
+    { id: 'u1l4', icon: '', name: 'Drive motors', does: 'Turn your commands into movement.' },
+    { id: 'u2l1', icon: '', name: 'Memory bank', does: 'Stores the values your robot keeps track of.' },
+    { id: 'u2l2', icon: '', name: 'Battery pack', does: 'Keeps the loops running through a long search.' },
+    { id: 'u2l3', icon: '', name: 'Touch LED', does: 'Signals what the robot has decided.' },
+    { id: 'u2l4', icon: '', name: 'Distance sensor', does: 'Sees walls and rubble before hitting them.' },
+    { id: 'u2l5', icon: '', name: 'Function board', does: 'Packages skills the robot can reuse.' },
+    { id: 'u3l1', icon: '', name: 'Front bumper', does: 'Feels its way through a collapsed maze.' },
+    { id: 'u3l2', icon: '', name: 'Optical sensor', does: 'Follows marked evacuation routes.' },
+    { id: 'u3l3', icon: '', name: 'Searchlight', does: 'Scans each zone for survivors.' },
+    { id: 'u3l4', icon: '', name: 'Cargo rack', does: 'Keeps supplies sorted and ready.' },
+    { id: 'u3l5', icon: '', name: 'Rescue claw', does: 'Picks up and carries what matters.' },
+    { id: 'u3l6', icon: '', name: 'Navigation antenna', does: 'Finds the shortest safe path.' },
+    { id: 'u3l7', icon: '', name: 'Stabilizer', does: 'Smooths out every stop and turn.' },
+    { id: 'u4l1', icon: '', name: 'AI core', does: 'Lets the robot act on what it senses.' },
+    { id: 'u4l2', icon: '', name: 'Decision module', does: 'Works through choices step by step.' },
+    { id: 'u4l3', icon: '', name: 'Mode switch', does: 'Moves between search, carry and return.' },
+    { id: 'u4l4', icon: '', name: 'Training camera', does: 'Collects the examples the AI learns from.' },
+    { id: 'u4l5', icon: '', name: 'Learning chip', does: 'Improves through trial and error.' },
+    { id: 'u4l6', icon: '', name: 'Safety governor', does: 'Keeps decisions fair and people safe.' }
   ];
   const MISSION = [
-    { id: 'u5l1', icon: '🗺️', name: 'Plan the rescue', mission: true, does: 'Fit the rescue claw and design your strategy.' },
-    { id: 'u5l2', icon: '🧪', name: 'Field test', mission: true, does: 'Build, code and test on the rescue field.' },
-    { id: 'u5l3', icon: '🏅', name: 'Rescue day', mission: true, does: 'Show what your finished robot can do.' }
+    { id: 'u5l1', icon: '', name: 'Plan the rescue', mission: true, does: 'Fit the rescue claw and design your strategy.' },
+    { id: 'u5l2', icon: '', name: 'Field test', mission: true, does: 'Build, code and test on the rescue field.' },
+    { id: 'u5l3', icon: '', name: 'Rescue day', mission: true, does: 'Show what your finished robot can do.' }
   ];
   const ALL = PARTS.concat(MISSION);
   // Parts that sim.js draws itself; everything else is added on top in drawExtras.
@@ -13242,11 +13246,11 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   // ---- learning map: a flight from Earth (bottom) to Moon Base (top), one row per unit
   const W = 1000, ROW = 156, MARGIN = 86, SKY = 44, GROUND = 104;
   const ZONES = {
-    1: { icon: '🌍', name: 'Earth', story: 'Build your robot at the launch site.' },
-    2: { icon: '☁️', name: 'The Sky', story: 'Teach your robot to think on the climb.' },
-    3: { icon: '🛰️', name: 'Orbit', story: 'Plot a course with smarter algorithms.' },
-    4: { icon: '✨', name: 'Deep Space', story: 'Far from home, your robot learns to decide alone.' },
-    5: { icon: '🌕', name: 'Moon Base', story: 'Land and carry out the rescue.' }
+    1: { icon: '', name: 'Earth', story: 'Build your robot at the launch site.' },
+    2: { icon: '', name: 'The Sky', story: 'Teach your robot to think on the climb.' },
+    3: { icon: '', name: 'Orbit', story: 'Plot a course with smarter algorithms.' },
+    4: { icon: '', name: 'Deep Space', story: 'Far from home, your robot learns to decide alone.' },
+    5: { icon: '', name: 'Moon Base', story: 'Land and carry out the rescue.' }
   };
   const EVENT_STORY = { sumo: 'Launch trials: every robot must prove it is ready to fly.', maze: 'Asteroid field: find the fastest safe way through.' };
   const MOON_KM = 384400;
@@ -13312,7 +13316,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       return `<g class="map-stop ${state}" data-stop="${i}" role="button" tabindex="0" aria-label="${esc(label)}, ${people.length} here">
         <title>${esc(label)}</title>
         <circle cx="${s.x}" cy="${s.y}" r="21"/>
-        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '🚩' : l.complete ? '✓' : l.event ? l.icon : l.num}</text>
+        <text x="${s.x}" y="${s.y + 6}" class="map-num">${s.finish ? '★' : l.complete ? '✓' : l.event ? '★' : l.num}</text>
         ${you ? `<image href="${tokenImage(you.look, you.built)}" x="${s.x - 42}" y="${s.y - 52}" width="84" height="84" class="map-you"/>` : ''}
         ${lines}${more}</g>`;
     }).join('');
@@ -13322,7 +13326,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       svg: `<svg class="learning-map" viewBox="0 0 ${W} ${height}" role="group" aria-label="Mission map from Earth to Moon Base">
         ${backdrop(stops, height)}${labels}
         <path d="${road(stops)}" class="map-road"/><path d="${road(stops)}" class="map-lane"/>
-        <text x="${launch.x + 2}" y="${height - 22}" font-size="30" text-anchor="middle" aria-hidden="true">🚀</text>
+        <text x="${launch.x + 2}" y="${height - 22}" font-size="30" text-anchor="middle" aria-hidden="true"></text>
         ${nodes}</svg>`
     };
   }
@@ -13339,8 +13343,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   let ME = null, MYCLASS = null, ACCOUNT = '';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const UNIT_NAMES = { 1: 'Meet Your Robot', 2: 'C++ Foundations', 3: 'Algorithms', 4: 'Artificial Intelligence', 5: 'Capstone' };
-  const UNIT_ICONS = { 1: '🔧', 2: '💻', 3: '🧩', 4: '🧠', 5: '🏆' };
-  const KIND = { warmup: ['⚡', 'Warm-up'], learn: ['📘', 'Learn'], build: ['🔧', 'Build'], activity: ['🎯', 'Activity'], unplugged: ['✂️', 'Unplugged'], code: ['💻', 'Code'], wrapup: ['✅', 'Wrap-up'] };
+  const KIND = { warmup: ['', 'Warm-up'], learn: ['', 'Learn'], build: ['', 'Build'], activity: ['', 'Activity'], unplugged: ['', 'Unplugged'], code: ['', 'Code'], wrapup: ['', 'Wrap-up'] };
 
   // Every call goes through the one server function. Answers that arrive after the
   // student has moved to another page are dropped so they can't overwrite it.
@@ -13447,13 +13450,13 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   // Read aloud, using the voices built into the browser.
   const canSpeak = 'speechSynthesis' in window;
   let readingBtn = null;
-  function stopReading() { if (!canSpeak) return; speechSynthesis.cancel(); if (readingBtn) { readingBtn.textContent = '🔊 Read aloud'; readingBtn.setAttribute('aria-pressed', 'false'); readingBtn = null; } }
+  function stopReading() { if (!canSpeak) return; speechSynthesis.cancel(); if (readingBtn) { readingBtn.textContent = 'Read aloud'; readingBtn.setAttribute('aria-pressed', 'false'); readingBtn = null; } }
   function addReadAloud(root) {
     if (!canSpeak) return;
     root.querySelectorAll('.panel.sec > .sec-kind').forEach(head => {
       const panel = head.parentElement, source = panel.querySelector('[data-read]') || panel.querySelector('.body');
       if (!source) return;
-      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'read-btn'; btn.textContent = '🔊 Read aloud'; btn.setAttribute('aria-pressed', 'false');
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'read-btn'; btn.textContent = 'Read aloud'; btn.setAttribute('aria-pressed', 'false');
       btn.onclick = () => {
         const wasMe = readingBtn === btn; stopReading(); if (wasMe) return;
         const copy = source.cloneNode(true); copy.querySelectorAll('pre,[data-widget],svg').forEach(x => x.remove());
@@ -13488,7 +13491,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     routeSeq++;
     const parts = Nav.hash.slice(1).split('/').filter(Boolean);
     renderNav(); window.scrollTo(0, 0);
-    $app.innerHTML = '<div class="loading">⏳ Loading…</div>';
+    $app.innerHTML = '<div class="loading">Loading…</div>';
     const firstPage = !route.ran; route.ran = true;
     try { await dispatch(parts); if (!firstPage) $app.focus({ preventScroll: true }); }
     catch (e) { $app.innerHTML = `<div class="panel"><h2>Oops</h2><p>${esc(e.message)}</p><a class="btn" href="#/">Back home</a></div>`; }
@@ -13517,10 +13520,10 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 }</div>
     </section>
     <div class="pillars">
-      <div class="pillar"><div class="ico">🔧</div><b>Build</b><p class="small muted">Construct and configure a VEX IQ robot with your team.</p></div>
-      <div class="pillar"><div class="ico">💻</div><b>Code</b><p class="small muted">Write real C++ and test it instantly in the simulator.</p></div>
-      <div class="pillar"><div class="ico">🧩</div><b>Algorithms</b><p class="small muted">Line following, search, sorting, pathfinding, control.</p></div>
-      <div class="pillar"><div class="ico">🧠</div><b>AI</b><p class="small muted">Decision trees, state machines, machine learning & ethics.</p></div>
+      <div class="pillar"><b>Build</b><p class="small muted">Construct and configure a VEX IQ robot with your team.</p></div>
+      <div class="pillar"><b>Code</b><p class="small muted">Write real C++ and test it instantly in the simulator.</p></div>
+      <div class="pillar"><b>Algorithms</b><p class="small muted">Line following, search, sorting, pathfinding, control.</p></div>
+      <div class="pillar"><b>AI</b><p class="small muted">Decision trees, state machines, machine learning & ethics.</p></div>
     </div>
     <div class="auth-wrap panel">
       <h2 style="margin-top:0">Join your class</h2>
@@ -13530,7 +13533,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
         <label class="f">Class code <span class="muted small">(6 letters from your teacher)</span><input name="classCode" maxlength="6" style="text-transform:uppercase;letter-spacing:.2em;font-family:var(--mono)" required></label>
         <label class="f">First name<input name="firstName" maxlength="30" autocomplete="given-name" required></label>
         <label class="f">Last name <span class="muted small">(classmates only see your first initial)</span><input name="lastName" maxlength="30" autocomplete="family-name" required></label>
-        <button class="btn primary" style="width:100%">Join class 🚀</button>
+        <button class="btn primary" style="width:100%">Join class</button>
       </form>
     </div>`;
     document.getElementById('f').onsubmit = async e => {
@@ -13555,11 +13558,11 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     const parts = buildParts(lessons), partsDone = parts.filter(isDone).length, nextPart = Quest.part(parts.find(l => !isDone(l))?.id);
     const allIn = (list, u) => { const inUnit = list.filter(l => l.unit === u); return inUnit.length > 0 && inUnit.every(isDone); };
     const BADGES = [
-      ['🔧', 'Robot Builder', allIn(main, 1)], ['💻', 'C++ Coder', allIn(main, 2)], ['🏆', 'Rescue Certified', allIn(main, 5)],
-      ['🧩', 'Algorithm Ace', allIn(lessons, 3)], ['🧠', 'AI Engineer', allIn(lessons, 4)], ['⭐', 'First Lesson', done + extraDone >= 1], ['🚀', 'Went Further', extraDone >= 1]
+      ['', 'Robot Builder', allIn(main, 1)], ['', 'C++ Coder', allIn(main, 2)], ['', 'Rescue Certified', allIn(main, 5)],
+      ['', 'Algorithm Ace', allIn(lessons, 3)], ['', 'AI Engineer', allIn(lessons, 4)], ['', 'First Lesson', done + extraDone >= 1], ['', 'Went Further', extraDone >= 1]
     ];
     $app.innerHTML = `
-      <div class="row" style="margin-bottom:16px"><div><h1>Hi, ${esc(ME.name.split(' ')[0])}! 👋</h1><p class="muted" style="margin:0">${esc(MYCLASS?.name || '')}</p></div><div class="spacer"></div>
+      <div class="row" style="margin-bottom:16px"><div><h1>Hi, ${esc(ME.name.split(' ')[0])}!</h1><p class="muted" style="margin:0">${esc(MYCLASS?.name || '')}</p></div><div class="spacer"></div>
         ${next ? `<a class="btn primary" href="#/lesson/${next.id}">${next.status === 'started' ? 'Continue' : 'Start'}: ${esc(next.title)} →</a>` : ''}</div>
       <div class="stats">
         <div class="stat"><span class="muted small">Lessons complete</span><b>${done} / ${main.length}</b><div class="bar"><i style="width:${100 * done / main.length}%"></i></div>${extraDone ? `<span class="small muted">+ ${extraDone} Go Further</span>` : ''}</div>
@@ -13568,23 +13571,23 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
         <div class="stat"><span class="muted small">Badges</span><b>${BADGES.filter(b => b[2]).length} / ${BADGES.length}</b></div>
       </div>
       ${(waitEvent => waitEvent ? `<div class="event-banner panel"><span style="font-size:2rem" aria-hidden="true">${waitEvent.icon}</span><div style="flex:1;min-width:200px"><b>Class event: ${esc(waitEvent.title)}</b><br><span class="small">All teams meet here before moving on. While you wait, try a Go Further lesson.</span></div><a class="btn primary" href="#/event/${waitEvent.id}">Get ready →</a></div>` : '')(events.find(e => e.ready && e.status !== 'done'))}
-      ${!ME.team ? `<p class="small">🤝 Working with a partner? <a href="#/team">Create or join a team</a> to share one robot.</p>` : ''}
+      ${!ME.team ? `<p class="small">Working with a partner? <a href="#/team">Create or join a team</a> to share one robot.</p>` : ''}
       <div class="quest-strip panel">
         <canvas id="home-robot" width="132" height="132" aria-label="Your Rescue Robot so far"></canvas>
-        <div style="flex:1;min-width:200px"><b>🤖 Your Rescue Robot</b>
+        <div style="flex:1;min-width:200px"><b>Your Rescue Robot</b>
           <div class="bar" style="margin:6px 0"><i style="width:${100 * partsDone / (parts.length || 1)}%"></i></div>
           <span class="small muted">${partsDone} of ${parts.length} parts installed${nextPart ? ` · Next: ${nextPart.icon} ${esc(nextPart.name)}` : ' · Ready for the rescue mission!'}</span></div>
         ${events.map(e => `<a class="btn" href="#/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}
-        <a class="btn" href="#/robot">🔧 My Robot</a><a class="btn" href="#/map">🚀 Moon Mission</a>
+        <a class="btn" href="#/robot">My Robot</a><a class="btn" href="#/map">Moon Mission</a>
       </div>
       <div class="badges">${BADGES.map(([i, n, on]) => `<span class="badge ${on ? '' : 'off'}">${i} ${n}</span>`).join('')}</div>
       ${units.map(u => `
         <section class="unit">
-          <div class="unit-head"><h2>${UNIT_ICONS[u] || '📦'} Unit ${u}: ${UNIT_NAMES[u] || ''}</h2><span class="muted small">${main.filter(l => l.unit === u && isDone(l)).length}/${main.filter(l => l.unit === u).length} done</span></div>
+          <div class="unit-head"><h2>Unit ${u}: ${UNIT_NAMES[u] || ''}</h2><span class="muted small">${main.filter(l => l.unit === u && isDone(l)).length}/${main.filter(l => l.unit === u).length} done</span></div>
           <div class="cards">${main.filter(l => l.unit === u).map(card).join('')}</div>
         </section>`).join('')}
       ${extra.length ? `<section class="unit">
-        <div class="unit-head"><h2>🚀 Go Further</h2><span class="muted small">${extraDone}/${extra.length} done</span></div>
+        <div class="unit-head"><h2>Go Further</h2><span class="muted small">${extraDone}/${extra.length} done</span></div>
         <p class="muted" style="margin-top:0">Extra lessons for anyone who wants more. They open as you finish the lessons they build on, and each one adds an upgrade to your robot.</p>
         <div class="cards">${extra.map(card).join('')}</div></section>` : ''}`;
     Quest.drawBuild(document.getElementById('home-robot'), ME.robot, built, true);
@@ -13593,12 +13596,12 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   // The parts that make up this term's robot: the main path before the rescue mission.
   const buildParts = lessons => lessons.filter(l => l.track === 'main' && !Quest.part(l.id)?.mission);
   function card(l) {
-    const icon = !l.unlocked ? '🔒' : l.status === 'complete' ? '✅' : l.status === 'started' ? '🟡' : '';
+    const icon = !l.unlocked ? 'Locked' : l.status === 'complete' ? '✓ Done' : l.status === 'started' ? 'In progress' : '';
     return `<a class="lcard ${l.unlocked ? '' : 'locked'} ${l.status}" href="#/lesson/${l.id}">
       <span class="status" role="img" aria-label="${!l.unlocked ? 'Locked' : l.status === 'complete' ? 'Complete' : l.status === 'started' ? 'In progress' : 'Not started'}">${icon}</span><span class="num">${l.track === 'extra' ? 'GO FURTHER' : 'LESSON ' + l.num}${ME.role === 'teacher' ? ` · ${l.minutes} MIN` : ''}</span>
       <h3>${esc(l.title)}</h3><p>${esc(l.summary)}</p><div>${tags(l.tags)}</div>
       ${l.requires?.length ? `<span class="small muted">Opens after: ${l.requires.map(esc).join(', ')}</span>` : ''}
-      ${l.photo ? '<span class="small muted">📸 Team photo required</span>' : ''}
+      ${l.photo ? '<span class="small muted">Team photo required</span>' : ''}
       ${l.quizScore ? `<span class="small muted">Quiz: ${l.quizScore}</span>` : ''}</a>`;
   }
 
@@ -13630,44 +13633,44 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       </div>
       <div class="lesson-layout">
         <aside class="toc">
-          <a href="#" data-jump="goals"><span>🎯 Goals</span></a>
-          <a href="#" data-jump="brief"><span>📖 Engineer's Brief</span></a>
-          ${L.video ? `<a href="#" data-jump="video"><span>🎬 Video</span></a>` : ''}
+          <a href="#" data-jump="goals"><span>Goals</span></a>
+          <a href="#" data-jump="brief"><span>Engineer's Brief</span></a>
+          ${L.video ? `<a href="#" data-jump="video"><span>Video</span></a>` : ''}
           ${secs.map((s, i) => `<a href="#" data-jump="s${i}"><span>${(KIND[s.kind] || ['•'])[0]} ${esc(s.title)}</span>${teacher ? `<span class="min">${s.minutes || ''}′</span>` : ''}</a>`).join('')}
-          ${L.challenge ? `<a href="#" data-jump="challenge"><span>🤖 Code Challenge</span></a>` : ''}
-          ${photo ? '<a href="#" data-jump="photo"><span>📸 Team Photo</span></a>' : ''}
-          <a href="#" data-jump="quiz"><span>📝 Exit Ticket</span></a>
-          ${teacher ? '<p class="small muted" style="margin:8px 6px 0">The class timer is on each class\'s 📺 Class Screen.</p>' : ''}
+          ${L.challenge ? `<a href="#" data-jump="challenge"><span>Code Challenge</span></a>` : ''}
+          ${photo ? '<a href="#" data-jump="photo"><span>Team Photo</span></a>' : ''}
+          <a href="#" data-jump="quiz"><span>Exit Ticket</span></a>
+          ${teacher ? '<p class="small muted" style="margin:8px 6px 0">The class timer is on each class\'s Class Screen.</p>' : ''}
         </aside>
         <div>
           ${teacher && L.teacherNote ? `<div class="callout warn"><b>Teacher note:</b> ${esc(L.teacherNote)}</div>` : ''}
-          ${P?.feedback ? `<div class="feedback sec"><b>💬 Feedback from your teacher</b>${P.grade != null ? ` · Grade: <b>${P.grade}</b>` : ''}<p style="margin:6px 0 0">${esc(P.feedback)}</p></div>` : ''}
+          ${P?.feedback ? `<div class="feedback sec"><b>Feedback from your teacher</b>${P.grade != null ? ` · Grade: <b>${P.grade}</b>` : ''}<p style="margin:6px 0 0">${esc(P.feedback)}</p></div>` : ''}
           <div class="panel sec" id="goals">
-            <div class="sec-kind">🎯 Overview</div>
+            <div class="sec-kind">Overview</div>
             <p style="margin-top:0;font-size:1.05rem">${esc(L.summary)}</p>
-            <h3>🎯 Learning goals</h3><ul>${(L.objectives || []).map(o => `<li>${esc(o)}</li>`).join('')}</ul>
-            ${L.materials?.length ? `<h3>🧰 You'll need</h3><p>${L.materials.map(esc).join(' · ')}</p>` : ''}
-            ${L.vocab?.length ? `<h3>📖 Vocabulary</h3><div class="vocab">${L.vocab.map(v => `<div><b>${esc(v.term)}</b>${esc(v.def)}</div>`).join('')}</div>` : ''}
+            <h3>Learning goals</h3><ul>${(L.objectives || []).map(o => `<li>${esc(o)}</li>`).join('')}</ul>
+            ${L.materials?.length ? `<h3>You'll need</h3><p>${L.materials.map(esc).join(' · ')}</p>` : ''}
+            ${L.vocab?.length ? `<h3>Vocabulary</h3><div class="vocab">${L.vocab.map(v => `<div><b>${esc(v.term)}</b>${esc(v.def)}</div>`).join('')}</div>` : ''}
             <details class="standards"><summary class="small"><b>MA DLCS standards for this lesson</b></summary>
               ${L.standards.anchor.map(s => `<p class="small"><b>${esc(s.code)}</b> ${esc(s.text)}</p>`).join('')}
               ${L.standards.supporting.length ? `<p class="small muted" style="margin-bottom:2px"><b>Also practiced:</b></p>${L.standards.supporting.map(s => `<p class="small"><b>${esc(s.code)}</b> ${esc(s.text)}</p>`).join('')}` : ''}
             </details>
           </div>
-          <div class="panel sec" id="brief"><div class="sec-kind">📖 Engineer's Brief</div>
+          <div class="panel sec" id="brief"><div class="sec-kind">Engineer's Brief</div>
             <p class="think"><b>Think about it as you read:</b> ${esc(L.supports.think)}</p>
             ${Visuals.render(L.supports.visual)}
             <div data-read><p class="brief-text">${esc(L.supports.brief)}</p></div>
           </div>
-          ${L.video ? `<div class="panel sec" id="video"><div class="sec-kind">🎬 Watch</div>${videoEmbed(L.video)}</div>` : ''}
+          ${L.video ? `<div class="panel sec" id="video"><div class="sec-kind">Watch</div>${videoEmbed(L.video)}</div>` : ''}
           ${secs.map((s, i) => `<div class="panel sec ${esc(s.kind)}" id="s${i}"><div class="sec-kind">${(KIND[s.kind] || ['•', s.kind]).join(' ')}${teacher ? ` <span class="m">· ${s.minutes || '?'} min</span>` : ''}</div><h2>${esc(s.title)}</h2><div class="body">${s.html}</div></div>`).join('')}
-          ${L.challenge ? `<div class="panel sec code" id="challenge"><div class="sec-kind">🤖 Code Challenge</div><h2>${esc(L.challenge.title)}</h2><div class="body">${L.challenge.prompt}</div>
-              ${L.supports.worked ? `<details class="callout tip"><summary><b>👀 See a worked example</b></summary><p class="small">This solves a similar problem, not your challenge.</p><pre class="code">${esc(L.supports.worked.code)}</pre><ol class="small">${L.supports.worked.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ol></details>` : ''}
-              <details class="callout think"><summary><b>🧗 Stuck? Try these in order</b></summary><ol class="small"><li>Read the error message and go to the line it names.</li><li>Read your code out loud, one line at a time. What does the robot do on each line?</li><li>Compare your code with the worked example.</li><li>Open one hint below.</li><li>Explain the problem to a partner, then ask your teacher.</li></ol></details>
-              <div class="hints">${(L.challenge.hints || []).map((h, i) => `<details><summary>💡 Hint ${i + 1}</summary>${esc(h)}</details>`).join('')}</div>
-              ${teacher && L.challenge.solution ? `<details class="callout warn"><summary><b>👩‍🏫 Reference solution (teachers only)</b></summary><pre class="code">${esc(L.challenge.solution)}</pre></details>` : ''}
+          ${L.challenge ? `<div class="panel sec code" id="challenge"><div class="sec-kind">Code Challenge</div><h2>${esc(L.challenge.title)}</h2><div class="body">${L.challenge.prompt}</div>
+              ${L.supports.worked ? `<details class="callout tip"><summary><b>See a worked example</b></summary><p class="small">This solves a similar problem, not your challenge.</p><pre class="code">${esc(L.supports.worked.code)}</pre><ol class="small">${L.supports.worked.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ol></details>` : ''}
+              <details class="callout think"><summary><b>Stuck? Try these in order</b></summary><ol class="small"><li>Read the error message and go to the line it names.</li><li>Read your code out loud, one line at a time. What does the robot do on each line?</li><li>Compare your code with the worked example.</li><li>Open one hint below.</li><li>Explain the problem to a partner, then ask your teacher.</li></ol></details>
+              <div class="hints">${(L.challenge.hints || []).map((h, i) => `<details><summary>Hint ${i + 1}</summary>${esc(h)}</details>`).join('')}</div>
+              ${teacher && L.challenge.solution ? `<details class="callout warn"><summary><b>Reference solution (teachers only)</b></summary><pre class="code">${esc(L.challenge.solution)}</pre></details>` : ''}
               <div id="ide"></div></div>` : ''}
-          ${photo ? '<div class="panel sec" id="photo"><div class="sec-kind">📸 Team Build Photo</div><div id="photobox"></div></div>' : ''}
-          <div class="panel sec wrapup" id="quiz"><div class="sec-kind">📝 Exit Ticket</div><h2>Check your understanding</h2><div id="quizbox"></div></div>
+          ${photo ? '<div class="panel sec" id="photo"><div class="sec-kind">Team Build Photo</div><div id="photobox"></div></div>' : ''}
+          <div class="panel sec wrapup" id="quiz"><div class="sec-kind">Exit Ticket</div><h2>Check your understanding</h2><div id="quizbox"></div></div>
           <div class="row">${prev ? `<a class="btn" href="#/lesson/${prev}">← Previous lesson</a>` : ''}<div class="spacer"></div>${next ? `<a class="btn primary" href="#/lesson/${next}">Next lesson →</a>` : ''}</div>
         </div>
       </div>`;
@@ -13694,10 +13697,10 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
           unsaved = null; clearTimeout(ide._d);
           const r = await api(`/api/lessons/${L.id}/submit`, { body: { code, checks, output } });
           celebrate(L, r.progress);
-          toast(checks.every(c => c.pass) ? '🎉 Challenge passed!' : '📤 Saved. Pass every check to complete this lesson.');
+          toast(checks.every(c => c.pass) ? 'Challenge passed!' : 'Saved. Pass every check to complete this lesson.');
         }
       });
-      if (P?.challenge) ide.note((P.challengePassed || P.challenge.passed) ? '✅ You already passed this challenge. You can keep experimenting and resubmit.' : `Last try: ${P.challenge.passCount}/${P.challenge.total} checks passed. Pass every check to complete this lesson.`);
+      if (P?.challenge) ide.note((P.challengePassed || P.challenge.passed) ? 'You already passed this challenge. You can keep experimenting and resubmit.' : `Last try: ${P.challenge.passCount}/${P.challenge.total} checks passed. Pass every check to complete this lesson.`);
       if (ME.robot) ide.sim.setLook(ME.robot);
       cleanup = () => { saveDraft(); ide.destroy(); };
     }
@@ -13723,10 +13726,10 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   function mountPhoto(box, o) {
     let photoId = o.photoId;
     const paint = () => {
-      box.innerHTML = `<p style="margin-top:0"><b>${photoId ? '✅ Photo added.' : o.excused ? 'Your teacher has excused this photo.' : 'Required:'}</b> ${esc(o.prompt)}</p>
+      box.innerHTML = `<p style="margin-top:0"><b>${photoId ? 'Photo added.' : o.excused ? 'Your teacher has excused this photo.' : 'Required:'}</b> ${esc(o.prompt)}</p>
         <p class="small muted">One teammate uploads for the whole team. Robots only, please: no faces or names.</p>
         ${photoId ? `<img class="robot-photo" alt="Your team's robot photo">` : ''}
-        <label class="btn file-btn">📷 ${photoId ? 'Replace photo' : 'Add a photo'}<input class="sr-only" type="file" accept="image/*" capture="environment"></label>
+        <label class="btn file-btn">${photoId ? 'Replace photo' : 'Add a photo'}<input class="sr-only" type="file" accept="image/*" capture="environment"></label>
         <span class="small" role="status" data-state></span>`;
       if (photoId) showPhoto(box.querySelector('img'), photoId);
       box.querySelector('input').onchange = async e => {
@@ -13735,7 +13738,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
         state.textContent = ' Uploading…';
         try {
           const r = await api('/api/photos', { body: { checkpoint: o.checkpoint, image: await shrinkPhoto(file) } });
-          photoId = r.photo.id; paint(); toast('📸 Photo saved'); if (o.onDone) o.onDone(r);
+          photoId = r.photo.id; paint(); toast('Photo saved'); if (o.onDone) o.onDone(r);
         } catch (err) { state.textContent = ' ' + err.message; }
       };
     };
@@ -13747,7 +13750,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     if (!progress.completed || celebrated === L.id) return;
     celebrated = L.id;
     const part = Quest.part(L.id); if (!part) return;
-    const heading = lessonPlace?.track === 'extra' ? '🚀 Upgrade installed!' : part.mission ? '🚩 Mission stage complete!' : '🔧 New part installed!';
+    const heading = lessonPlace?.track === 'extra' ? 'Upgrade installed!' : part.mission ? 'Mission stage complete!' : 'New part installed!';
     const m = modal(`<h2 style="margin-top:0">${heading}</h2>
       <div class="celebrate"><canvas width="220" height="220" role="img" aria-label="Your robot with its newest part installed"></canvas><div><p style="font-size:1.2rem;margin:0 0 6px"><b>${part.icon} ${esc(part.name)}</b></p><p>${esc(part.does)}</p>
       <div class="row"><a class="btn primary" href="#/robot">See my robot</a><a class="btn" href="#/map">Moon map</a><button class="btn" id="cx">Keep going</button></div></div></div>`);
@@ -13763,7 +13766,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     const revealed = quiz.some(q => q.answer !== undefined); // the server sends answers only when the ticket is finished
     const needed = Math.ceil(rules.pass * quiz.length), tries = P?.quizAttempts || 0, left = Math.max(0, rules.tries - tries);
     const best = done ? Math.max(P.quiz.score, P.quizBest || 0) : 0, passed = best >= needed;
-    const scoreNote = !done ? '' : P.quiz.score === P.quiz.total ? 'Perfect! 🌟'
+    const scoreNote = !done ? '' : P.quiz.score === P.quiz.total ? 'Perfect!'
       : revealed && !passed ? `You've used all ${rules.tries} tries. Read the explanations below, then talk to your teacher so you can move on.`
       : revealed ? 'Read the explanations below to see what you missed.'
       : `${passed ? 'You passed. ' : `You need ${needed} correct to complete this lesson. `}Look again at question${P.quiz.missed?.length === 1 ? '' : 's'} ${(P.quiz.missed || []).join(', ')}. ${left} ${left === 1 ? 'try' : 'tries'} left.`;
@@ -13776,8 +13779,8 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
             const picked = done && Number(P.quiz.answers[i]) === j; const cls = (done || teacher) && q.answer !== undefined ? (j === q.answer ? (done || teacher ? 'right' : '') : picked ? 'wrong' : '') : '';
             return `<label class="${done || teacher ? cls : ''}"><input type="radio" name="q${i}" value="${j}" ${picked ? 'checked' : ''} required> <span>${esc(c)}</span>${(done || teacher) && j === q.answer ? ' <b>✓ Correct answer</b>' : picked && q.answer !== undefined && j !== q.answer ? ' <b>✗ Your answer</b>' : ''}</label>`;
           }).join('')}</div>
-          ${(done || teacher) && q.explain ? `<div class="explain">💡 ${esc(q.explain)}</div>` : ''}</div>`).join('')}
-        ${L.reflection ? `<label class="f">✍️ Reflection: ${esc(L.reflection)}<textarea name="reflection" rows="3" required>${esc(P?.reflection || '')}</textarea></label>
+          ${(done || teacher) && q.explain ? `<div class="explain">${esc(q.explain)}</div>` : ''}</div>`).join('')}
+        ${L.reflection ? `<label class="f">Reflection: ${esc(L.reflection)}<textarea name="reflection" rows="3" required>${esc(P?.reflection || '')}</textarea></label>
           ${L.supports?.frames?.length ? `<p class="small muted" style="margin-top:-6px"><b>Need a start?</b> ${L.supports.frames.map(esc).join(' &nbsp;·&nbsp; ')}</p>` : ''}` : ''}
         ${teacher ? '<p class="muted small">Teacher preview — correct answers are highlighted.</p>' : (revealed ? '' : `<button class="btn primary">${done ? 'Try again' : 'Submit exit ticket'}</button>`)}
         ${!teacher && document.getElementById('photobox') ? '<p class="muted small">This lesson also needs your team\'s build photo before it counts as complete.</p>' : ''}
@@ -13796,26 +13799,26 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 
   // ---------------------------------------------------------------- IDE
   const API_REF = `
-  <details><summary>🚗 Drivetrain</summary><pre class="code">Drivetrain.driveFor(forward, 12, inches);   // reverse, mm
+  <details><summary>Drivetrain</summary><pre class="code">Drivetrain.driveFor(forward, 12, inches);   // reverse, mm
 Drivetrain.turnFor(right, 90, degrees);     // left
 Drivetrain.drive(forward);   Drivetrain.turn(right);   Drivetrain.stop();
 Drivetrain.setDriveVelocity(50, percent);   Drivetrain.setTurnVelocity(50, percent);
 Drivetrain.turnToHeading(90, degrees);      Drivetrain.heading(degrees);</pre></details>
-  <details><summary>📡 Sensors</summary><pre class="code">DistanceSensor.objectDistance(inches)   // how far is the wall in front?
+  <details><summary>Sensors</summary><pre class="code">DistanceSensor.objectDistance(inches)   // how far is the wall in front?
 DistanceSensor.isObjectDetected()
 BumperA.pressing()                      // true when the front bumper is touching
 Optical.color() == red                  // red green blue yellow black white ...
 Optical.brightness()                    // 0-100  (black ≈ 5, white ≈ 90)
 BrainInertial.heading(degrees)          Brain.Timer.time(seconds)</pre></details>
-  <details><summary>🖥️ Brain screen & output</summary><pre class="code">Brain.Screen.print("Score: %d", score);  Brain.Screen.newLine();
+  <details><summary>Brain screen & output</summary><pre class="code">Brain.Screen.print("Score: %d", score);  Brain.Screen.newLine();
 Brain.Screen.clearScreen();             Brain.Screen.setCursor(1, 1);
 std::cout &lt;&lt; "x = " &lt;&lt; x &lt;&lt; std::endl;
 wait(1, seconds);   wait(200, msec);
 TouchLED.setColor(green);</pre></details>
-  <details><summary>🦾 Claw & arm</summary><pre class="code">ClawMotor.spinFor(forward, 90, degrees);  // close: grabs a cube right in front
+  <details><summary>Claw & arm</summary><pre class="code">ClawMotor.spinFor(forward, 90, degrees);  // close: grabs a cube right in front
 ClawMotor.spinFor(reverse, 90, degrees);  // open: drops it
 ArmMotor.spinFor(forward, 180, degrees);</pre></details>
-  <details><summary>🧮 C++ you can use</summary><pre class="code">int double bool string char  · arrays: int a[5] = {1,2,3,4,5};
+  <details><summary>C++ you can use</summary><pre class="code">int double bool string char  · arrays: int a[5] = {1,2,3,4,5};
 std::vector&lt;int&gt; v;  v.push_back(4);  v.size();
 if / else if / else · while · for · do-while · switch · functions
 abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
@@ -13862,7 +13865,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
   }
   function copyForVexcode(source, setup) {
     const code = forVexcode(source);
-    const m = modal(`<h2 style="margin-top:0">📋 Copy for VEXcode</h2>
+    const m = modal(`<h2 style="margin-top:0">Copy for VEXcode</h2>
       <ol class="small"><li>Press <b>Copy code</b>, then open ${VEXCODE_LINK('VEXcode IQ ↗', 'btn sm')} <button class="btn sm" type="button" id="split" title="Put VEXcode IQ and RoboCode side by side">⧉ Side by side</button></li><li>In VEXcode IQ, choose <b>File → New Text Project</b> and pick C++.</li><li>In <b>Devices</b>, choose your <b>IQ Robot Brain</b> (1st or 2nd gen), then add the same devices, ports and names as your Robot Setup.</li><li>In <b>main.cpp</b>, keep the folded <code>#pragma region VEXcode Generated Robot Configuration</code> block at the top. Select from <code>int main() {</code> to the bottom, paste, then download it to your robot.</li></ol>
       <p class="small muted">First time? The lesson <a href="#/lesson/u1v1">From Simulator to Robot: VEXcode IQ</a> shows every step with pictures.</p>
       <textarea id="vex-code" class="input" rows="12" readonly spellcheck="false" aria-label="Code to paste into VEXcode" style="font-family:var(--mono)">${esc(code)}</textarea>
@@ -13884,12 +13887,12 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     let prefs = loadEditorPrefs(), setup = opts.setup || mySetup();
     host.innerHTML = `
       <div class="ide-bar">
-        <button class="btn go" data-a="run">▶ Run</button><button class="btn stop" data-a="stop" disabled>■ Stop</button>
+        <button class="btn go" data-a="run">▶ Run</button><button class="btn stop" data-a="stop" disabled>Stop</button>
         <button class="btn" data-a="reset">↺ Reset robot</button>
         <select class="input" data-a="speed" style="width:auto;margin:0"><option value="1">1× speed</option><option value="2">2×</option><option value="4">4×</option><option value="10">10×</option></select>
-        <button class="btn" data-a="setup" aria-expanded="false">🔌 Robot Setup</button>
-        ${opts.setup ? '' : `<button class="btn" data-a="copy">📋 Copy for VEXcode</button>${VEXCODE_LINK('VEXcode IQ ↗', 'btn')}<button class="btn" data-a="split" title="Put VEXcode IQ and RoboCode side by side" aria-label="Put VEXcode IQ and RoboCode side by side">⧉</button>`}
-        <button class="btn" data-a="settings" aria-expanded="false">⚙ Editor settings</button>
+        <button class="btn" data-a="setup" aria-expanded="false">Robot Setup</button>
+        ${opts.setup ? '' : `<button class="btn" data-a="copy">Copy for VEXcode</button>${VEXCODE_LINK('VEXcode IQ ↗', 'btn')}<button class="btn" data-a="split" title="Put VEXcode IQ and RoboCode side by side" aria-label="Put VEXcode IQ and RoboCode side by side">⧉</button>`}
+        <button class="btn" data-a="settings" aria-expanded="false">Editor settings</button>
         <div class="spacer"></div>
         ${opts.starter ? '<button class="btn sm" data-a="restore">Restore starter code</button>' : ''}
         ${opts.checks?.length ? `<button class="btn primary" data-a="check">✔ ${esc(opts.submitLabel || 'Check')}</button>` : ''}
@@ -13906,11 +13909,11 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
         <button class="btn sm" type="button" data-a="settings-reset">Reset to defaults</button>
       </form>
       <div class="ide">
-        <div><textarea></textarea><div class="ref" style="margin-top:10px"><b class="small">📚 Quick reference</b>${VexSim.adaptText(API_REF, setup)}${setup.gen === 1 ? '<p class="small muted">1st gen Brain screen: 5 rows, 21 columns.</p>' : ''}</div></div>
+        <div><textarea></textarea><div class="ref" style="margin-top:10px"><b class="small">Quick reference</b>${VexSim.adaptText(API_REF, setup)}${setup.gen === 1 ? '<p class="small muted">1st gen Brain screen: 5 rows, 21 columns.</p>' : ''}</div></div>
         <div class="simbox">
           <canvas width="960" height="720" role="img" aria-label="Robot simulator field. The robot's position, heading and results are written as text beside it."></canvas>
           <div class="hud"></div>
-          <div class="brain"><span class="small muted">🧠 Brain screen / output</span><div class="brain-screen"></div></div>
+          <div class="brain"><span class="small muted">Brain screen / output</span><div class="brain-screen"></div></div>
           <div class="msg" data-m role="status" aria-live="polite"></div>
           <ul class="checks" aria-live="polite"></ul>
           <p class="sr-only" data-summary aria-live="polite"></p>
@@ -13948,7 +13951,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
         <td><label class="row"><input type="checkbox" name="${job}.on" ${d.on ? 'checked' : ''}> ${job === 'color' ? `<select name="color.kind" aria-label="Color sensor type">${options(['color', 'optical'], d.kind, v => v === 'color' ? 'Color Sensor' : 'Optical Sensor')}</select>` : J.label}</label></td>
         <td>${portSelect(job + '.port', d.port)}</td>
         <td><input name="${job}.name" value="${esc(d.name)}" maxlength="20" spellcheck="false" aria-label="${J.label} name"></td></tr>`; };
-      setupBox.innerHTML = `<p style="margin-top:0"><b>🔌 Robot Setup</b> · Tell your program what's plugged into your robot, just like the Devices window in VEXcode. Only add what your robot has.</p>
+      setupBox.innerHTML = `<p style="margin-top:0"><b>Robot Setup</b> · Tell your program what's plugged into your robot, just like the Devices window in VEXcode. Only add what your robot has.</p>
         ${!MYCLASS && !readOnly ? `<label class="f" style="max-width:220px">Brain<select name="gen">${options([1, 2], s.gen, v => `VEX IQ ${v === 1 ? '1st' : '2nd'} gen`)}</select></label>` : `<p class="small muted">Brain: VEX IQ ${s.gen === 1 ? '1st gen (no built-in inertial sensor, so add a Gyro Sensor for accurate turns)' : '2nd gen (inertial sensor built in)'}</p>`}
         <table class="tbl setup-tbl"><tr><th>Device</th><th>Smart Port</th><th>Name in your code</th></tr>
           <tr><td><b>Drivetrain</b> (left motor)</td><td>${portSelect('drive.left', s.drive.left)}</td><td rowspan="2"><code>Drivetrain</code></td></tr>
@@ -13977,7 +13980,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       try {
         const r = await api('/api/me/setup', { method: 'PUT', body: { setup: next } });
         ME.setup = r.setup; setup = VexSim.normalizeSetup(r.setup, next.gen);
-        toast('Robot Setup saved 🔌'); renderSetup(); showSetup(false); setMsg('');
+        toast('Robot Setup saved'); renderSetup(); showSetup(false); setMsg('');
         if (textChanged && opts.onNewNames) opts.onNewNames();
       } catch (ex) { err.textContent = ex.message; }
     };
@@ -13987,7 +13990,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
     sim.on('screen', () => { scr.textContent = sim.screen.lines.join('\n'); scr.scrollTop = scr.scrollHeight; });
     let frame = 0;
     sim.on('frame', () => { if (frame++ % 6) return; const d = sim.rayDistance(); const [ox, oy] = sim.opticalPt();
-      hud.innerHTML = `<span title="How long the program has been running in the simulator">sim time ${sim.t.toFixed(1)}s</span><span>🧭 ${sim.r.h.toFixed(0)}°</span><span>📍 (${sim.r.x.toFixed(1)}, ${sim.r.y.toFixed(1)}) in</span><span>📡 ${d === null ? '—' : d.toFixed(1) + ' in'}</span><span>🎨 ${sim.floorAt(ox, oy).color}</span>${sim.collisions ? `<span style="color:var(--bad)">💥 ${sim.collisions} bump${sim.collisions > 1 ? 's' : ''}</span>` : ''}`; });
+      hud.innerHTML = `<span title="How long the program has been running in the simulator">sim time ${sim.t.toFixed(1)}s</span><span>${sim.r.h.toFixed(0)}°</span><span>(${sim.r.x.toFixed(1)}, ${sim.r.y.toFixed(1)}) in</span><span>${d === null ? '—' : d.toFixed(1) + ' in'}</span><span>${sim.floorAt(ox, oy).color}</span>${sim.collisions ? `<span style="color:var(--bad)">${sim.collisions} bump${sim.collisions > 1 ? 's' : ''}</span>` : ''}`; });
     let errMark = null;
     const setMsg = (t, kind) => { msg.className = 'msg ' + (kind || ''); msg.textContent = t || ''; };
     sim.on('error', e => setMsg(e.message, 'bad'));
@@ -13997,7 +14000,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
       if (running) return;
       if (!setup.confirmed) { showSetup(true); setMsg('Set up your robot first: choose its devices in Robot Setup, then press Save setup.', 'bad'); return; }
       running = true;
-      q('[data-a=run]').disabled = true; q('[data-a=stop]').disabled = false; q('.checks').innerHTML = ''; setMsg(withChecks ? '🏁 Running your program for the auto-check…' : '');
+      q('[data-a=run]').disabled = true; q('[data-a=stop]').disabled = false; q('.checks').innerHTML = ''; setMsg(withChecks ? 'Running your program for the auto-check…' : '');
       const code = cm.getValue();
       const r = await VexSim.run(sim, code, setup);
       q('[data-summary]').textContent = `Robot is now ${sim.r.x.toFixed(0)} inches across and ${sim.r.y.toFixed(0)} inches down the field, facing ${sim.r.h.toFixed(0)} degrees, with ${sim.collisions} collisions.`;
@@ -14008,13 +14011,13 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
         if (r.line) { errMark = r.line - 1; cm.addLineClass(errMark, 'background', 'err-line'); cm.scrollIntoView({ line: errMark, ch: 0 }); }
         if (!withChecks) return;
       } else if (r.stopped) { setMsg('Program stopped.'); if (withChecks) return; }
-      else if (!withChecks) setMsg('✅ Program finished.', 'good');
+      else if (!withChecks) setMsg('Program finished.', 'good');
       if (withChecks) {
         const res = VexSim.evaluate(sim, VexSim.canonicalize(code, setup), opts.checks);
         if (!r.ok) res.unshift({ message: 'Program runs without errors', pass: false });
-        q('.checks').innerHTML = res.map(c => `<li>${c.pass ? '✅' : '❌'} ${esc(c.message)}</li>`).join('');
+        q('.checks').innerHTML = res.map(c => `<li>${c.pass ? '✓' : '✗'} ${esc(c.message)}</li>`).join('');
         const all = res.every(c => c.pass);
-        setMsg(all ? '🎉 All checks passed!' : `${res.filter(c => c.pass).length}/${res.length} checks passed — read the ❌ items, adjust, and try again.`, all ? 'good' : 'bad');
+        setMsg(all ? 'All checks passed!' : `${res.filter(c => c.pass).length}/${res.length} checks passed — read the ✗ items, adjust, and try again.`, all ? 'good' : 'bad');
         if (opts.onSubmit) { try { await opts.onSubmit(code, res, sim.output); } catch (e) { setMsg('Could not submit: ' + e.message, 'bad'); } }
       }
     }
@@ -14052,7 +14055,7 @@ abs sqrt pow min max round  rand()  to_string(x)</pre></details>`;
   const PLAY_CODE = `#include "vex.h"
 using namespace vex;
 
-// 🧪 Code Lab — experiment freely! Pick a field on the right.
+// Code Lab — experiment freely! Pick a field on the right.
 int main() {
   Brain.Screen.print("Hello, robot!");
   Brain.Screen.newLine();
@@ -14070,10 +14073,10 @@ int main() {
     const remember = () => { ME.robot = look; clearTimeout(saveTimer); saveTimer = setTimeout(() => api('/api/me/robot', { method: 'PUT', body: { robot: look } }).catch(() => {}), 1200); };
     const O = VexSim.LOOK_OPTIONS;
     const color = (name, label) => `<label class="f">${label}<input type="color" name="${name}" value="${look[name]}"></label>`;
-    host.innerHTML = `<div class="sec-kind">🤖 Robot Workshop<span class="spacer"></span><button class="ctl close" type="button" id="rw-close" title="Close" aria-label="Close Robot Workshop">✕</button></div>
+    host.innerHTML = `<div class="sec-kind">Robot Workshop<span class="spacer"></span><button class="ctl close" type="button" id="rw-close" title="Close" aria-label="Close Robot Workshop">✕</button></div>
       <div class="workshop">
         <div><canvas class="robot-preview" width="400" height="400" aria-label="Preview of your robot"></canvas>
-          <div class="row" style="margin-top:8px"><button class="btn sm" type="button" id="rw-random">🎲 Surprise me</button><button class="btn sm" type="button" id="rw-reset">Reset</button></div></div>
+          <div class="row" style="margin-top:8px"><button class="btn sm" type="button" id="rw-random">Surprise me</button><button class="btn sm" type="button" id="rw-reset">Reset</button></div></div>
         <form id="rw-form">
           <div class="workshop-fields">
             <label class="f">Robot name<input name="name" maxlength="12" placeholder="Name tag (optional)"></label>
@@ -14107,9 +14110,9 @@ int main() {
   }
   function playground() {
     let code = PLAY_CODE; try { code = localStorage.getItem('playground:' + ME.id) || PLAY_CODE; } catch (e) {}
-    $app.innerHTML = `<div class="row"><div><h1>🧪 Code Lab</h1><p class="muted" style="margin-top:0">A free sandbox to try ideas. Your code is saved in this browser.</p></div><div class="spacer"></div>
+    $app.innerHTML = `<div class="row"><div><h1>Code Lab</h1><p class="muted" style="margin-top:0">A free sandbox to try ideas. Your code is saved in this browser.</p></div><div class="spacer"></div>
       <label class="small">Field: <select class="input" id="fsel" style="display:inline-block;width:auto">${Object.keys(FIELDS).map(k => `<option>${k}</option>`).join('')}</select></label>
-      <button class="btn" id="rw-open" aria-expanded="false">🤖 Customize robot</button></div>
+      <button class="btn" id="rw-open" aria-expanded="false">Customize robot</button></div>
       <div class="panel sec" id="workshop" hidden></div>
       <div class="panel" id="ide"></div>`;
     const ide = createIDE(document.getElementById('ide'), { code, starter: PLAY_CODE, field: FIELDS['Open field'], onChange: c => { try { localStorage.setItem('playground:' + ME.id, c); } catch (e) {} } });
@@ -14130,12 +14133,12 @@ int main() {
   async function teacherHome() {
     const { classes } = await api('/api/teacher/classes');
     $app.innerHTML = `
-      <div class="row"><h1>👩‍🏫 Teacher Dashboard</h1><div class="spacer"></div><a class="btn" href="#/teacher/lessons">📚 Lessons & videos</a></div>
+      <div class="row"><h1>Teacher Dashboard</h1><div class="spacer"></div><a class="btn" href="#/teacher/lessons">Lessons & videos</a></div>
       <div class="cards" style="margin-top:12px">
         ${classes.map(c => `<a class="lcard class-card" href="#/teacher/class/${c.id}"><span class="num">CLASS</span><h3>${esc(c.name)}</h3>
           <span class="muted small">Join code</span><span class="joincode">${esc(c.code)}</span><span class="small muted">${c.studentCount} student${c.studentCount === 1 ? '' : 's'} enrolled${c.closed ? ' · enrollment closed' : ''}</span></a>`).join('')}
-        <form class="lcard" id="newc" style="justify-content:center"><h3>➕ New class</h3><input class="input" name="name" placeholder="e.g. Period 3 — Robotics" required><select class="input" name="plan" aria-label="Term length">${PLAN_OPTIONS('15')}</select><select class="input" name="kit" aria-label="Robot kit">${KIT_OPTIONS('1')}</select><button class="btn primary">Create class</button></form>
-        <div class="lcard" style="justify-content:center"><h3>🎓 From Google Classroom</h3><p>Import a Classroom class and its roster. Students on the roster are enrolled automatically, with no join code.</p><button class="btn primary" id="importgc" type="button">Import a class</button></div>
+        <form class="lcard" id="newc" style="justify-content:center"><h3>New class</h3><input class="input" name="name" placeholder="e.g. Period 3 — Robotics" required><select class="input" name="plan" aria-label="Term length">${PLAN_OPTIONS('15')}</select><select class="input" name="kit" aria-label="Robot kit">${KIT_OPTIONS('1')}</select><button class="btn primary">Create class</button></form>
+        <div class="lcard" style="justify-content:center"><h3>From Google Classroom</h3><p>Import a Classroom class and its roster. Students on the roster are enrolled automatically, with no join code.</p><button class="btn primary" id="importgc" type="button">Import a class</button></div>
       </div>
       <div class="panel" style="margin-top:22px"><h3>How students enroll</h3>
         <ol><li>Create a class above to get a 6-letter <b>join code</b>, or import one from Google Classroom so rostered students are enrolled automatically.</li><li>Students open this website while signed in to their school Google account, then type the code and their name.</li><li>Open the class to watch progress live, read submitted code, and leave feedback & grades.</li></ol>
@@ -14153,7 +14156,7 @@ int main() {
     $app.innerHTML = `
       <a href="#/teacher" class="small">← All classes</a>
       <div class="row" style="margin:6px 0 14px"><h1 style="margin:0">${esc(C.name)}</h1><span class="joincode" style="font-size:1.1rem">${esc(C.code)}</span><div class="spacer"></div>
-        ${data.events.map(e => `<a class="btn sm" href="#/teacher/class/${C.id}/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}<a class="btn sm primary" href="#/teacher/class/${C.id}/screen">📺 Class Screen</a><button class="btn sm" id="teams">👥 Teams</button><button class="btn sm" id="photos">📸 Photos</button><button class="btn sm" id="gc">🎓 Google Classroom</button><a class="btn sm" href="#/map/${C.id}">🚀 Moon map</a><button class="btn sm" id="export">📊 Export to Google Sheets</button><button class="btn sm" id="settings">⚙ Class settings</button></div>
+        ${data.events.map(e => `<a class="btn sm" href="#/teacher/class/${C.id}/event/${e.id}">${e.icon} ${esc(e.title)}${e.status === 'done' ? ' ✓' : ''}</a>`).join('')}<a class="btn sm primary" href="#/teacher/class/${C.id}/screen">Class Screen</a><button class="btn sm" id="teams">Teams</button><button class="btn sm" id="photos">Photos</button><button class="btn sm" id="gc">Google Classroom</button><a class="btn sm" href="#/map/${C.id}">Moon map</a><button class="btn sm" id="export">Export to Google Sheets</button><button class="btn sm" id="settings">Class settings</button></div>
       <div class="stats">
         <div class="stat"><span class="muted small">Students</span><b>${students.length}</b></div>
         <div class="stat"><span class="muted small">Lessons completed (all students)</span><b>${students.reduce((n, s) => n + Object.values(s.progress).filter(p => p.status === 'complete').length, 0)}</b></div>
@@ -14184,7 +14187,7 @@ int main() {
       e.target.disabled = true;
       try {
         const { url } = await api(`/api/teacher/classes/${C.id}/export`, { body: {} });
-        const m = modal(`<h2 style="margin-top:0">📊 Grades exported</h2><p><a class="btn primary" href="${esc(url)}">Open the Google Sheet</a></p><div class="row"><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
+        const m = modal(`<h2 style="margin-top:0">Grades exported</h2><p><a class="btn primary" href="${esc(url)}">Open the Google Sheet</a></p><div class="row"><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
         m.querySelector('#cx').onclick = () => m.remove();
       } catch (err) { toast(err.message); }
       e.target.disabled = false;
@@ -14192,7 +14195,7 @@ int main() {
   }
 
   function settingsModal(C, lessons) {
-    const m = modal(`<h2>⚙ ${esc(C.name)} settings</h2>
+    const m = modal(`<h2>${esc(C.name)} settings</h2>
       <label class="f">Class name<input name="name" value="${esc(C.name)}"></label>
       <div class="row" style="margin-bottom:10px"><label class="f" style="flex:1;min-width:180px">Term length<select name="plan">${PLAN_OPTIONS(C.plan)}</select></label><label class="f" style="flex:1;min-width:180px">Robot kit<select name="kit">${KIT_OPTIONS(C.kit)}</select></label></div>
       <p class="small muted" style="margin:-4px 0 10px">Lessons outside the term stay available as Go Further lessons. Changing the term never removes student work.</p>
@@ -14201,7 +14204,7 @@ int main() {
       <label class="row" style="margin-top:8px"><input type="checkbox" name="showPeers" ${C.showPeers !== false ? 'checked' : ''}> Show classmates on the learning map (first name + last initial)</label>
       <h3 style="margin-top:18px">Unlock specific lessons</h3><p class="small muted">Useful if you want the whole class on the same lesson today.</p>
       <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px">${lessons.map(l => `<label class="small row"><input type="checkbox" name="u" value="${l.id}" ${(C.unlocked || []).includes(l.id) ? 'checked' : ''}> ${l.track === 'extra' ? '★' : l.num + '.'} ${esc(l.title)}</label>`).join('')}</div>
-      <div class="row" style="margin-top:18px"><button class="btn primary" id="sv">Save</button><button class="btn" id="nc">🔁 New join code</button><button class="btn" id="dl">🗑 Delete class</button><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
+      <div class="row" style="margin-top:18px"><button class="btn primary" id="sv">Save</button><button class="btn" id="nc">New join code</button><button class="btn" id="dl">Delete class</button><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
     const get = n => m.querySelector(`[name=${n}]`);
     m.querySelector('#cx').onclick = () => m.remove();
     m.querySelector('#sv').onclick = async () => {
@@ -14234,21 +14237,21 @@ int main() {
       <div class="row"><div><span class="muted small">UNIT ${L.unit}</span><h2 style="margin:0">${esc(S.name)} — ${esc(L.title)}</h2></div><div class="spacer"></div><button class="btn" id="cx">✕</button></div>
       <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:14px">
         <div class="stat"><span class="muted small">Exit ticket</span><b>${P?.quiz ? `${P.quiz.score}/${P.quiz.total}` : '—'}</b><span class="small muted">${P?.quizAttempts ? P.quizAttempts + ' attempt(s)' : 'not submitted'}</span></div>
-        <div class="stat"><span class="muted small">Code challenge</span><b>${L.challenge ? (P?.challenge ? (P.challenge.passed ? '✅ Passed' : `${P.challenge.passCount}/${P.challenge.total} checks`) : '—') : 'n/a'}</b><span class="small muted">${subs.length} submission(s)</span></div>
+        <div class="stat"><span class="muted small">Code challenge</span><b>${L.challenge ? (P?.challenge ? (P.challenge.passed ? '✓ Passed' : `${P.challenge.passCount}/${P.challenge.total} checks`) : '—') : 'n/a'}</b><span class="small muted">${subs.length} submission(s)</span></div>
       </div>
-      ${P?.reflection ? `<h3 style="margin-top:16px">✍️ Reflection</h3><p class="muted small">${esc(L.reflection || '')}</p><div class="callout">${esc(P.reflection)}</div>` : ''}
-      ${P?.quiz && !P.quiz.excused ? `<h3>📝 Quiz answers</h3><ol class="small">${(L.quiz || []).map((q, i) => { const a = Number(P.quiz.answers[i]); return `<li>${esc(q.q)}<br>${a === q.answer ? '✅' : '❌'} ${esc(q.choices[a] ?? '(blank)')}${a !== q.answer ? ` <span class="muted">— correct: ${esc(q.choices[q.answer])}</span>` : ''}</li>`; }).join('')}</ol>` : ''}
-      ${L.challenge ? `<h3>💻 Submitted code</h3>
+      ${P?.reflection ? `<h3 style="margin-top:16px">Reflection</h3><p class="muted small">${esc(L.reflection || '')}</p><div class="callout">${esc(P.reflection)}</div>` : ''}
+      ${P?.quiz && !P.quiz.excused ? `<h3>Quiz answers</h3><ol class="small">${(L.quiz || []).map((q, i) => { const a = Number(P.quiz.answers[i]); return `<li>${esc(q.q)}<br>${a === q.answer ? '✓' : '✗'} ${esc(q.choices[a] ?? '(blank)')}${a !== q.answer ? ` <span class="muted">— correct: ${esc(q.choices[q.answer])}</span>` : ''}</li>`; }).join('')}</ol>` : ''}
+      ${L.challenge ? `<h3>Submitted code</h3>
         ${subs.length ? `<div class="row small" style="margin-bottom:6px">Version: <select class="input" id="ver" style="width:auto;margin:0">${subs.map((s, i) => `<option value="${i}" ${i === subs.length - 1 ? 'selected' : ''}>#${i + 1} · ${new Date(s.at).toLocaleString()} · ${s.checks.filter(c => c.pass).length}/${s.checks.length}</option>`).join('')}</select><button class="btn sm" id="runit">▶ Run it in the simulator</button></div>
           <ul class="checks small" id="vchecks"></ul><div class="code-view" id="vcode"></div><div id="vide"></div>`
         : `<p class="muted">No code submitted yet.${P?.draft ? ' Latest autosaved draft:' : ''}</p>${P?.draft ? `<div class="code-view">${esc(P.draft)}</div>` : ''}`}` : ''}
-      <h3 style="margin-top:16px">🧑‍🏫 Your feedback</h3>
+      <h3 style="margin-top:16px">Your feedback</h3>
       <div class="row"><label class="small">Grade (0–100) <input class="input" id="gr" type="number" min="0" max="100" value="${P?.grade ?? ''}" style="width:110px"></label></div>
       <textarea class="input" id="fb" rows="3" placeholder="Glow: … Grow: …">${esc(P?.feedback || '')}</textarea>
       <div class="row" style="margin-top:10px"><button class="btn primary" id="save">Save feedback</button><label class="small row"><input type="checkbox" id="mc"> Mark lesson complete (lets this student move on)</label></div>`);
     m.querySelector('#cx').onclick = () => { m.remove(); };
     if (subs.length) {
-      const show = i => { const s = subs[i]; m.querySelector('#vcode').textContent = s.code; m.querySelector('#vchecks').innerHTML = s.checks.map(c => `<li>${c.pass ? '✅' : '❌'} ${esc(c.message)}</li>`).join(''); };
+      const show = i => { const s = subs[i]; m.querySelector('#vcode').textContent = s.code; m.querySelector('#vchecks').innerHTML = s.checks.map(c => `<li>${c.pass ? '✓' : '✗'} ${esc(c.message)}</li>`).join(''); };
       show(subs.length - 1);
       m.querySelector('#ver').onchange = e => show(+e.target.value);
       m.querySelector('#runit').onclick = () => {
@@ -14266,9 +14269,9 @@ int main() {
   async function lessonsAdmin() {
     const { lessons: full } = await api('/api/teacher/lessons-full');
     const lessons = full;
-    $app.innerHTML = `<h1>📚 Lessons, videos & notes</h1>
+    $app.innerHTML = `<h1>Lessons, videos & notes</h1>
       <p class="muted">Preview any lesson (as a teacher everything is unlocked and quiz answers are shown). Paste a YouTube, Google Drive or Vimeo link to embed a video at the top of a lesson.</p>
-      ${[...new Set(lessons.map(l => l.unit))].map(u => `<h2 style="margin-top:22px">${UNIT_ICONS[u]} Unit ${u}: ${UNIT_NAMES[u]}</h2>
+      ${[...new Set(lessons.map(l => l.unit))].map(u => `<h2 style="margin-top:22px">Unit ${u}: ${UNIT_NAMES[u]}</h2>
         <div class="grid">${full.filter(l => l.unit === u).map(l => `<div class="panel" style="padding:14px">
           <div class="row"><b>${l.order}. ${esc(l.title)}</b> <span class="muted small">${l.minutes} min</span> ${tags(l.tags)}<div class="spacer"></div><a class="btn sm" href="#/lesson/${l.id}">Open lesson →</a></div>
           <div class="row" style="margin-top:8px"><input class="input" data-v="${l.id}" placeholder="Video URL (optional)" value="${esc(l.video || '')}" style="flex:2;min-width:220px;margin:0">
@@ -14285,18 +14288,18 @@ int main() {
     const { team, photos, maxSize } = await api('/api/team');
     const act = async (url, body) => { try { await api(url, { body: body || {} }); const r = await api('/api/me'); ME = r.user; route(); } catch (e) { toast(e.message); } };
     if (!team) {
-      $app.innerHTML = `<h1>🤝 Team</h1><p class="muted">Partners share one robot: its design, Robot Setup, photos and class events. You still do your own code and exit tickets.</p>
+      $app.innerHTML = `<h1>Team</h1><p class="muted">Partners share one robot: its design, Robot Setup, photos and class events. You still do your own code and exit tickets.</p>
         <div class="cards"><div class="panel"><h3 style="margin-top:0">Start a team</h3><p class="small">You'll get a code to give your partners.</p><button class="btn primary" id="make">Create a team</button></div>
         <form class="panel" id="join"><h3 style="margin-top:0">Join a team</h3><label class="f">Team code<input name="code" maxlength="6" required style="text-transform:uppercase;letter-spacing:.2em;font-family:var(--mono)"></label><button class="btn primary">Join</button></form></div>`;
       document.getElementById('make').onclick = () => act('/api/team');
       document.getElementById('join').onsubmit = e => { e.preventDefault(); act('/api/team/join', { code: e.target.code.value }); };
       return;
     }
-    $app.innerHTML = `<h1>🤝 ${esc(team.name)}</h1>
+    $app.innerHTML = `<h1>${esc(team.name)}</h1>
       <div class="panel"><p style="margin-top:0">Team code: <span class="joincode">${esc(team.code)}</span> <span class="small muted">Up to ${maxSize} teammates. Share this code with your partners.</span></p>
         <h3>Teammates</h3><div class="roster">${team.members.map(m => `<span class="chip ${m.id === ME.id ? 'me' : ''}">${esc(m.id === ME.id ? 'You' : m.name)}</span>`).join('')}</div>
-        <div class="row" style="margin-top:14px"><button class="btn" id="name">🎲 New team name</button><a class="btn" href="#/robot">🔧 Our robot</a><div class="spacer"></div><button class="btn" id="leave">Leave team</button></div></div>
-      <h2 style="margin-top:18px">📸 Our robot photos</h2>
+        <div class="row" style="margin-top:14px"><button class="btn" id="name">New team name</button><a class="btn" href="#/robot">Our robot</a><div class="spacer"></div><button class="btn" id="leave">Leave team</button></div></div>
+      <h2 style="margin-top:18px">Our robot photos</h2>
       <div class="photo-grid">${photos.map(p => `<div class="photo-card"><img data-photo="${p.id}" alt="Robot photo for ${esc(p.label)}"><span class="small">${esc(p.label)}</span></div>`).join('') || '<p class="muted">Photos appear here as your team adds them in build lessons and events.</p>'}</div>`;
     document.getElementById('name').onclick = () => act('/api/team/rename');
     document.getElementById('leave').onclick = () => { if (confirm('Leave this team? You will go back to your own robot.')) act('/api/team/leave'); };
@@ -14304,7 +14307,7 @@ int main() {
   }
   async function teamsModal(C) {
     const { teams, solo } = await api(`/api/teacher/classes/${C.id}/teams`);
-    const m = modal(`<h2 style="margin-top:0">👥 ${esc(C.name)} teams</h2>
+    const m = modal(`<h2 style="margin-top:0">${esc(C.name)} teams</h2>
       ${teams.map(t => `<h3>${esc(t.name)} <span class="small muted">code ${esc(t.code)}</span></h3><div class="roster">${t.members.map(s => `<span class="chip">${esc(s.name)} <button class="btn sm" data-rm="${s.id}" aria-label="Remove ${esc(s.name)} from ${esc(t.name)}">✕</button></span>`).join('')}</div>`).join('') || '<p class="muted">No teams yet. Students create them from the Team page.</p>'}
       <h3>Working alone (${solo.length})</h3><p class="small">${solo.map(esc).join(', ') || 'Nobody'}</p>
       <div class="row"><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
@@ -14313,7 +14316,7 @@ int main() {
   }
   async function photosModal(C) {
     const { photos } = await api(`/api/teacher/classes/${C.id}/photos`);
-    const m = modal(`<h2 style="margin-top:0">📸 ${esc(C.name)} robot photos</h2>
+    const m = modal(`<h2 style="margin-top:0">${esc(C.name)} robot photos</h2>
       <div class="photo-grid">${photos.map(p => `<div class="photo-card"><img data-photo="${p.id}" alt="${esc(p.who)}: ${esc(p.label)}"><b class="small">${esc(p.who)}</b><br><span class="small">${esc(p.label)}</span><br><button class="btn sm" data-del="${p.id}">Delete</button></div>`).join('') || '<p class="muted">No photos yet.</p>'}</div>
       <div class="row" style="margin-top:12px"><span class="small muted">Deleting a photo means the team has to upload a new one.</span><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
     m.querySelector('#cx').onclick = () => m.remove();
@@ -14333,9 +14336,9 @@ int main() {
   }
   const defaultInstructions = L => [
     ...L.sections.map(sec => `${(KIND[sec.kind] || ['•'])[0]} ${sec.title}`),
-    L.hasChallenge ? '🤖 Finish the code challenge and press Check & Submit' : null,
-    L.hasPhoto ? '📸 Upload your team build photo' : null,
-    '📝 Turn in your exit ticket'
+    L.hasChallenge ? 'Finish the code challenge and press Check & Submit' : null,
+    L.hasPhoto ? 'Upload your team build photo' : null,
+    'Turn in your exit ticket'
   ].filter(Boolean).join('\n');
   async function classScreen(cid, lessonId) {
     const load = () => api(`/api/teacher/classes/${cid}/screen${lessonId ? '/' + lessonId : ''}`);
@@ -14353,27 +14356,27 @@ int main() {
       <h1 class="cs-title">${esc(L.title)}</h1>
       <div class="cs-grid">
         <div class="cs-main">
-          <section class="panel cs-q"><div class="sec-kind">❓ Question of the Day</div><p>${esc(L.question || L.summary)}</p></section>
-          <section class="panel"><div class="row"><div class="sec-kind" style="margin:0">📋 What to do today</div><div class="spacer"></div><button class="btn sm" id="cs-edit" type="button">✏️ Edit</button></div>
+          <section class="panel cs-q"><div class="sec-kind">Question of the Day</div><p>${esc(L.question || L.summary)}</p></section>
+          <section class="panel"><div class="row"><div class="sec-kind" style="margin:0">What to do today</div><div class="spacer"></div><button class="btn sm" id="cs-edit" type="button">Edit</button></div>
             <div id="cs-instr"></div></section>
-          <section class="panel"><div class="sec-kind">🎯 Today's standards (MA DLCS)</div>
+          <section class="panel"><div class="sec-kind">Today's standards (MA DLCS)</div>
             ${L.standards.anchor.map(st => `<p class="cs-std"><b>${esc(st.code.replace('6-8.', ''))}</b> ${esc(st.text)}</p>`).join('')}
             ${L.standards.supporting.length ? `<p class="small muted" style="margin:8px 0 2px">Also practicing</p>${L.standards.supporting.map(st => `<p class="cs-std small"><b>${esc(st.code.replace('6-8.', ''))}</b> ${esc(st.text)}</p>`).join('')}` : ''}
             <p class="small muted" style="margin-bottom:0"><b>Goal:</b> ${L.objectives.map(esc).join(' ')}</p></section>
         </div>
         <div class="cs-side">
           <section class="panel cs-timer" id="cs-timer">
-            <div class="sec-kind">⏲ Class timer</div>
+            <div class="sec-kind">Class timer</div>
             <div class="cs-label" id="cs-tlabel"></div>
             <div class="cs-clock" id="cs-clock" role="timer" aria-live="off"></div>
             <div class="bar"><i id="cs-tbar"></i></div>
             <div class="row" style="margin-top:10px"><button class="btn primary" id="cs-go" type="button"></button><button class="btn" id="cs-reset" type="button">↺ Reset</button><button class="btn" id="cs-plus" type="button">+1 min</button></div>
-            <div class="row small" style="margin-top:8px">${L.sections.map((sec, i) => `<button class="btn sm" type="button" data-preset="${i}" title="${esc(sec.title)}" aria-label="${esc(sec.title)}, ${sec.minutes} minutes">${(KIND[sec.kind] || ['•'])[0]} ${sec.minutes}′</button>`).join('')}
+            <div class="row small" style="margin-top:8px">${L.sections.map((sec, i) => `<button class="btn sm" type="button" data-preset="${i}" title="${esc(sec.title)}" aria-label="${esc(sec.title)}, ${sec.minutes} minutes">${(KIND[sec.kind] || ['', 'Part ' + (i + 1)])[1]} ${sec.minutes}′</button>`).join('')}
               <button class="btn sm" type="button" data-preset="all">Whole lesson ${L.minutes}′</button>
               <label class="small row">Other <input class="input" id="cs-mins" type="number" min="1" max="120" value="10" style="width:64px;margin:0"> min <button class="btn sm" type="button" id="cs-set">Set</button></label></div>
           </section>
-          <section class="panel"><div class="sec-kind">📊 Class progress</div><div id="cs-progress"></div></section>
-          <section class="panel"><div class="sec-kind">🏆 Recent achievements</div><div id="cs-ach"></div></section>
+          <section class="panel"><div class="sec-kind">Class progress</div><div id="cs-progress"></div></section>
+          <section class="panel"><div class="sec-kind">Recent achievements</div><div id="cs-ach"></div></section>
         </div>
       </div></div>`;
     const $ = sel => $app.querySelector(sel);
@@ -14424,12 +14427,12 @@ int main() {
         <div class="cs-stack" role="img" aria-label="${p.complete} finished, ${p.started} working, ${p.notStarted} not started"><i class="c" style="width:${pct(p.complete)}%"></i><i class="w" style="width:${pct(p.started)}%"></i></div>
         <div class="row small cs-legend"><span><i class="c"></i> ${p.complete} finished</span><span><i class="w"></i> ${p.started} working</span><span><i></i> ${p.notStarted} not started</span></div>
         <p class="small" style="margin:12px 0 4px">Where everyone is:</p>
-        <div class="cs-where">${d.lessons.filter(l => d.at[l.id]).map(l => `<div><span>${l.num}. ${esc(l.title)}</span><b>${d.at[l.id]}</b></div>`).join('')}${d.at.done ? `<div><span>🏁 Finished the term</span><b>${d.at.done}</b></div>` : ''}</div>`
+        <div class="cs-where">${d.lessons.filter(l => d.at[l.id]).map(l => `<div><span>${l.num}. ${esc(l.title)}</span><b>${d.at[l.id]}</b></div>`).join('')}${d.at.done ? `<div><span>Finished the term</span><b>${d.at.done}</b></div>` : ''}</div>`
         : '<p class="muted">No students have joined yet.</p>';
       $('#cs-ach').innerHTML = d.achievements.length ? `<ul class="cs-ach">${d.achievements.map(a => {
-        if (a.unit) return `<li>🏅 <b>${esc(a.who)}</b> earned the Unit ${a.unit} badge: ${esc(UNIT_NAMES[a.unit] || '')}</li>`;
+        if (a.unit) return `<li><b>${esc(a.who)}</b> earned the Unit ${a.unit} badge: ${esc(UNIT_NAMES[a.unit] || '')}</li>`;
         const part = Quest.part(a.lessonId);
-        return `<li>${part ? part.icon : '✅'} <b>${esc(a.who)}</b> finished ${a.extra ? 'Go Further: ' : ''}${esc(a.title)}${part && !part.mission ? ` <span class="muted">· installed the ${esc(part.name)}</span>` : ''}</li>`;
+        return `<li>✓ <b>${esc(a.who)}</b> finished ${a.extra ? 'Go Further: ' : ''}${esc(a.title)}${part && !part.mission ? ` <span class="muted">· installed the ${esc(part.name)}</span>` : ''}</li>`;
       }).join('')}</ul>` : '<p class="muted">Finished lessons from the last 7 days show up here.</p>';
     };
     drawLive();
@@ -14442,7 +14445,7 @@ int main() {
   const isoDate = d => d.toLocaleDateString('en-CA');
   async function importClassroomModal() {
     const { courses } = await api('/api/teacher/classroom/courses');
-    const m = modal(`<h2 style="margin-top:0">🎓 Import from Google Classroom</h2>
+    const m = modal(`<h2 style="margin-top:0">Import from Google Classroom</h2>
       ${courses.length ? `<label class="f">Google Classroom class<select id="course">${COURSE_OPTIONS(courses)}</select></label>
       <label class="f">Term length<select id="plan">${PLAN_OPTIONS('15')}</select></label>
       <label class="f">Robot kit<select id="kit">${KIT_OPTIONS('1')}</select></label>
@@ -14463,7 +14466,7 @@ int main() {
     const [{ courses }, status] = await Promise.all([api('/api/teacher/classroom/courses'), api(`/api/teacher/classes/${C.id}/classroom/status`)]);
     let st = status, tab = startTab || (st.courseId ? 'assign' : 'link');
     const today = new Date(), inAWeek = new Date(Date.now() + 7 * 864e5);
-    const m = modal(`<h2 style="margin-top:0">🎓 Google Classroom</h2>
+    const m = modal(`<h2 style="margin-top:0">Google Classroom</h2>
       <div class="tabs" role="tablist"><button data-tab="link">Class & roster</button><button data-tab="assign">Post assignments</button><button data-tab="grades">Send grades</button></div>
       <div id="gc-body"></div><div class="err" id="gc-err"></div><div id="gc-result" role="status"></div>
       <div class="row" style="margin-top:12px"><div class="spacer"></div><button class="btn" id="cx">Close</button></div>`);
@@ -14478,7 +14481,7 @@ int main() {
           <label class="f">Google Classroom class<select id="course">${COURSE_OPTIONS(courses, st.courseId)}</select></label>
           <div class="row"><button class="btn primary" id="link" ${courses.length ? '' : 'disabled'}>${st.courseId ? 'Save & refresh roster' : 'Link class & load roster'}</button></div>
           ${st.courseId ? `<p class="small" style="margin-top:12px"><b>${st.rosterCount}</b> student${st.rosterCount === 1 ? '' : 's'} on the Classroom roster. They join this class automatically when they first open the RoboCode link.</p>
-            ${st.notJoined.length ? `<p class="small"><b>Haven't opened RoboCode yet (${st.notJoined.length}):</b> ${st.notJoined.map(esc).join(', ')}</p>` : '<p class="small">Everyone on the roster has joined. ✅</p>'}` : ''}`;
+            ${st.notJoined.length ? `<p class="small"><b>Haven't opened RoboCode yet (${st.notJoined.length}):</b> ${st.notJoined.map(esc).join(', ')}</p>` : '<p class="small">Everyone on the roster has joined.</p>'}` : ''}`;
         body.querySelector('#link').onclick = async e => {
           busy(e.target, 'Loading the roster…');
           try {
@@ -14557,7 +14560,7 @@ int main() {
         return editable && match.a && match.b ? `<button class="${cls}" data-r="${r}" data-m="${i}" data-w="${esc(key)}" aria-label="${esc(entrantName(v, key))} wins">${esc(entrantName(v, key))}</button>` : `<span class="${cls}">${esc(entrantName(v, key))}</span>`;
       };
       return `<div class="match">${side(match.a)}${side(match.b)}</div>`;
-    }).join('')}</div>`).join('')}</div>${n && v.bracket.rounds[n - 1][0].winner ? `<p><b>🏆 Champion: ${esc(entrantName(v, v.bracket.rounds[n - 1][0].winner))}</b></p>` : ''}`;
+    }).join('')}</div>`).join('')}</div>${n && v.bracket.rounds[n - 1][0].winner ? `<p><b>Champion: ${esc(entrantName(v, v.bracket.rounds[n - 1][0].winner))}</b></p>` : ''}`;
   }
   function leaderboardHtml(v) {
     if (!v.best.length) return '<p class="muted">No race times yet.</p>';
@@ -14570,9 +14573,9 @@ int main() {
     $app.innerHTML = `<a class="small" href="#/">← My course</a>${eventHead(v)}
       <p class="muted">All teams meet for this event after <b>${esc(v.event.after)}</b>. The next lessons open when your teacher finishes it.</p>
       <div class="panel">${eventRules(v)}</div>
-      <div class="panel sec"><div class="sec-kind">📸 Check in</div><div id="photobox"></div></div>
-      <div class="panel sec"><div class="sec-kind">${v.event.kind === 'bracket' ? '🤼 Bracket' : '⏱ Leaderboard'}</div>${v.event.kind === 'bracket' ? bracketHtml(v, false) : leaderboardHtml(v)}<button class="btn sm" id="refresh" style="margin-top:8px">↻ Refresh</button></div>
-      <h3>Teams (${v.entrants.length})</h3><div class="roster">${v.entrants.map(e => `<span class="chip ${e === mine ? 'me' : ''}">${e.checkedIn ? '✅' : '⏳'} ${esc(e.name)}</span>`).join('')}</div>`;
+      <div class="panel sec"><div class="sec-kind">Check in</div><div id="photobox"></div></div>
+      <div class="panel sec"><div class="sec-kind">${v.event.kind === 'bracket' ? 'Bracket' : 'Leaderboard'}</div>${v.event.kind === 'bracket' ? bracketHtml(v, false) : leaderboardHtml(v)}<button class="btn sm" id="refresh" style="margin-top:8px">↻ Refresh</button></div>
+      <h3>Teams (${v.entrants.length})</h3><div class="roster">${v.entrants.map(e => `<span class="chip ${e === mine ? 'me' : ''}">${e.checkedIn ? '✓' : '…'} ${esc(e.name)}</span>`).join('')}</div>`;
     mountPhoto(document.getElementById('photobox'), { checkpoint: 'event_' + id, prompt: v.event.photo, photoId: v.myPhotoId, onDone: () => route() });
     document.getElementById('refresh').onclick = () => route();
   }
@@ -14593,9 +14596,9 @@ int main() {
       $app.innerHTML = `<a class="small" href="#/teacher/class/${cid}">← Back to class</a>${eventHead(v)}
         <div class="panel"><div class="row"><button class="btn" data-s="upcoming">Coming up</button><button class="btn" data-s="live">Start event</button><button class="btn primary" data-s="done">Finish and open next lessons</button></div>
         <p class="small muted" style="margin-bottom:0">The next lessons stay closed until you finish this event.</p></div>
-        <div class="panel sec"><div class="sec-kind">${v.event.kind === 'bracket' ? '🤼 Bracket' : '⏱ Race times'}</div>${results}</div>
-        <div class="panel sec"><div class="sec-kind">✅ Check-in (${v.entrants.length - missing.length} of ${v.entrants.length})</div>
-          <div class="roster">${v.entrants.map(e => `<span class="chip">${e.checkedIn ? '✅' : '⏳'} ${esc(e.name)} <span class="small muted">${e.members.map(esc).join(', ')}</span>${e.checkedIn ? '' : ` <button class="btn sm" data-waive="${esc(e.key)}">Check in without photo</button>`}</span>`).join('') || '<span class="muted">No students yet.</span>'}</div></div>
+        <div class="panel sec"><div class="sec-kind">${v.event.kind === 'bracket' ? 'Bracket' : 'Race times'}</div>${results}</div>
+        <div class="panel sec"><div class="sec-kind">Check-in (${v.entrants.length - missing.length} of ${v.entrants.length})</div>
+          <div class="roster">${v.entrants.map(e => `<span class="chip">${e.checkedIn ? '✓' : '…'} ${esc(e.name)} <span class="small muted">${e.members.map(esc).join(', ')}</span>${e.checkedIn ? '' : ` <button class="btn sm" data-waive="${esc(e.key)}">Check in without photo</button>`}</span>`).join('') || '<span class="muted">No students yet.</span>'}</div></div>
         <div class="panel">${eventRules(v)}</div>`;
       $app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => {
         const noResult = v.event.kind === 'times' ? v.entrants.filter(e => !v.best.some(x => x.key === e.key)).length : v.bracket ? 0 : v.entrants.length;
@@ -14634,7 +14637,7 @@ int main() {
         ${strands.map(strand => `<h3>${esc(strand)}</h3><div class="gridtbl"><table class="tbl std"><thead><tr><th scope="col">Code</th><th scope="col">Standard</th><th scope="col">Assessed in lesson</th><th scope="col">Practiced in lesson</th></tr></thead>
           <tbody>${standards.filter(s => s.strand === strand).map(s => `<tr class="${anySet.has(s.code) ? '' : 'gap'}"><td>${short(s.code)}</td><td class="l">${esc(s.text)}</td><td>${nums(s.code, 'anchor')}</td><td>${nums(s.code, 'supporting')}</td></tr>`).join('')}</tbody></table></div>`).join('')}`;
     };
-    $app.innerHTML = `<div class="row"><h1 style="margin:0">📋 MA DLCS Standards Map</h1><div class="spacer"></div>
+    $app.innerHTML = `<div class="row"><h1 style="margin:0">MA DLCS Standards Map</h1><div class="spacer"></div>
       <label class="small">Term: <select class="input" id="std-plan" style="display:inline-block;width:auto">${PLAN_OPTIONS('15')}</select></label></div>
       <p class="muted">Massachusetts Digital Literacy and Computer Science standards, grades 6-8. Lesson numbers are positions in the full course. Rows in gray aren't addressed in this term.</p>
       <div id="std-body"></div>`;
@@ -14650,25 +14653,25 @@ int main() {
     const installed = parts.filter(isDone).length, total = parts.length;
     const nextLesson = parts.find(l => !isDone(l)), nextPart = Quest.part(nextLesson?.id);
     const finished = installed === total, certified = finished && mission.every(isDone);
-    const status = certified ? '🏅 Rescue Certified! Your robot finished the mission.' : finished ? '🚩 Build complete. Your rescue mission is open!' : `Next part: ${nextPart.icon} ${esc(nextPart.name)}, earned by finishing Lesson ${nextLesson.num}.`;
+    const status = certified ? 'Rescue Certified! Your robot finished the mission.' : finished ? 'Build complete. Your rescue mission is open!' : `Next part: ${nextPart.icon} ${esc(nextPart.name)}, earned by finishing Lesson ${nextLesson.num}.`;
     const row = l => { const p = Quest.part(l.id), on = isDone(l); return `<a class="part ${on ? 'on' : ''} ${l.unlocked ? '' : 'locked'}" href="#/lesson/${l.id}">
-      <span class="ico">${on ? p.icon : l.unlocked ? '○' : '🔒'}</span><span><b>${esc(p.name)}</b><br><span class="small muted">${l.track === 'extra' ? '' : `Lesson ${l.num}: `}${esc(l.title)}</span><br><span class="small">${esc(p.does)}</span></span></a>`; };
-    $app.innerHTML = `<h1>🔧 My Rescue Robot</h1>
+      <span class="ico">${on ? '✓' : l.unlocked ? '○' : '–'}</span><span><b>${esc(p.name)}</b><br><span class="small muted">${l.track === 'extra' ? '' : `Lesson ${l.num}: `}${esc(l.title)}</span><br><span class="small">${esc(p.does)}</span></span></a>`; };
+    $app.innerHTML = `<h1>My Rescue Robot</h1>
       <div class="hangar">
         <div><canvas class="robot-preview" id="build" width="480" height="480" aria-label="Your robot with ${installed} of ${total} parts"></canvas>
-          <button class="btn" id="custom" style="width:100%;margin-top:8px" aria-expanded="false">🎨 Customize colors and style</button></div>
+          <button class="btn" id="custom" style="width:100%;margin-top:8px" aria-expanded="false">Customize colors and style</button></div>
         <div>
           <div class="panel"><b style="font-size:1.3rem">${installed} / ${total} parts installed</b><div class="bar" style="margin:8px 0"><i style="width:${100 * installed / (total || 1)}%"></i></div><p style="margin:0">${status}</p>
             ${nextLesson?.unlocked ? `<a class="btn primary" style="margin-top:10px" href="#/lesson/${nextLesson.id}">Go earn it →</a>` : ''}</div>
           <div class="panel sec" id="workshop" hidden style="margin-top:12px"></div>
         </div>
       </div>
-      <h2 style="margin-top:20px">🧩 This term's build</h2>
+      <h2 style="margin-top:20px">This term's build</h2>
       <div class="parts">${parts.map(row).join('')}</div>
-      <h2 style="margin-top:20px">🚩 The Rescue Mission</h2>
+      <h2 style="margin-top:20px">The Rescue Mission</h2>
       <p class="muted" style="margin-top:0">Your finished robot proves itself in the capstone.</p>
       <div class="parts">${mission.map(row).join('')}</div>
-      ${upgrades.length ? `<h2 style="margin-top:20px">🚀 Go Further upgrades</h2>
+      ${upgrades.length ? `<h2 style="margin-top:20px">Go Further upgrades</h2>
       <p class="muted" style="margin-top:0">Optional. Finish a Go Further lesson to add its upgrade to your robot.</p>
       <div class="parts">${upgrades.map(row).join('')}</div>` : ''}`;
     const canvas = document.getElementById('build'), shop = document.getElementById('workshop'), btn = document.getElementById('custom');
@@ -14691,20 +14694,20 @@ int main() {
     const data = await api(teacher ? '/api/map/' + cid : '/api/map');
     const { stops, svg } = Quest.renderMap(data);
     const peers = data.class.showPeers;
-    const stopName = i => stops[i]?.finish ? '🌕 Moon Base' : stops[i].lesson.event ? `${stops[i].lesson.icon} ${stops[i].lesson.title}` : `Lesson ${stops[i].lesson.num}`;
-    $app.innerHTML = `<div class="row" style="margin-bottom:10px"><div><h1 style="margin:0">🚀 Mission to the Moon</h1><p class="muted" style="margin:0">${esc(data.class.name)}${!teacher && !peers ? ' · Your teacher has turned off classmates on this map.' : ''}</p></div><div class="spacer"></div>
+    const stopName = i => stops[i]?.finish ? 'Moon Base' : stops[i].lesson.event ? `${stops[i].lesson.icon} ${stops[i].lesson.title}` : `Lesson ${stops[i].lesson.num}`;
+    $app.innerHTML = `<div class="row" style="margin-bottom:10px"><div><h1 style="margin:0">Mission to the Moon</h1><p class="muted" style="margin:0">${esc(data.class.name)}${!teacher && !peers ? ' · Your teacher has turned off classmates on this map.' : ''}</p></div><div class="spacer"></div>
       ${teacher ? `<label class="small">Class: <select class="input" id="mapc" style="display:inline-block;width:auto">${classes.map(c => `<option value="${c.id}" ${c.id === cid ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>` : ''}</div>
       ${(me => me ? `<p style="margin:0 0 8px"><b>${Math.round(Quest.MOON_KM * Math.min(1, me.at / (stops.length - 1))).toLocaleString()} km</b> of ${Quest.MOON_KM.toLocaleString()} km to the Moon</p>` : '')(data.students.find(s => s.me))}
       <div class="map-wrap">${svg}</div>
       <div class="legend" style="margin-top:8px"><span><i class="key done"></i> finished</span><span><i class="key here"></i> you are here</span><span><i class="key open"></i> open</span><span><i class="key locked"></i> locked</span><span>Click a stop to see who is there.</span></div>
       <h2 style="margin-top:18px">Where everyone is</h2>
       <div class="roster">${data.students.map(s => `<span class="chip ${s.me ? 'me' : ''}"><b>${esc(s.me ? 'You' : s.name)}</b>${s.team ? ` <span class="small">(${esc(s.team)})</span>` : ''} · ${stopName(s.at)}${s.extras ? ` · ★${s.extras}` : ''}</span>`).join('') || '<span class="muted">No students have joined yet.</span>'}</div>
-      ${data.extras.length ? `<h2 style="margin-top:18px">🚀 Your Go Further lessons</h2>
-      <div class="roster">${data.extras.map(l => l.unlocked ? `<a class="chip ${l.complete ? 'me' : ''}" href="#/lesson/${l.id}">${l.complete ? '✓' : '○'} ${esc(l.title)}</a>` : `<span class="chip locked">🔒 ${esc(l.title)}</span>`).join('')}</div>` : ''}`;
+      ${data.extras.length ? `<h2 style="margin-top:18px">Your Go Further lessons</h2>
+      <div class="roster">${data.extras.map(l => l.unlocked ? `<a class="chip ${l.complete ? 'me' : ''}" href="#/lesson/${l.id}">${l.complete ? '✓' : '○'} ${esc(l.title)}</a>` : `<span class="chip locked">Locked: ${esc(l.title)}</span>`).join('')}</div>` : ''}`;
     if (teacher) document.getElementById('mapc').onchange = e => Nav.go('#/map/' + e.target.value);
     const open = el => {
       const i = +el.dataset.stop, s = stops[i], here = data.students.filter(x => x.at === i);
-      const m = modal(`<h2 style="margin-top:0">${s.finish ? '🌕 Moon Base' : s.lesson.event ? `${s.lesson.icon} ${esc(s.lesson.title)}` : `${s.lesson.num}. ${esc(s.lesson.title)}`}</h2>
+      const m = modal(`<h2 style="margin-top:0">${s.finish ? 'Moon Base' : s.lesson.event ? `${s.lesson.icon} ${esc(s.lesson.title)}` : `${s.lesson.num}. ${esc(s.lesson.title)}`}</h2>
         ${s.finish ? '<p>Everyone here has landed and finished this term\'s path.</p>' : s.lesson.event ? `<p><b>${esc(Quest.EVENT_STORY[s.lesson.id] || '')}</b></p><p>A whole-class event. All teams meet here before moving on.</p>` : (p => `<p>${p.icon} ${p.mission ? 'Mission stage:' : 'Earns'} <b>${esc(p.name)}</b></p>`)(Quest.part(s.lesson.id))}
         ${!s.finish && Quest.ZONES[s.lesson.unit] ? `<p class="small muted">${Quest.ZONES[s.lesson.unit].icon} ${esc(Quest.ZONES[s.lesson.unit].name)}: ${esc(Quest.ZONES[s.lesson.unit].story)}</p>` : ''}
         <h3>Here now (${here.length})</h3><div class="roster">${here.map(x => `<span class="chip ${x.me ? 'me' : ''}">${esc(x.me ? 'You' : x.name)}</span>`).join('') || '<span class="muted small">Nobody is on this stop right now.</span>'}</div>
@@ -14733,7 +14736,7 @@ int main() {
   setInterval(tick, 10000);
 
   // Look of the whole site, remembered in this browser. The button moves on to the next one.
-  const THEMES = { eco: '🌿 Eco', classic: '🖥 Windows 95', future: '🚀 Retro-Future' }, ORDER = Object.keys(THEMES);
+  const THEMES = { eco: 'Eco', classic: 'Windows 95', future: 'Retro-Future' }, ORDER = Object.keys(THEMES);
   const themeBtn = document.getElementById('theme');
   const setTheme = name => {
     document.documentElement.dataset.theme = name;

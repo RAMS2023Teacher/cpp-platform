@@ -32,10 +32,10 @@ Each class has a **term length** of 11, 13 or 16 lessons, or the full 29. Every 
 Everything outside the term becomes **Go Further** lessons. Anyone can try them. Each one opens when the lesson it builds on is finished, so a fast student can go deeper mid-term. Classmates can't see how many a student has done, but you can.
 
 ## VEXcode IQ
-A **VEXcode IQ ↗** button sits in the top bar and the code editor. It always opens the same tab, so students flip between the two apps instead of piling up tabs. The **⧉** button shows how to snap the two windows side by side on a Chromebook. **📋 Copy for VEXcode** copies a student's code and lists the devices to add. The lesson *From Simulator to Robot: VEXcode IQ* walks through copying, setting up devices, downloading and calibrating, with screenshots (see [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md)).
+A **VEXcode IQ ↗** button sits in the top bar and the code editor. It always opens the same tab, so students flip between the two apps instead of piling up tabs. The **⧉** button shows how to snap the two windows side by side on a Chromebook. **Copy for VEXcode** copies a student's code and lists the devices to add. The lesson *From Simulator to Robot: VEXcode IQ* walks through copying, setting up devices, downloading and calibrating, with screenshots (see [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md)).
 
 ## Robot Setup and VEX IQ kits
-Each class is set to a **VEX IQ 1st gen or 2nd gen** kit. Before a program can run, students open **🔌 Robot Setup** in the editor and choose their devices, ports and names, as in the VEXcode Devices window. Code that uses a device the robot doesn't have stops with an error explaining what to add.
+Each class is set to a **VEX IQ 1st gen or 2nd gen** kit. Before a program can run, students open **Robot Setup** in the editor and choose their devices, ports and names, as in the VEXcode Devices window. Code that uses a device the robot doesn't have stops with an error explaining what to add.
 
 On 1st gen, lessons automatically show the Color Sensor (`colorname()`) and Gyro Sensor in place of the Optical Sensor and the built-in inertial sensor, and auto-checks accept whatever names a student chose.
 
@@ -51,10 +51,10 @@ A **CAD Studio ↗** button in the top bar opens the class's VEX IQ CAD Studio i
 Lessons show pictures of VEX IQ parts (Brain, motors, sensors, beams, pins, shafts, claws and build views) from the VEX Library and vexrobotics.com. They load from VEX's own website, each with an "Image: VEX Robotics" credit, and aren't copied into this project. Pictures of 2nd gen-only parts are hidden for 1st gen classes, and the reverse. The list is in [`lessons/vex-images.js`](lessons/vex-images.js). If a school network blocks VEX's sites, the pictures simply don't appear.
 
 ## Class Screen
-Open a class and press **📺 Class Screen** to put it on the projector. It shows:
+Open a class and press **Class Screen** to put it on the projector. It shows:
 - today's lesson (picked automatically as the first lesson most of the class hasn't finished, or chosen from the list and remembered for the class)
 - the **Question of the Day** (the lesson's guiding question)
-- **What to do today**, built from the lesson's steps; press **✏️ Edit** to write your own, one step per line, saved per class and lesson
+- **What to do today**, built from the lesson's steps; press **Edit** to write your own, one step per line, saved per class and lesson
 - the lesson's MA DLCS standards and learning goals
 - a large **class timer** with a button for each part of the lesson, +1 minute, and a chime when time is up
 - **class progress** on today's lesson and how many students are on each lesson

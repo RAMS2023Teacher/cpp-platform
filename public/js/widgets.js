@@ -17,14 +17,14 @@
     function upd() { range.textContent = `Possible range: ${lo.toLocaleString()} – ${hi.toLocaleString()}   ·   Guesses: ${guesses}   ·   Binary search would need at most ${Math.ceil(Math.log2(max + 1))}`; }
     function guess(g) {
       if (!Number.isFinite(g)) return; guesses++;
-      if (g === secret) msg.textContent = `🎉 Got it in ${guesses} guesses! The number was ${secret.toLocaleString()}.`;
-      else if (g < secret) { msg.textContent = `${g.toLocaleString()} is too LOW ⬆️`; lo = Math.max(lo, g + 1); }
-      else { msg.textContent = `${g.toLocaleString()} is too HIGH ⬇️`; hi = Math.min(hi, g - 1); }
+      if (g === secret) msg.textContent = `Got it in ${guesses} guesses! The number was ${secret.toLocaleString()}.`;
+      else if (g < secret) { msg.textContent = `${g.toLocaleString()} is too LOW`; lo = Math.max(lo, g + 1); }
+      else { msg.textContent = `${g.toLocaleString()} is too HIGH`; hi = Math.min(hi, g - 1); }
       upd();
     }
-    el.append(h('h4', {}, '🔎 Binary Search Challenge'), h('div', { class: 'row' }, sel, h('button', { class: 'btn sm', onclick: start }, 'New game')), msg,
+    el.append(h('h4', {}, 'Binary Search Challenge'), h('div', { class: 'row' }, sel, h('button', { class: 'btn sm', onclick: start }, 'New game')), msg,
       h('div', { class: 'row' }, input, h('button', { class: 'btn primary sm', onclick: () => { guess(+input.value); input.select(); } }, 'Guess'),
-        h('button', { class: 'btn sm', onclick: () => { const m = Math.floor((lo + hi) / 2); input.value = m; guess(m); } }, '🤖 Let the robot guess the middle')), range);
+        h('button', { class: 'btn sm', onclick: () => { const m = Math.floor((lo + hi) / 2); input.value = m; guess(m); } }, 'Let the robot guess the middle')), range);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') { guess(+input.value); input.select(); } });
     start();
   };
@@ -37,7 +37,7 @@
       bars.innerHTML = '';
       const sortedFrom = arr.length - i;
       arr.forEach((v, k) => bars.append(h('div', { class: (cmp && (k === j || k === j + 1) ? 'cmp' : '') + (k >= sortedFrom || done ? ' done' : ''), style: `height:${v * 1.5}px` }, String(v))));
-      info.textContent = done ? `✅ Sorted! ${comps} comparisons, ${swaps} swaps.` : `Pass ${i + 1}: comparing positions ${j} and ${j + 1}.  Comparisons: ${comps}  Swaps: ${swaps}`;
+      info.textContent = done ? `Sorted! ${comps} comparisons, ${swaps} swaps.` : `Pass ${i + 1}: comparing positions ${j} and ${j + 1}.  Comparisons: ${comps}  Swaps: ${swaps}`;
       code.textContent = `if (arr[${j}] > arr[${j + 1}])   // ${arr[j]} > ${arr[j + 1]} ?  ${arr[j] > arr[j + 1] ? 'YES → swap' : 'no'}`;
     }
     function step() {
@@ -50,10 +50,10 @@
       draw(true);
     }
     let timer = null;
-    el.append(h('h4', {}, '🫧 Bubble Sort, step by step'), bars, code, info,
+    el.append(h('h4', {}, 'Bubble Sort, step by step'), bars, code, info,
       h('div', { class: 'row' }, h('button', { class: 'btn primary sm', onclick: step }, 'Step ▶'),
-        h('button', { class: 'btn sm', onclick: () => { clearInterval(timer); timer = setInterval(() => { step(); if (done) clearInterval(timer); }, 350); } }, 'Auto ⏩'),
-        h('button', { class: 'btn sm', onclick: () => { clearInterval(timer); reset(); } }, 'Shuffle 🔀')));
+        h('button', { class: 'btn sm', onclick: () => { clearInterval(timer); timer = setInterval(() => { step(); if (done) clearInterval(timer); }, 350); } }, 'Auto'),
+        h('button', { class: 'btn sm', onclick: () => { clearInterval(timer); reset(); } }, 'Shuffle')));
     reset();
   };
 
@@ -87,13 +87,13 @@
           prev[nk] = k; q.push([nr, nc]);
         }
       }
-      if (!(G.join() in prev)) { info.textContent = '🚫 No path! The goal is walled off.'; return; }
+      if (!(G.join() in prev)) { info.textContent = 'No path! The goal is walled off.'; return; }
       let k = prev[G.join()], len = 1; while (k && k !== S.join()) { cells[k].className = 'p'; k = prev[k]; len++; }
-      info.textContent = `✅ Shortest path: ${len} moves. BFS explored ${order} squares (light blue) — it searches in rings, nearest first.`;
+      info.textContent = `Shortest path: ${len} moves. BFS explored ${order} squares (light blue) — it searches in rings, nearest first.`;
     }
-    el.append(h('h4', {}, '🧭 Breadth-First Search Maze'), h('p', { class: 'small' }, '🟩 robot start   🟥 goal   ⬛ wall   🟦 explored   🟨 shortest path'), grid, info,
-      h('div', { class: 'row' }, h('button', { class: 'btn primary sm', onclick: bfs }, 'Find Path 🔍'), h('button', { class: 'btn sm', onclick: () => { walls = new Set(); paint(); } }, 'Clear walls'),
-        h('button', { class: 'btn sm', onclick: () => { walls = new Set(); for (let i = 0; i < 38; i++) { const k = Math.floor(Math.random() * R) + ',' + Math.floor(Math.random() * C); if (k !== S.join() && k !== G.join()) walls.add(k); } paint(); } }, 'Random walls 🎲')));
+    el.append(h('h4', {}, 'Breadth-First Search Maze'), h('p', { class: 'small' }, 'Green: robot start · Red: goal · Dark gray: wall · Light blue: explored · Yellow: shortest path'), grid, info,
+      h('div', { class: 'row' }, h('button', { class: 'btn primary sm', onclick: bfs }, 'Find Path'), h('button', { class: 'btn sm', onclick: () => { walls = new Set(); paint(); } }, 'Clear walls'),
+        h('button', { class: 'btn sm', onclick: () => { walls = new Set(); for (let i = 0; i < 38; i++) { const k = Math.floor(Math.random() * R) + ',' + Math.floor(Math.random() * C); if (k !== S.join() && k !== G.join()) walls.add(k); } paint(); } }, 'Random walls')));
     paint();
   };
 
@@ -113,8 +113,8 @@
     cv.addEventListener('click', e => { const r = cv.getBoundingClientRect(); pts.push({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height, l: label }); draw(); });
     function train(n = 1) { for (let k = 0; k < n; k++) { epochs++; pts.forEach(p => { const err = p.l - pred(p.x, p.y); if (err) { w[0] += 0.1 * err * p.x; w[1] += 0.1 * err * p.y; w[2] += 0.1 * err; } }); } draw(); }
     const lbl = h('span', { class: 'tag' }, 'Adding: RED');
-    el.append(h('h4', {}, '🧠 Train a Perceptron (a tiny neural network)'), h('p', { class: 'small' }, 'Each dot is a training example (think: Optical sensor readings). The line is the AI\'s decision boundary. Train it and watch it learn!'), cv,
-      h('div', { class: 'row', style: 'margin-top:8px' }, h('button', { class: 'btn sm', onclick: () => { label = 1; lbl.textContent = 'Adding: RED'; } }, '🔴 Red'), h('button', { class: 'btn sm', onclick: () => { label = -1; lbl.textContent = 'Adding: BLUE'; } }, '🔵 Blue'), lbl,
+    el.append(h('h4', {}, 'Train a Perceptron (a tiny neural network)'), h('p', { class: 'small' }, 'Each dot is a training example (think: Optical sensor readings). The line is the AI\'s decision boundary. Train it and watch it learn!'), cv,
+      h('div', { class: 'row', style: 'margin-top:8px' }, h('button', { class: 'btn sm', onclick: () => { label = 1; lbl.textContent = 'Adding: RED'; } }, 'Red'), h('button', { class: 'btn sm', onclick: () => { label = -1; lbl.textContent = 'Adding: BLUE'; } }, 'Blue'), lbl,
         h('button', { class: 'btn sm', onclick: () => { pts.push({ x: Math.random(), y: Math.random(), l: label }); draw(); } }, 'Add a point for me'),
         h('button', { class: 'btn primary sm', onclick: () => train(1) }, 'Train 1 round'), h('button', { class: 'btn sm', onclick: () => train(25) }, 'Train ×25'),
         h('button', { class: 'btn sm', onclick: () => { w = [Math.random() - .5, Math.random() - .5, Math.random() - .5]; epochs = 0; draw(); } }, 'Forget (reset weights)'),
@@ -128,12 +128,12 @@
     const box = h('div'); const path = h('p', { class: 'small muted' });
     function show(node, trail) {
       box.innerHTML = ''; path.textContent = trail.length ? 'Path: ' + trail.join(' → ') : 'Answer the questions like the robot\'s "brain" would.';
-      if (typeof node === 'string') { box.append(h('div', { class: 'tree-node tree-leaf' }, '🤖 Decision: ' + node), h('button', { class: 'btn sm', onclick: () => show(tree, []) }, 'Start over ↺')); return; }
-      box.append(h('div', { class: 'tree-node' }, '❓ ' + node.q), h('div', { class: 'row', style: 'justify-content:center' },
+      if (typeof node === 'string') { box.append(h('div', { class: 'tree-node tree-leaf' }, 'Decision: ' + node), h('button', { class: 'btn sm', onclick: () => show(tree, []) }, 'Start over ↺')); return; }
+      box.append(h('div', { class: 'tree-node' }, '' + node.q), h('div', { class: 'row', style: 'justify-content:center' },
         h('button', { class: 'btn go sm', onclick: () => show(node.yes, [...trail, node.q + ' YES']) }, 'Yes'),
         h('button', { class: 'btn stop sm', onclick: () => show(node.no, [...trail, node.q + ' NO']) }, 'No')));
     }
-    el.append(h('h4', {}, '🌳 Decision Tree'), box, path); show(tree, []);
+    el.append(h('h4', {}, 'Decision Tree'), box, path); show(tree, []);
   };
 
   window.mountWidgets = root => root.querySelectorAll('[data-widget]').forEach(el => {

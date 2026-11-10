@@ -169,10 +169,10 @@ a.lcard:hover h3 { color: var(--title); text-decoration: underline; }
 .callout.tip, .callout.warn, .callout.think, .callout.robot { background: var(--tip); box-shadow: none; border: 1px solid #000; }
 .callout.warn { background: var(--warn-soft); } .callout.robot { background: #ffe8d4; } .callout.think { background: #f4e4f4; }
 .callout.robot::before, .callout.think::before, .callout.tip::before, .callout.warn::before { display: block; font-weight: 700; margin-bottom: 4px; font-size: .84rem; }
-.callout.robot::before { content: "🤖 With your VEX robot"; color: #7a3000; }
-.callout.think::before { content: "💬 Think & discuss"; color: var(--algo); }
-.callout.tip::before { content: "💡 Tip"; color: var(--title); }
-.callout.warn::before { content: "⚠️ Heads up"; color: var(--warn); }
+.callout.robot::before { content: "With your VEX robot"; color: #7a3000; }
+.callout.think::before { content: "Think & discuss"; color: var(--algo); }
+.callout.tip::before { content: "Tip"; color: var(--title); }
+.callout.warn::before { content: "Heads up"; color: var(--warn); }
 pre.code, .body pre { background: var(--ide-bg); color: var(--ide-ink); padding: 12px 14px; border: 2px solid var(--face); box-shadow: 0 0 0 1px var(--shade); overflow-x: auto; font-family: var(--mono); font-size: .86rem; line-height: 1.5; }
 .body code { font-family: var(--mono); font-size: .92em; font-weight: 700; color: var(--title); }
 .lead code { font-family: var(--mono); font-weight: 700; color: var(--title); }
@@ -568,3 +568,7 @@ figure.shot .shot-missing { display: grid; place-items: center; min-height: 90px
 .vexpic img { width: 100%; height: 150px; object-fit: contain; }
 .vexpic figcaption { font-size: .85rem; font-weight: 600; color: #1b1f2a; }
 .vexpic .credit { display: block; font-weight: 400; font-size: .72rem; color: #5d6475; }
+
+/* Lesson card status as a small text label */
+.lcard .status { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.lcard.complete .status { color: #1f7a45; }

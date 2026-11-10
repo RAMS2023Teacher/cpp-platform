@@ -175,7 +175,7 @@
   function adaptText(text, s) {
     const d = s.devices, isColor = d.color.kind === 'color', gen1 = s.gen === 1;
     const rename = (from, to) => { if (from !== to) t = t.replace(new RegExp('\\b' + from + '(?=\\s*\\.|</code>)', 'g'), to); };
-    let t = text.split('Our simulator already has these devices set up with the same names.').join('Then set up the same devices in 🔌 Robot Setup, next to the Run button.');
+    let t = text.split('Our simulator already has these devices set up with the same names.').join('Then set up the same devices in Robot Setup, next to the Run button.');
     t = t.replace(/\bOptical\s*\.\s*color\(\)/g, d.color.name + (isColor ? '.colorname()' : '.color()'));
     rename('Optical', d.color.name); rename('DistanceSensor', d.distance.name); rename('BumperA', d.bumper.name);
     rename('TouchLED', d.touchled.name); rename('ClawMotor', d.claw.name); rename('ArmMotor', d.arm.name);
@@ -459,7 +459,7 @@
       }
       const [ox, oy] = this.opticalPt(); const f = this.floorAt(ox, oy); if (f.tile !== undefined) this.visited.add(f.tile);
       this.waiters = this.waiters.filter(w => { if (this.t >= w.until) { w.resolve(); this._woke = true; return false; } return true; });
-      if (this.t > 180) this.halt('⏱️ Time limit reached (3 simulated minutes) — program stopped. Is there an endless loop?');
+      if (this.t > 180) this.halt('Time limit reached (3 simulated minutes) — program stopped. Is there an endless loop?');
     }
     _finishMotion() { const m = this.motion; this.motion = null; this._woke = true; if (m && m.done) m.done(); }
     _carry() { const [fx, fy] = this.frontPt(FRONT + 1.6); this.holding.x = fx; this.holding.y = fy; }

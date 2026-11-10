@@ -19,12 +19,12 @@ module.exports = {
   // Whole-class events. The main path pauses after the `after` lesson until the teacher finishes the event.
   events: {
     sumo: {
-      title: 'Robot Sumo', icon: '🤼', kind: 'bracket', after: 'u1l4',
+      title: 'Robot Sumo', icon: '', kind: 'bracket', after: 'u1l4',
       photo: 'Show your robot ready for the sumo ring.',
       rules: ['Two robots start inside a taped circle, facing each other.', 'A robot loses the round when it leaves the circle or stops moving for 10 seconds.', 'The first robot to win 2 rounds wins the match.', 'Robots may push but may not lift, trap or damage each other.', 'Your teacher will say whether robots are driven or programmed.']
     },
     maze: {
-      title: 'Maze Race', icon: '⏱️', kind: 'times', after: 'u2l5',
+      title: 'Maze Race', icon: '', kind: 'times', after: 'u2l5',
       photo: 'Show your robot ready for the maze.',
       rules: ['Your robot runs the taped maze on its own, with no controller and no hands.', 'The timer starts at "go" and stops when the robot crosses the finish.', 'Each touch of a wall adds 5 seconds to your time.', 'You may fix your code and try again. Only your best run counts.']
     }
