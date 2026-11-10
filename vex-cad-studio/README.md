@@ -3,10 +3,11 @@
 A 3D editor where students build VEX IQ models from the **real VEX IQ CAD parts**. It runs on **Google Apps Script**, like RoboCode Academy, so it lives in your school's Google Workspace and needs no other server.
 
 - **449 official parts** (beams, plates, pins, connectors, standoffs, shafts, gears, wheels, panels and more), converted from VEX's STEP files, plus simple stand-in blocks for the Brain, Smart Motor, battery and sensors.
+- **Colorful parts.** Each kind of part has its own color (beams blue, plates green, gears red and so on) in the library and when placed, so models are easy to read. Students can recolor anything.
 - **Place parts by clicking.** Pick a part, then click on the grid or on another part. New parts sit flat on top of or beside the part under the mouse.
 - **Holes line up.** With Snap on **1 pitch** (12.7 mm), parts snap so their holes line up, even when one part has an even number of holes and the other an odd number.
 - **Move and rotate** with on-screen arrows, the arrow keys, 90° Turn/Tilt/Roll buttons, or by typing exact positions.
-- **Edit like a CAD tool:** multi-select, copy and paste, duplicate, colors, hide and show, undo and redo, and a parts list (bill of materials) that downloads as CSV.
+- **Edit like a CAD tool:** multi-select by Shift+click or by dragging a box, copy and paste, duplicate, colors, hide and show, undo and redo, and a parts list (bill of materials) that downloads as CSV.
 - **Save to the Chromebook and open again.** Save downloads a `.vexiq.json` file, and Open… (or dragging the file onto the 3D view) loads it back. Work also autosaves in the browser.
 - **Export** an STL for 3D printing, or a PNG picture of the model.
 - **Example models:** a gear train, a criss-cross beam tower and a simple drive base.
@@ -46,10 +47,10 @@ Paste in the changed files, then **Deploy → Manage deployments → pencil icon
 |---|---|
 | Add a part | Click it in the library (or drag it), then click in the 3D view. Shift+click places more copies. |
 | Turn the new part before placing | <kbd>R</kbd> turn, <kbd>T</kbd> tilt. <kbd>Esc</kbd> stops placing. |
-| Select | Click a part. Shift+click adds more. Double-click selects every part of that kind. |
+| Select | Click a part. Shift+click adds more. Double-click selects every part of that kind. Drag a box to select several: choose **⬚ Select** at the top right of the 3D view (or press <kbd>B</kbd>), or hold Shift and drag in any mode. |
 | Move or rotate | Drag the arrows. <kbd>W</kbd> move arrows, <kbd>E</kbd> rotate rings. Arrow keys nudge 1 pitch, Shift+↑/↓ moves up and down, Ctrl+arrow nudges ½ pitch. |
 | Quick 90° turns | Turn, Tilt and Roll buttons, or <kbd>R</kbd> <kbd>T</kbd> <kbd>Y</kbd>. |
-| Camera | Left-drag to orbit, right-drag to pan, scroll or pinch to zoom. 3D/Top/Front/Side buttons and <kbd>F</kbd> to fit. |
+| Camera | Left-drag orbits, right-drag pans, scroll or pinch zooms. On a touchpad, choose **✋ Pan** (<kbd>P</kbd>) to make left-drag pan instead, and **⟲ Orbit** (<kbd>O</kbd>) to switch back. 3D/Top/Front/Side buttons and <kbd>F</kbd> to fit. |
 | Copy, paste, duplicate, delete | Ctrl+C, Ctrl+V, Ctrl+D, Delete. Ctrl+Z / Ctrl+Y undo and redo. |
 | Save and open | **Save** (Ctrl+S) downloads a `.vexiq.json` file to Downloads. **Open…** (Ctrl+O) loads one back. |
 

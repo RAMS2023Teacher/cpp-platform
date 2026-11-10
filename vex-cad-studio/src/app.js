@@ -14,8 +14,8 @@
     ['Purple', '#7b3fb5'], ['Pink', '#e05a9a'], ['White', '#f2f2f2'], ['Light Gray', '#b9bec6'], ['Dark Gray', '#4f5660'], ['Black', '#22252a']
   ];
   const CAT_COLOR = {
-    'Beams': '#b9bec6', 'Plates': '#b9bec6', 'Connectors': '#b9bec6', 'Panels': '#f2f2f2', 'Pins': '#00897b', 'Standoffs': '#4f5660',
-    'Shafts & Collars': '#22252a', 'Gears & Sprockets': '#f2f2f2', 'Wheels & Tires': '#4f5660', 'Motion': '#b9bec6',
+    'Beams': '#1e63c6', 'Plates': '#2e9d4a', 'Connectors': '#f57c00', 'Panels': '#fbc02d', 'Pins': '#7b3fb5', 'Standoffs': '#4f5660',
+    'Shafts & Collars': '#4f5660', 'Gears & Sprockets': '#d32f2f', 'Wheels & Tires': '#00897b', 'Motion': '#e05a9a',
     'Electronics': '#4f5660', 'Special & Themed': '#f57c00'
   };
   const partColorDefault = p => /tire|rubber|belt|band|tread/i.test(p.name) ? '#22252a' : (CAT_COLOR[p.cat] || '#b9bec6');
@@ -405,6 +405,56 @@
     const hits = ray.intersectObjects(model.children.filter(m => m.visible && m !== exclude), false);
     return hits[0] || null;
   }
+  // ---------- drag tools: orbit, pan, box select ----------
+  let dragTool = 'orbit';
+  function setDragTool(t) {
+    dragTool = t;
+    controls.mouseButtons.LEFT = t === 'orbit' ? THREE.MOUSE.ROTATE : t === 'pan' ? THREE.MOUSE.PAN : -1;
+    controls.touches.ONE = t === 'orbit' ? THREE.TOUCH.ROTATE : t === 'pan' ? THREE.TOUCH.PAN : -1;
+    document.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === t));
+    viewport.dataset.tool = t;
+  }
+  document.querySelectorAll('[data-tool]').forEach(b => b.onclick = () => setDragTool(b.dataset.tool));
+
+  const boxEl = el('div', { class: 'box-select', hidden: true });
+  viewport.append(boxEl);
+  let boxDrag = null;
+  // Runs before the camera controls see the press (capture phase), so a box drag doesn't also orbit.
+  viewport.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || placing || gizmo.axis || e.target !== renderer.domElement) return;
+    if (dragTool !== 'select' && !e.shiftKey) return;
+    controls.enabled = false;
+    const r = viewport.getBoundingClientRect();
+    boxDrag = { x0: e.clientX - r.left, y0: e.clientY - r.top, add: e.shiftKey || e.ctrlKey || e.metaKey, rect: r };
+  }, true);
+  function boxRect(e) {
+    const b = boxDrag, x = e.clientX - b.rect.left, y = e.clientY - b.rect.top;
+    return { left: Math.min(b.x0, x), top: Math.min(b.y0, y), right: Math.max(b.x0, x), bottom: Math.max(b.y0, y) };
+  }
+  window.addEventListener('pointermove', e => {
+    if (!boxDrag) return;
+    const r = boxRect(e);
+    if (r.right - r.left < 4 && r.bottom - r.top < 4) return;
+    Object.assign(boxEl.style, { left: r.left + 'px', top: r.top + 'px', width: (r.right - r.left) + 'px', height: (r.bottom - r.top) + 'px' });
+    boxEl.hidden = false;
+  });
+  window.addEventListener('pointerup', e => {
+    if (!boxDrag) return;
+    const r = boxRect(e), add = boxDrag.add, w = boxDrag.rect.width, h = boxDrag.rect.height;
+    boxDrag = null; boxEl.hidden = true; controls.enabled = true;
+    if (r.right - r.left < 5 && r.bottom - r.top < 5) return; // a click, handled below
+    // A part is inside the box when the centre of its outline is.
+    const hits = model.children.filter(m => {
+      if (!m.visible) return false;
+      const c = new THREE.Box3().setFromObject(m).getCenter(new THREE.Vector3()).project(camera);
+      if (c.z > 1) return false;
+      const sx = (c.x + 1) / 2 * w, sy = (1 - c.y) / 2 * h;
+      return sx >= r.left && sx <= r.right && sy >= r.top && sy <= r.bottom;
+    });
+    setSelection(add ? selection.concat(hits.filter(m => !selection.includes(m))) : hits);
+    if (hits.length) toast(`Selected ${selection.length} part${selection.length === 1 ? '' : 's'}`);
+  });
+
   let downAt = null;
   renderer.domElement.addEventListener('pointerdown', e => { downAt = { x: e.clientX, y: e.clientY, b: e.button }; viewport.focus({ preventScroll: true }); });
   renderer.domElement.addEventListener('pointerup', e => {
@@ -603,6 +653,7 @@
       }
     };
   })();
+  const THUMB_STYLE = 'color1/'; // change to redraw cached library pictures
   const thumbQueue = []; let thumbBusy = false;
   const thumbs = new Map();
   function requestThumb(img) {
@@ -615,11 +666,11 @@
     while (thumbQueue.length) {
       const img = thumbQueue.shift(), id = img.dataset.id;
       try {
-        let url = thumbs.get(id) || await cache.get('thumbs', id);
+        let url = thumbs.get(id) || await cache.get('thumbs', THUMB_STYLE + id);
         if (!url) {
           const p = byId.get(id);
           url = thumbRenderer.draw(await getGeometry(id), partColorDefault(p));
-          cache.put('thumbs', id, url);
+          cache.put('thumbs', THUMB_STYLE + id, url);
         }
         thumbs.set(id, url);
         document.querySelectorAll(`img[data-id="${CSS.escape(id)}"]`).forEach(i => { i.src = url; i.classList.remove('ph'); });
@@ -848,11 +899,11 @@
     const rows = [
       ['Click a part in the library', 'Pick it up, then click in the 3D view to place it'],
       ['Shift + click', 'Place another copy, or add to the selection'],
-      ['Left-drag', 'Orbit the camera'], ['Right-drag', 'Pan the camera'], ['Scroll / pinch', 'Zoom'],
+      ['Left-drag', 'Orbit, pan or box-select, depending on the tool chosen at the top right'], ['Right-drag', 'Pan the camera'], ['Scroll / pinch', 'Zoom'],
       ['W / E', 'Move or Rotate arrows'], ['R / T / Y', 'Turn, tilt or roll 90°'],
       ['Arrow keys', 'Nudge 1 pitch (Ctrl for ½ pitch)'], ['Shift + ↑ / ↓', 'Nudge up or down'],
       ['Ctrl+D', 'Duplicate'], ['Ctrl+C / Ctrl+V', 'Copy and paste'], ['Delete', 'Delete'],
-      ['Ctrl+Z / Ctrl+Y', 'Undo and redo'], ['F', 'Zoom to fit'], ['H / Shift+H', 'Hide / show all'], ['G', 'Grid on or off'],
+      ['Ctrl+Z / Ctrl+Y', 'Undo and redo'], ['F', 'Zoom to fit'], ['O / P / B', 'Left-drag orbits, pans or box-selects'], ['Shift + drag', 'Box-select more parts'], ['H / Shift+H', 'Hide / show all'], ['G', 'Grid on or off'],
       ['Ctrl+S / Ctrl+O', 'Save or open a model file'], ['Esc', 'Stop placing, or clear the selection']
     ];
     const g = el('div', { class: 'help-grid' });
@@ -902,6 +953,9 @@
     else if (k === 'y') ACTIONS.rotZ();
     else if (k === 'f') frame(selection);
     else if (k === 'g') ACTIONS.grid();
+    else if (k === 'o') setDragTool('orbit');
+    else if (k === 'p') setDragTool('pan');
+    else if (k === 'b') setDragTool('select');
     else if (k === 'h') { if (e.shiftKey) showAll(); else hideSelection(); }
     else if (k === '?') showHelp();
     else if (k.startsWith('arrow') && selection.length) {

@@ -77,6 +77,10 @@ select, input[type="text"], input[type="search"], input[type="number"], .model-n
 .views { position: absolute; top: 10px; right: 10px; display: flex; gap: 4px; z-index: 5; }
 .views button { background: var(--panel); box-shadow: 0 1px 3px rgba(0,0,0,.12); min-height: 30px; padding: 4px 8px; }
 .views button.on { background: var(--accent); }
+.views .seg { margin-right: 6px; }
+.box-select { position: absolute; z-index: 4; border: 1.5px dashed var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); pointer-events: none; }
+.viewport[data-tool="pan"] canvas { cursor: grab; }
+.viewport[data-tool="select"] canvas { cursor: crosshair; }
 .place-hint, .empty-hint { position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
 .place-hint { bottom: 12px; padding: 6px 12px; font-size: 13px; pointer-events: none; max-width: calc(100% - 32px); text-align: center; }
 .empty-hint { top: 30%; max-width: 420px; padding: 16px 20px; text-align: center; pointer-events: none; }
