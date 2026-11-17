@@ -1,0 +1,656 @@
+id: follow-the-line
+title: Follow the Line
+tagline: Teach your robot to read the floor and stay on a tape track
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 on the real field
+
+mission:
+  big_question: "How can one number from the floor keep a robot on its path?"
+  goal: |
+    Warehouse robots follow tape on the floor. Today yours does too. The **Color Sensor** points down and
+    gives one number: how bright the floor is. You'll pick a **threshold** to split dark from light, write a
+    **two-state line follower**, and pack it into **functions** so `main()` reads like a plan.
+    Then you'll calibrate on real tape.
+  picture:
+    type: flow
+    loop: true
+    steps:
+      - {icon: "👁️", label: "Sense: read the brightness", color: "#2f6bff"}
+      - {icon: "🤔", label: "Decide: dark or light?", color: "#9b51e0"}
+      - {icon: "↪️", label: "Act: turn a little, step forward", color: "#33c95a"}
+    caption: The robot does these three things again and again, many times a second.
+  you_need:
+    - A partner
+    - Your robot with the Distance Sensor from See It Coming
+    - A Color Sensor and a Smart Cable
+    - Black electrical tape on the field (your teacher sets this up)
+    - A USB cable for the Brain
+  learn:
+    - "`Color.brightness()` gives a number from 0 (dark) to 100 (bright)"
+    - "a **threshold** is the cut-off number between dark and light"
+    - "**calibrate**: measure the real floor before you trust a number"
+    - "a **function** is a named block of code you can use again"
+  talk: You walk along the edge of a sidewalk with your eyes closed. Your foot can only feel "grass" or "concrete". What rule keeps you on the edge? What does your path look like from above?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: Read the floor
+    say: |
+      The Color Sensor sits at the front of the robot and points **down**. `Color.brightness()` tells you how
+      much light bounces back from the floor, from **0** to **100**. White floor bounces a lot of light. Black
+      tape bounces very little. First, just look at the numbers.
+    do:
+      - The program already reads the floor and prints the number. Press **Run** and look at the Brain screen.
+      - "Add the highlighted lines: drive 20 inches to the black tape, read again, and print it."
+      - Press **Run**. You should see two very different numbers.
+    code: |
+      int main() {
+        int b = Color.brightness();
+        Brain.Screen.print("Floor: %d", b);
+        Brain.Screen.newLine();
+        Drivetrain.driveFor(forward, 20, inches);
+        b = Color.brightness();
+        Brain.Screen.print("Tape: %d", b);
+      }
+    new: "5-7"
+    what: "`int b` is a **variable** that holds the reading. `%d` is the spot where the number in `b` gets printed. Line 6 reads the sensor again, so `b` gets a new value."
+    stuck:
+      - "**Both numbers are 90?** The sensor is not over the tape yet. The drive must be 20 inches."
+      - "**It prints %d?** The variable goes after the comma: `print(\"Tape: %d\", b);`"
+    sim:
+      starter: |
+        int main() {
+          int b = Color.brightness();
+          Brain.Screen.print("Floor: %d", b);
+          Brain.Screen.newLine();
+          // TODO: drive forward 20 inches, onto the tape
+          // TODO: read the brightness into b again
+          // TODO: print "Tape: " and the number
+        }
+      field:
+        start: {x: 48, y: 60, heading: 0}
+        lines: [{points: [[20, 36], [76, 36]], width: 2}]
+      checks:
+        - {type: output, pattern: "Floor:\\s*90", message: "It prints the floor's brightness"}
+        - {type: output, pattern: "Tape:\\s*5\\b", message: "It prints the tape's brightness"}
+      solution: |
+        int main() {
+          int b = Color.brightness();
+          Brain.Screen.print("Floor: %d", b);
+          Brain.Screen.newLine();
+          Drivetrain.driveFor(forward, 20, inches);
+          b = Color.brightness();
+          Brain.Screen.print("Tape: %d", b);
+        }
+    fields: ["Floor brightness", "Tape brightness"]
+    ask: The sensor only gives a number. How could a program use that number to tell tape from floor?
+
+  - part: "Part 1: In the simulator"
+    title: Pick a threshold
+    say: |
+      A **threshold** is a cut-off number. Below it means **dark**. Above it means **light**. The safest
+      threshold is the **middle** of your two readings: add them and divide by 2. In the simulator that is
+      (5 + 90) ÷ 2, about **50**. Now use it: creep forward until the floor turns dark.
+    do:
+      - Set `threshold` to the middle number.
+      - "Finish the `while` loop. It should keep going **while the floor is light**."
+      - Press **Run**. The robot should stop with its sensor on the tape, inside the green goal.
+    code: |
+      int main() {
+        int threshold = 50;
+        while (Color.brightness() > threshold) {
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+        Brain.Screen.print("Found the line");
+      }
+    new: "2-5"
+    what: "The loop checks the sensor, takes a 1 inch step, and checks again. When the reading drops below 50, the condition is false and the loop ends."
+    tip: "**Watch out:** the sensor reads the floor a little **ahead** of the robot's middle. The robot stops when its nose is on the tape, not its wheels."
+    stuck:
+      - "**The robot never moves?** Check the sign. `>` means keep going while the floor is brighter than the threshold."
+      - "**It drives into the wall?** Is your threshold between 5 and 90?"
+    sim:
+      starter: |
+        int main() {
+          int threshold = 0;   // TODO: the middle of 5 and 90
+          // TODO: while the brightness is greater than the threshold,
+          //       drive forward 1 inch
+
+          Brain.Screen.print("Found the line");
+        }
+      field:
+        start: {x: 48, y: 62, heading: 0}
+        lines: [{points: [[20, 30], [76, 30]], width: 2}]
+        goal: {x: 48, y: 34, r: 6}
+      checks:
+        - {type: goal, message: "The robot stops at the tape, inside the green goal"}
+        - {type: code, pattern: "while\\s*\\(\\s*Color\\.brightness\\s*\\(\\s*\\)\\s*>", message: "A while loop checks the brightness"}
+        - {type: noCollision, message: "The robot never hits a wall"}
+      solution: |
+        int main() {
+          int threshold = 50;
+          while (Color.brightness() > threshold) {
+            Drivetrain.driveFor(forward, 1, inches);
+          }
+          Brain.Screen.print("Found the line");
+        }
+    ask: Try a threshold of 3, then 95. What happens each time, and why is the middle the safest choice?
+
+  - part: "Part 1: In the simulator"
+    title: Follow the edge
+    say: |
+      With one sensor, the robot can't see where the line goes. So it follows the line's **left edge** with two
+      rules. **Dark?** I'm on the tape: turn a little **left**. **Light?** I'm off the tape: turn a little
+      **right**. Then take a small step. The robot wiggles along the edge. This is a **two-state** line follower.
+    do:
+      - "Inside the loop, write the `if / else`: dark turns left 5 degrees, light turns right 5 degrees."
+      - Press **Run**. Watch the robot wiggle up the line and around the bend.
+      - The loop ends when the Distance Sensor sees the wall closer than 10 inches.
+    code: |
+      int main() {
+        int threshold = 50;
+        while (Distance.distance(inches) > 10) {
+          if (Color.brightness() < threshold) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+        Brain.Screen.print("End of the line");
+      }
+    new: "4-8"
+    what: "Every trip around the loop is one **sense → decide → act**: read the floor, pick a turn, step forward. The Distance Sensor decides when the whole job is done."
+    picture:
+      type: compare
+      items:
+        - {icon: "⬛", title: "Dark (below 50)", text: "On the tape. Turn a little left."}
+        - {icon: "⬜", title: "Light (above 50)", text: "Off the tape. Turn a little right."}
+      caption: Two states, two actions. The robot rides the edge between them.
+    stuck:
+      - "**The robot spins in a circle?** Dark must turn **left** and light must turn **right**. Check they aren't swapped."
+      - "**It loses the line on the bend?** Keep the turn at 5 degrees and the step at 1 inch."
+      - "**It never stops?** The loop needs `Distance.distance(inches) > 10`."
+    sim:
+      starter: |
+        int main() {
+          int threshold = 50;
+          while (Distance.distance(inches) > 10) {
+            // TODO: if the brightness is below the threshold, turn left 5 degrees
+            //       else turn right 5 degrees
+
+            Drivetrain.driveFor(forward, 1, inches);
+          }
+          Brain.Screen.print("End of the line");
+        }
+      field:
+        start: {x: 18, y: 62, heading: 0}
+        lines: [{points: [[18, 66], [18, 34], [24, 22], [36, 16], [86, 16]], width: 2}]
+        goal: {x: 81, y: 16, r: 7}
+      checks:
+        - {type: goal, message: "The robot follows the line to the green goal"}
+        - {type: noCollision, message: "The robot never hits a wall"}
+        - {type: code, pattern: "if\\s*\\(\\s*Color\\.brightness\\s*\\(\\s*\\)\\s*<", message: "An if / else decides with the brightness"}
+      solution: |
+        int main() {
+          int threshold = 50;
+          while (Distance.distance(inches) > 10) {
+            if (Color.brightness() < threshold) {
+              Drivetrain.turnFor(left, 5, degrees);
+            } else {
+              Drivetrain.turnFor(right, 5, degrees);
+            }
+            Drivetrain.driveFor(forward, 1, inches);
+          }
+          Brain.Screen.print("End of the line");
+        }
+    ask: Change both turns to 15 degrees and run it. What changes about the wiggle and the time? Put them back to 5.
+
+  - part: "Part 1: In the simulator"
+    title: Give the job a name
+    say: |
+      Your loop works, but it is getting long. A **function** is a block of code with a **name**. You write it
+      once, **above** `main()`. Then you **call** it by name whenever you need it. `void` means the function
+      does a job and gives nothing back. Move one step of line following into `void followLine()`.
+    do:
+      - "Look at `main()`. It is already short: while the wall is far, `followLine();`."
+      - "Fill in the body of `followLine()` above it: the `if / else` and the 1 inch step."
+      - Press **Run**. This line bends both ways. The same function handles all of it.
+    code: |
+      int threshold = 50;
+
+      void followLine() {
+        if (Color.brightness() < threshold) {
+          Drivetrain.turnFor(left, 5, degrees);
+        } else {
+          Drivetrain.turnFor(right, 5, degrees);
+        }
+        Drivetrain.driveFor(forward, 1, inches);
+      }
+
+      int main() {
+        while (Distance.distance(inches) > 10) {
+          followLine();
+        }
+        Brain.Screen.print("End of the line");
+      }
+    new: "3-10, 14"
+    what: "Line 14 **calls** the function: the Brain jumps up to line 3, runs the body, and comes back. `threshold` now sits above every function, so all of them can use it."
+    tip: "**Watch out:** a function must be written **above** the place that calls it. And a call needs its parentheses: `followLine();`"
+    stuck:
+      - "**followLine was not declared?** Check the spelling and capitals match in both places."
+      - "**The robot only drives straight?** The `if / else` goes inside the `{ }` of `followLine()`."
+    sim:
+      starter: |
+        int threshold = 50;
+
+        void followLine() {
+          // TODO: one step of line following:
+          //       dark -> turn left 5, light -> turn right 5,
+          //       then drive forward 1 inch
+
+        }
+
+        int main() {
+          while (Distance.distance(inches) > 10) {
+            followLine();
+          }
+          Brain.Screen.print("End of the line");
+        }
+      field:
+        start: {x: 12, y: 60, heading: 0}
+        lines: [{points: [[12, 64], [12, 44], [20, 32], [34, 26], [52, 26], [64, 34], [74, 40], [88, 40]], width: 2}]
+        goal: {x: 81, y: 40, r: 7}
+      checks:
+        - {type: goal, message: "The robot follows the S-bend to the green goal"}
+        - {type: code, pattern: "void\\s+followLine\\s*\\(\\s*\\)\\s*\\{[^}]*Color\\.brightness", message: "followLine() reads the Color Sensor"}
+        - {type: code, pattern: "while\\s*\\([^{]*\\{\\s*followLine\\s*\\(\\s*\\)\\s*;", message: "main() calls followLine() in its loop"}
+        - {type: noCollision, message: "The robot never hits a wall"}
+      solution: |
+        int threshold = 50;
+
+        void followLine() {
+          if (Color.brightness() < threshold) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        int main() {
+          while (Distance.distance(inches) > 10) {
+            followLine();
+          }
+          Brain.Screen.print("End of the line");
+        }
+    ask: Read your `main()` out loud to your partner. Why is a short `main()` easier to check than one long loop?
+
+  - part: "Part 1: In the simulator"
+    title: Stop at the station
+    say: |
+      Some functions **answer a question**. A `bool` function gives back `true` or `false` with `return`.
+      `onLine()` answers "am I on the tape?" The Color Sensor can also name a color:
+      `Color.colorname3()` gives `red`, `green` or `blue`. Write `atStation()` so the robot follows the line
+      until it sees the **red** station.
+    do:
+      - "Read `onLine()`. It is finished. See how `followLine()` uses it."
+      - "Finish `atStation()`: return whether `Color.colorname3() == colorType::red`."
+      - "In `main()`, keep calling `followLine()` while `atStation() == false`."
+      - Press **Run**. The robot should stop at the red tile and turn its Touch LED red.
+    code: |
+      int threshold = 50;
+
+      bool onLine() {
+        return Color.brightness() < threshold;
+      }
+
+      bool atStation() {
+        return Color.colorname3() == colorType::red;
+      }
+
+      void followLine() {
+        if (onLine()) {
+          Drivetrain.turnFor(left, 5, degrees);
+        } else {
+          Drivetrain.turnFor(right, 5, degrees);
+        }
+        Drivetrain.driveFor(forward, 1, inches);
+      }
+
+      int main() {
+        while (atStation() == false) {
+          followLine();
+        }
+        TouchLED.setColor(red);
+        Brain.Screen.print("Station");
+      }
+    new: "7-9, 21-23"
+    what: "`return` sends an answer back to the line that called the function. `Color.brightness() < threshold` is already true or false, so `onLine()` just returns it. Now `main()` reads like a plan: while not at the station, follow the line."
+    tip: "**Watch out:** comparing uses **two** equals signs: `== red`. One equals sign means \"store this\"."
+    stuck:
+      - "**The robot drives past the tile?** Check `atStation()` returns `Color.colorname3() == colorType::red`."
+      - "**The robot doesn't move at all?** The loop must run while `atStation() == false`."
+    sim:
+      starter: |
+        int threshold = 50;
+
+        bool onLine() {
+          return Color.brightness() < threshold;
+        }
+
+        bool atStation() {
+          // TODO: return true when the Color Sensor sees red
+          return false;
+        }
+
+        void followLine() {
+          if (onLine()) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        int main() {
+          // TODO: while atStation() is false, followLine()
+
+          TouchLED.setColor(red);
+          Brain.Screen.print("Station");
+        }
+      field:
+        start: {x: 14, y: 58, heading: 90}
+        lines: [{points: [[8, 58], [40, 58], [54, 52], [62, 40], [62, 20]], width: 2}]
+        tiles: [{x: 56, y: 10, w: 12, h: 12, color: red}]
+        goal: {x: 62, y: 24, r: 7}
+      checks:
+        - {type: goal, message: "The robot stops at the red station"}
+        - {type: code, pattern: "colorname3\\s*\\(\\s*\\)\\s*==\\s*(colorType::)?red", message: "atStation() checks for red"}
+        - {type: code, pattern: "while\\s*\\([^)]*atStation\\s*\\(\\s*\\)", message: "main() loops until atStation()"}
+        - {type: noCollision, message: "The robot never hits a wall"}
+      solution: |
+        int threshold = 50;
+
+        bool onLine() {
+          return Color.brightness() < threshold;
+        }
+
+        bool atStation() {
+          return Color.colorname3() == colorType::red;
+        }
+
+        void followLine() {
+          if (onLine()) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        int main() {
+          while (atStation() == false) {
+            followLine();
+          }
+          TouchLED.setColor(red);
+          Brain.Screen.print("Station");
+        }
+    ask: "`followLine()` is `void` but `onLine()` is `bool`. What is the difference between the two kinds of function?"
+
+  - part: "Part 2: On the real robot"
+    title: Add the Color Sensor
+    say: |
+      Time for real tape. The Color Sensor must point **straight down** at the front of the robot, close to
+      the floor: about one finger's width above it. Too high and every reading looks dark. Then VEXcode needs
+      to know the sensor is there, with the same name your code uses.
+    wiring:
+      - "Mount the Color Sensor at the **front** of the drive base, facing **down**, about a finger's width above the floor."
+      - "Plug a Smart Cable from the Color Sensor into **Port 3** on the Brain. Push until it clicks."
+    do:
+      - "In VEXcode IQ, open **Devices**, add a device, and choose the **Color** sensor on **Port 3**."
+      - "Change its name to `Color` so it matches your code, then click **Done**."
+      - Check your Drivetrain, Distance Sensor and Touch LED are still in the list.
+    tip: "**Watch out:** nothing may stick out below the sensor or drag on the floor. Push the robot by hand over the tape to check."
+    test:
+      - The Color Sensor points down, a finger's width above the floor
+      - Its cable is in Port 3
+      - Devices shows a sensor named Color on Port 3
+
+  - part: "Part 2: On the real robot"
+    title: Calibrate
+    say: |
+      The simulator says tape is 5 and floor is 90. Your real field won't agree. The lights in the room, the
+      color of the floor and the height of the sensor all change the numbers. So engineers **calibrate**:
+      measure first, then pick the threshold.
+    do:
+      - Start a new C++ text project, or save a copy of your last one. Paste this small program over `int main()` and download it.
+      - Hold the robot with the sensor over the **floor**. Write down the number.
+      - Hold it over the **black tape**. Write down the number.
+      - "Work out your threshold: (floor + tape) ÷ 2."
+    code: |
+      int main() {
+        while (true) {
+          int b = Color.brightness();
+          Brain.Screen.clearScreen();
+          Brain.Screen.setCursor(1, 1);
+          Brain.Screen.print("Bright: %d", b);
+          wait(200, msec);
+        }
+      }
+    what: "This loop reads the sensor five times a second and shows the number, so you can move the robot around and watch it change."
+    stuck:
+      - "**The number never changes?** Check the cable is in Port 3 and the sensor in Devices is named `Color`."
+      - "**Floor and tape read almost the same?** The sensor is too high or tilted. Move it closer to the floor."
+    test:
+      - The number on the Brain changes when I move from floor to tape
+      - My threshold is between my two readings
+    fields: ["Floor reading", "Tape reading", "My threshold"]
+    ask: How different are your numbers from the simulator's 5 and 90? Give one reason they are different.
+
+  - part: "Part 2: On the real robot"
+    title: Run the tape track
+    say: |
+      Now put your threshold into your line follower and try the real track. The track ends near the field
+      wall, so the Distance Sensor can end the run, just like in the simulator. Real robots need a few tries.
+      Change **one thing** at a time.
+    do:
+      - "Your line follower is in the editor below. Change `threshold` to **your** number and press **Run** to check it still works."
+      - Press **Copy for VEXcode**, then **Copy code**. Paste it into VEXcode over `int main()` and everything below it. Download.
+      - Put the robot at the start with the sensor just **left of the tape's edge**, pointing along the line.
+      - Run it. Keep hands off until it stops.
+    stuck:
+      - "**It spins in place?** It can't find the edge. Start with the sensor right beside the tape, and check your threshold."
+      - "**It turns away from the line?** Start with the sensor at the tape's other edge, or swap `left` and `right` in `followLine()`."
+      - "**It drives off on the bend?** Slow down: try a smaller step, like half an inch."
+      - "**It stops too early?** Something is in front of the Distance Sensor. Clear the field."
+    sim:
+      starter: |
+        int threshold = 0;   // TODO: your real threshold from the Calibrate step
+
+        bool onLine() {
+          return Color.brightness() < threshold;
+        }
+
+        void followLine() {
+          if (onLine()) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        int main() {
+          while (Distance.distance(inches) > 10) {
+            followLine();
+          }
+          Brain.Screen.print("End of the line");
+        }
+      field:
+        start: {x: 18, y: 62, heading: 0}
+        lines: [{points: [[18, 66], [18, 34], [24, 22], [36, 16], [86, 16]], width: 2}]
+        goal: {x: 81, y: 16, r: 7}
+      checks:
+        - {type: goal, message: "My threshold still works in the simulator"}
+        - {type: code, pattern: "bool\\s+onLine[\\s\\S]*void\\s+followLine", message: "My program uses onLine() and followLine()"}
+      solution: |
+        int threshold = 40;
+
+        bool onLine() {
+          return Color.brightness() < threshold;
+        }
+
+        void followLine() {
+          if (onLine()) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        int main() {
+          while (Distance.distance(inches) > 10) {
+            followLine();
+          }
+          Brain.Screen.print("End of the line");
+        }
+    test:
+      - The robot followed the straight part of the tape
+      - The robot made it around the bend
+      - The robot stopped by itself before the wall
+    ask: What was the first thing that went wrong on the real track, and what one thing did you change to fix it?
+
+  - part: "Part 2: On the real robot"
+    title: Tune the wiggle
+    say: |
+      The turn size is a trade-off. **Small turns** are smooth, but the robot can miss a bend. **Big turns**
+      catch every bend, but the robot wiggles and wastes time. Test three turn sizes on the same track and let
+      the data pick the winner.
+    do:
+      - "In `followLine()`, set both turns to **3** degrees. Run the track and time it."
+      - "Do the same with **5** degrees, then **10** degrees."
+      - Write each time in seconds. Write **DNF** if the robot did not finish.
+      - Put your best turn size back in the program.
+    test:
+      - I tested all three turn sizes on the same track
+      - My program now uses the best one
+    fields: ["Time with 3° (s)", "Time with 5° (s)", "Time with 10° (s)", "Best turn size"]
+    ask: Which turn size won on your robot? Explain why using the words smooth, wiggle or bend.
+
+quiz:
+  - question: On your field, black tape reads 8 and the floor reads 72. What is the best threshold?
+    choices: ["8", "40", "72", "80"]
+    answer: 1
+    why: "The middle is the safest: (8 + 72) ÷ 2 = 40. It leaves the most room on both sides for readings that jump around."
+  - question: "The threshold is 45 and the sensor reads 12. What does the robot do?\n\n`if (Color.brightness() < threshold) {`\n\n`  Drivetrain.turnFor(left, 5, degrees);`\n\n`} else {`\n\n`  Drivetrain.turnFor(right, 5, degrees);`\n\n`}`"
+    choices: ["Turns left 5 degrees", "Turns right 5 degrees", "Turns left, then right", "Nothing"]
+    answer: 0
+    why: 12 is less than 45, so the condition is true and only the first block runs. The robot is on the tape, so it turns left.
+  - question: Why do you calibrate the Color Sensor on the real field?
+    choices: ["To charge the sensor", "Because real readings change with the light, the floor and the sensor's height", "Because the simulator is broken", "To make the robot drive faster"]
+    answer: 1
+    why: Real sensors never read exactly 5 and 90. You measure your own floor and tape, then pick a threshold between them.
+  - question: "What does `void` mean in `void followLine()`?"
+    choices: ["The function is empty", "The function does a job and gives nothing back", "The function gives back true or false", "The function only runs once"]
+    answer: 1
+    why: "A `void` function just does its job. A `bool` function like `onLine()` gives back true or false with `return`."
+  - question: Why did we move the line-following code into functions?
+    choices: ["Functions make the motors stronger", "The Brain can't run long programs", "`main()` reads like a plan, and each job can be fixed or reused in one place", "C++ won't run without them"]
+    answer: 2
+    why: Functions hide the detail behind a name. You can read the plan in `main()` and change how a job works in just one spot.
+
+ship:
+  turn_in: code
+  note: Your line follower from the Run the tape track step, with your real threshold in it, is turned in with your answers.
+  extensions:
+    - title: Line lights
+      level: Easier
+      goal: Make the Touch LED show what the robot sees. Green when it is on the tape, yellow when it is off.
+      where: Inside `followLine()`, in the two branches of the `if / else`.
+      code: |
+        void followLine() {
+          if (onLine()) {
+            TouchLED.setColor(green);
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            TouchLED.setColor(yellow);
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+      new: "3, 6"
+      hints:
+        - "The LED is a quick way to debug. If it never turns green, the threshold is wrong."
+    - title: Lap timer
+      level: Medium
+      goal: Time the run. Clear the Brain's timer at the start and print the seconds when the robot reaches the station.
+      where: The first line of `main()` and after the loop.
+      code: |
+        int main() {
+          Brain.Timer.clear();
+          while (atStation() == false) {
+            followLine();
+          }
+          Brain.Screen.print("Time: %.1f s", Brain.Timer.time(seconds));
+        }
+      new: "2, 6"
+      hints:
+        - "`%.1f` prints a number with one decimal place, like 18.4."
+        - "Try a 2 inch step in `followLine()`. Is the run faster? Does it still finish?"
+    - title: A function with a dial
+      level: Challenge
+      goal: "Give `followLine` a **parameter** so the caller picks the turn size: `followLine(3)` for straight parts, `followLine(10)` for bends."
+      where: "Change the first line of `followLine()` and both turns inside it. Then change the call in `main()`."
+      code: |
+        void followLine(int turnSize) {
+          if (onLine()) {
+            Drivetrain.turnFor(left, turnSize, degrees);
+          } else {
+            Drivetrain.turnFor(right, turnSize, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+      new: "1, 3, 5"
+      hints:
+        - "A parameter is a variable that gets its value from the call. `followLine(5);` makes `turnSize` equal 5."
+        - "Could you use a small turn for the first 30 steps and a bigger one after that? A `for` loop can count steps."
+  reflect:
+    - Your real threshold was different from the simulator's 50. What did you measure, and how did you pick your number?
+    - Which function from today would you reuse in the Autonomy Challenge, and what job does it do?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5) in the simulator. Step 4 (functions) is the big new
+  idea: stop the class and trace one call on the board (main → jump up to followLine → come back). Day 2: Part 2 on
+  the real field, then the quiz and Ship it.
+
+  **Before class.** Tape the track on each field with black electrical tape: a straight run of about 2 feet, one wide
+  gentle bend (no sharper than 45°), and a straight run that ends about 6 inches from a field wall (the Distance Sensor ends the run there). A **double-width
+  line** (two strips side by side, about 1.5 inches) is much more forgiving than a single strip. Avoid sharp corners
+  and crossings. Hand out one Color Sensor and Smart Cable per team. The lesson assumes **Port 3** and the device
+  name `Color`.
+
+  **Common trouble.** Sensor mounted too high or tilted (floor and tape read almost the same: lower it). Sensor
+  started on the wrong side of the tape (the robot turns away: start it on the left edge, or swap `left` and `right`).
+  A threshold copied from the simulator (send them back to the Calibrate step). Sunlight from a window changing the
+  readings between runs (recalibrate, or shade the field). On the real robot, many tiny `turnFor` moves are slow and
+  jerky; that's expected for a two-state follower. Teams that want it smoother can try the Challenge extension.
+
+  **Sharing fields.** Calibration takes one minute per team at the field. Teams waiting for the field work on an
+  extension in the simulator.
+
+  **Check for understanding.** Ask a pair: "Your tape reads 12 and your floor reads 60. What threshold, and why not 15?"
+  Ask them to point to where `followLine()` is **defined** and where it is **called**.
+standards:
+  - code: 6-8.CS.a.4
+    how: Students describe and use the Color Sensor as an input, the Brain as the controller and the motors as outputs in a sense, decide, act loop.
+  - code: 6-8.CT.a.2
+    how: Students define followLine(), onLine() and atStation() and reuse them on three different tracks.
+  - code: 6-8.CT.d.2
+    how: Students move the line-following detail into functions so main() reads like a plan.
+  - code: 6-8.CT.d.4
+    how: The line follower uses a while loop, an if / else, comparison expressions, a threshold variable and functions.
+  - code: 6-8.CT.c.5
+    how: Students collect brightness readings on the real field, compute a threshold, and time three turn sizes to pick the best.
+  - code: 6-8.CT.b.5
+    how: Students test thresholds at the edges (3 and 95) and explain why the middle value is the safe boundary.

@@ -1,91 +1,92 @@
-# RoboCode Academy — C++, Algorithms & AI with VEX IQ
+# RoboCode Academy
 
-A course website for 8th graders that runs on **Google Apps Script**, so it needs no server and lives inside your school's Google Workspace. Students sign in with their school Google account and work through a **11-, 13- or 16-lesson term (30–40 min each)** drawn from 29 lessons, writing VEX IQ C++ in a built-in editor with a robot simulator. Teachers watch progress, read submitted code, and leave grades and feedback.
+A 12-project robotics course for 8th grade: **circuits, mechanics and C++ with VEX IQ (1st generation)**. It starts
+with a single circuit on a micro:bit and ends with a robot that finishes a course with no driver. It looks and works
+like the teacher's other courses (micro:bit Maker Lab, AppVenture, Scratch Quest) and is built on Maker Lab's engine.
+It runs as a **Google Apps Script web app** in the teacher's school Google account, and student work stays in the
+teacher's Drive.
 
-To put it online, follow **[docs/DEPLOY.md](docs/DEPLOY.md)**.
+**To install or update it, follow [dist/apps-script/INSTALL.md](dist/apps-script/INSTALL.md)** (paste 3 Script files
+into a new Apps Script project).
 
-## Course map
-| Unit | Lessons |
+## The course
+
+| # | Project | Big idea | Hardware |
+|---|---|---|---|
+| 1 | Light It Up | Circuits: input → decide → output | micro:bit, LED, resistor, button |
+| 2 | Motors and Gears | Gear ratios: speed or strength | Smart Motor, gears, shafts |
+| 3 | Build the Drive Base | Structure, bracing and Smart Ports | VEX IQ kit, 2 motors, Brain |
+| 4 | Hello, Brain | A C++ program runs in order | Drive base + USB cable |
+| 5 | Take the Wheel | Loops · joystick numbers → motor speed | Controller |
+| 6 | Battle Bot Design | if / else · buttons run a mechanism | Extra motor, beams for a wedge |
+| 7 | **Battle Bot Challenge** | Test, improve, compete (driver-controlled sumo) | Your battle bot + the ring |
+| 8 | Drive by Code | Sequences and for loops | Drive base + Gyro Sensor |
+| 9 | Feel the Wall | if / else with a sensor | Bumper Switch + Touch LED |
+| 10 | See It Coming | while loops with a sensor | Distance Sensor |
+| 11 | Follow the Line | Functions and thresholds | Color Sensor |
+| 12 | **Autonomy Challenge** | Sense → decide → act, all together | Your robot + the course |
+
+Each lesson is about two class periods and is split into two Parts.
+
+## How a lesson works
+
+| Stage | What students do |
 |---|---|
-| 1 · Meet Your Robot | What Is a Robot? · Build Basics: Beams, Plates & Pins · Build Basics: Strong Structures · Build Basics: Motors, Shafts & Gears · Build the BaseBot · Hello, C++! · From Simulator to Robot: VEXcode IQ · Drive & Turn |
-| 2 · C++ Foundations | Variables & Math · Loops · Making Decisions · While Loops & Sensors · Functions |
-| 3 · Algorithms | What Is an Algorithm? · Line Following · Searching · Sorting · Cube Sorting Robot · Pathfinding (BFS) · Proportional Control |
-| 4 · Artificial Intelligence | What Is AI? · Decision Trees · State Machines · Machine Learning: Training Data · The Robot Learns (trial & error) · AI Ethics & Bias |
-| 5 · Capstone | Design a Rescue Robot · Build, Code, Test · Showcase |
+| 🎯 **Mission** | See what they'll build and what they need, and talk a question over with their partner |
+| 🛠️ **Build** | One step per screen: what to do, code with the **new lines highlighted**, a green **Test it** box, and one question. **Got it! Next ▶** unlocks when the step is done |
+| 🧠 **Quiz** | 4-5 questions as colored answer tiles, graded on the server (pass at 75%) |
+| 🚀 **Ship it** | Pick at least one extension, answer the reflection questions, and turn in |
 
-Each lesson has a warm-up, direct instruction, a hands-on activity, a simulator code challenge with auto-checks, and a graded exit ticket with a reflection. Lessons unlock in order. Some lessons are build-only and have no code challenge. The algorithm and AI lessons also have interactive widgets.
+**The editor and simulator are inside the Build steps.** In a coding step students type C++ next to a simulated
+VEX IQ robot. The step's 🤖 Test it boxes tick themselves when the program passes (the robot stops in the goal,
+never hits a wall, prints the right thing, and so on). In driving lessons the keyboard is the controller. A
+**Copy for VEXcode** button hands the program to **VEXcode IQ**, which opens in its own tab and puts it on the real Brain.
 
-## Standards and student supports
-Every lesson is mapped to the Massachusetts grades 6-8 DLCS standards. See **[docs/STANDARDS_MAP.md](docs/STANDARDS_MAP.md)** or the **Standards** page in the teacher view. The build stops if a lesson has no assessed standard or cites a code that isn't on the state list.
+Turn-ins are the program from the last simulator step (coding lessons), a MakeCode share link (lesson 1), or
+ticking "I showed my teacher my robot" (build lessons and the Battle Bot Challenge).
 
-Each lesson has an Engineer's Brief written for grades 7-8, with a guiding question and a diagram with alt text. Lessons also have sentence starters for reflections, and code lessons have a worked example and a "Stuck?" routine. Students can have sections read aloud and change the text size, spacing and font with **Aa Reading**. To edit these supports, see [`lessons/supports.js`](lessons/supports.js).
+Around that: XP, levels, badges and a robot avatar; a skill tree; partners on one Chromebook (work saves to both);
+a teacher gradebook with each student's stage, quiz score, answers and programs; a projector **Class display** with
+a timer, the question of the day, the lesson's standards, a race track of where everyone is, and recent wins;
+Google Classroom roster import and a grades package; and the Robot Rush arcade the teacher can open as a reward.
 
-## Teams, photos and class events
-- **Teams:** 2 to 4 students join with a team code and share one robot's design, Robot Setup, photos and events. Exit tickets and code stay individual.
-- **Build photos:** build lessons and class events need a team photo of the robot before they count as complete.
-- **Class events:** Robot Sumo (bracket) and the Maze Race (timed leaderboard) use real robots. The main path pauses at each event until the teacher finishes it.
-- **Google Classroom:** import a Classroom class so rostered students are enrolled automatically, post lessons as Classroom assignments that link straight to the lesson (now, scheduled or as drafts), and send grades back, then use Classroom's SIS export to reach PowerSchool. See [docs/DEPLOY.md](docs/DEPLOY.md).
+## CAD Studio
 
-## Term plans
-Each class has a **term length** of 11, 13 or 16 lessons, or the full 29. Every plan includes the VEXcode IQ lesson and an algorithms lesson and ends with the rescue capstone, the 13- and 16-lesson terms add AI, and each shorter plan is contained in the next, so you can change a class's plan without losing work. The lists are in [`lessons/plans.js`](lessons/plans.js).
+[`vex-cad-studio/`](vex-cad-studio/) is VEX IQ CAD Studio, a 3D building app with the real VEX IQ parts, for planning
+builds in class or at home. It is its **own** Apps Script project. Lessons open it with the **Open CAD Studio**
+button. Its address is `CAD_STUDIO_URL` in `course/rules.py`.
 
-Everything outside the term becomes **Go Further** lessons. Anyone can try them. Each one opens when the lesson it builds on is finished, so a fast student can go deeper mid-term. Classmates can't see how many a student has done, but you can.
+## Working on it
 
-## VEXcode IQ
-A **VEXcode IQ ↗** button sits in the top bar and the code editor. It always opens the same tab, so students flip between the two apps instead of piling up tabs. The **⧉** button shows how to snap the two windows side by side on a Chromebook. **Copy for VEXcode** copies a student's code and lists the devices to add. The lesson *From Simulator to Robot: VEXcode IQ* walks through copying, setting up devices, downloading and calibrating, with screenshots (see [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md)).
-
-## Robot Setup and VEX IQ kits
-Each class is set to a **VEX IQ 1st gen or 2nd gen** kit. Before a program can run, students open **Robot Setup** in the editor and choose their devices, ports and names, as in the VEXcode Devices window. Code that uses a device the robot doesn't have stops with an error explaining what to add.
-
-On 1st gen, lessons automatically show the Color Sensor (`colorname()`) and Gyro Sensor in place of the Optical Sensor and the built-in inertial sensor, and auto-checks accept whatever names a student chose.
-
-## The Rescue Robot quest
-- **My Robot:** each student starts with an empty outline. Each lesson before the capstone installs a part, and the robot visibly grows. Go Further lessons add upgrades. They can choose its colors and style.
-- **Rescue Mission:** the three capstone lessons are the mission stages. Finishing them earns *Rescue Certified*.
-- **Mission to the Moon map:** a flight from Earth to Moon Base through the course's units that shows each student's robot at the lesson they're on. Classmates appear as first name and last initial, with no grades or scores. Teachers see full names. A teacher can turn classmates off for a class in **Class settings**.
-
-## VEX part pictures
-Lessons show pictures of VEX IQ parts (Brain, motors, sensors, beams, pins, shafts, claws and build views) from the VEX Library and vexrobotics.com. They load from VEX's own website, each with an "Image: VEX Robotics" credit, and aren't copied into this project. Pictures of 2nd gen-only parts are hidden for 1st gen classes, and the reverse. The list is in [`lessons/vex-images.js`](lessons/vex-images.js). If a school network blocks VEX's sites, the pictures simply don't appear.
-
-## Class Screen
-Open a class and press **Class Screen** to put it on the projector. It shows:
-- today's lesson (picked automatically as the first lesson most of the class hasn't finished, or chosen from the list and remembered for the class)
-- the **Question of the Day** (the lesson's guiding question)
-- **What to do today**, built from the lesson's steps; press **Edit** to write your own, one step per line, saved per class and lesson
-- the lesson's MA DLCS standards and learning goals
-- a large **class timer** with a button for each part of the lesson, +1 minute, and a chime when time is up
-- **class progress** on today's lesson and how many students are on each lesson
-- **recent achievements** from the last 7 days (finished lessons, robot parts, unit badges), shown as first name and last initial, or anonymously if classmates are hidden in Class settings
-
-Students never see a timer or lesson minutes; those are only on the teacher's views.
-
-## Teacher workflow
-1. **Classes → New class** gives you a 6-letter join code.
-2. Students open the web app link and enter the code and their name, once.
-3. Open a class to see the progress grid. Click any cell to see quiz answers, the reflection and recent code versions, then leave a grade and feedback.
-4. **Class settings:** set the term length and robot kit, unlock lessons, close enrollment, regenerate the code, or hide classmates on the map.
-5. **Export to Google Sheets** puts grades in a spreadsheet.
-6. **Lessons** page: add a YouTube, Google Drive or Vimeo video to any lesson, and private teacher notes.
-
-## Working on the code
-You need [Node.js](https://nodejs.org) 18 or newer.
+You need Python 3 (`pip install -r requirements.txt -r requirements-dev.txt`) and Node.js.
 
 ```bash
-npm install
+python tools/build.py
 ```
 
 ```bash
-npm start
+python -m pytest -q
 ```
 
-This runs the real Apps Script code on your computer with stand-ins for Google's services. Open http://localhost:3000 as the teacher, or http://localhost:3000/?as=maya@school.test as a student. Nothing touches Google, and test data goes in `data/preview-sheets.json`.
+```bash
+node tests/apps_script_app/serve.js dist/apps-script 5055
+```
+
+The last one serves the app with pretend Google services at http://localhost:5055/exec (you are the teacher;
+add `?as=sam@students.school.org` to be a student).
 
 | Folder | What's in it |
 |---|---|
-| `gas/` | The Apps Script backend. |
-| `public/` | The web page (`quest.js` holds the robot parts and map). |
-| `lessons/` | Lesson content. The format is in [`docs/LESSON_FORMAT.md`](docs/LESSON_FORMAT.md). |
-| `apps-script/` | **Generated** by `npm run build`. These are the files that go into Google. |
+| `course/lessons/` | The 12 lessons, one YAML file each. [docs/LESSONS.md](docs/LESSONS.md) explains the format, the robot's C++ commands and the simulator. |
+| `course/rules.py` | The course plan, XP, levels, badges, avatar parts and the links to VEXcode IQ and CAD Studio. |
+| `course/shots/`, `course/pictures.py` | VEXcode IQ screenshots, and the list of VEX part pictures (linked from VEX's website). |
+| `apps_script/server/` | The Apps Script backend. |
+| `apps_script/client/` | The pages. `lesson.js` is the lesson player, `lib/sim.js` the robot simulator, `lib/ide.js` the step editor. |
+| `tools/` | `build.py` makes `dist/apps-script/`. `check_lesson.py FILE` checks one lesson. `check_sims.js` proves every simulator step can be passed. |
+| `dist/apps-script/` | **Generated.** The files that go into Google. |
+| `classroom-sender/` | The small separate script that sends grades to Google Classroom. See [docs/GOOGLE_CLASSROOM.md](docs/GOOGLE_CLASSROOM.md). |
 
-## About the simulator
-The editor runs a classroom subset of VEX IQ C++ (1st and 2nd gen) in a top-down simulator. It translates C++ into JavaScript in the browser, so it is not a full compiler. Real robot code should still be downloaded to the robots with VEXcode IQ.
+## History
+
+The earlier 29-lesson version of RoboCode Academy (a different design, with a spreadsheet backend) is kept on the
+branch `backup/2026-11-17-robocode-before-restart`.

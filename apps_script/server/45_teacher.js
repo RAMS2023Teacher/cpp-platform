@@ -1,0 +1,407 @@
+// ---------------------------------------------------------------- teacher
+// Only the script owner can call these. They change config.json, never a student's file,
+// so a teacher and a student saving at the same moment can't overwrite each other.
+
+function teacher_() {
+  var me = whoIs_();
+  if (!me.teacher) { var e = new Error('Only the teacher can do that.'); e.status = 403; throw e; }
+  return config_();
+}
+
+function joinCode_(cfg) {
+  var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', used = {};
+  Object.keys(cfg.classes).forEach(function (k) { used[cfg.classes[k].code] = 1; });
+  for (;;) {
+    var code = '';
+    for (var i = 0; i < 6; i++) code += abc.charAt(Math.floor(Math.random() * abc.length));
+    if (!used[code]) return code;
+  }
+}
+
+function dateOrEmpty_(s) {
+  s = String(s || '');
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : '';
+}
+
+function createClass(name) {
+  var cfg = teacher_();
+  name = String(name || '').trim().slice(0, 80);
+  if (!name) throw new Error('Give the class a name.');
+  var id = String(nextId_(cfg));
+  cfg.classes[id] = { id: id, name: name, code: joinCode_(cfg), created_at: now_() };
+  saveConfig_(cfg);
+  return cfg.classes[id];
+}
+
+function deleteClass(cid, typedName) {
+  var cfg = teacher_(), c = cfg.classes[cid];
+  if (!c) throw new Error('No such class.');
+  if (typedName !== c.name) throw new Error('Type the class name exactly to delete it.');
+  delete cfg.classes[cid];
+  if (cfg.rosters) delete cfg.rosters[cid];
+  cfg.assignments = cfg.assignments.filter(function (a) { return a.class_id !== cid; });
+  saveConfig_(cfg);
+  return { ok: true };
+}
+
+function assignLessons(cid, lessonIds, due, note) {
+  var cfg = teacher_();
+  if (!cfg.classes[cid]) throw new Error('No such class.');
+  var have = {};
+  cfg.assignments.forEach(function (a) { if (a.class_id === cid) have[a.lesson_id] = 1; });
+  var added = 0;
+  (lessonIds || []).forEach(function (lid) {
+    if (!DATA.lessons[lid] || have[lid]) return;
+    cfg.assignments.push({ id: String(nextId_(cfg)), class_id: cid, lesson_id: lid, due: dateOrEmpty_(due),
+                           note: String(note || '').slice(0, 500), created_at: now_() });
+    added++;
+  });
+  saveConfig_(cfg);
+  return { added: added };
+}
+
+function updateAssignment(aid, due, note, remove) {
+  var cfg = teacher_();
+  var a = cfg.assignments.filter(function (x) { return x.id === aid; })[0];
+  if (!a) throw new Error('No such assignment.');
+  if (remove) cfg.assignments = cfg.assignments.filter(function (x) { return x.id !== aid; });
+  else { a.due = dateOrEmpty_(due); a.note = String(note || '').slice(0, 500); }
+  saveConfig_(cfg);
+  return { ok: true };
+}
+
+function removeStudent(cid, email) {
+  var cfg = teacher_();
+  cfg.removed[cid] = cfg.removed[cid] || [];
+  if (cfg.removed[cid].indexOf(email) < 0) cfg.removed[cid].push(email);
+  saveConfig_(cfg);
+  return { ok: true };
+}
+
+function saveFeedback(email, lid, text) {
+  var cfg = teacher_();
+  cfg.feedback[email] = cfg.feedback[email] || {};
+  cfg.feedback[email][lid] = String(text || '').trim().slice(0, 5000);
+  saveConfig_(cfg);
+  return { ok: true };
+}
+
+function giveBonus(email, amount, reason, badge) {
+  var cfg = teacher_();
+  amount = Math.max(0, Math.min(Math.floor(Number(amount) || 0), 200));
+  reason = String(reason || '').trim().slice(0, 120) || 'Great work';
+  if (amount) {
+    cfg.bonuses[email] = cfg.bonuses[email] || [];
+    cfg.bonuses[email].push({ key: 'bonus:' + now_(), amount: amount, reason: 'Bonus from your teacher: ' + reason, at: now_() });
+  }
+  if (badge) cfg.picks[email] = true;
+  saveConfig_(cfg);
+  return { ok: true, xp: amount };
+}
+
+function saveVideos(map) {
+  var cfg = teacher_(), out = {};
+  Object.keys(map || {}).forEach(function (lid) {
+    var url = String(map[lid] || '').trim();
+    if (DATA.lessons[lid] && /^https:\/\//.test(url)) out[lid] = url.slice(0, 500);
+  });
+  cfg.videos = out;
+  saveConfig_(cfg);
+  return { ok: true, count: Object.keys(out).length };
+}
+
+// ---------------------------------------------------------------- gradebook
+/** Everyone in a class: students who joined with the code, plus the Google Classroom roster (even before they sign in). */
+function classStudents_(cfg, sum, cid) {
+  var removed = cfg.removed[cid] || [], roster = rosterOf_(cfg, cid), emails = {};
+  Object.keys(sum.students).forEach(function (email) { if (sum.students[email].classes.indexOf(cid) >= 0) emails[email] = 1; });
+  Object.keys(roster).forEach(function (email) { emails[email] = 1; });
+  return Object.keys(emails).filter(function (email) { return removed.indexOf(email) < 0; }).map(function (email) {
+    var s = sum.students[email];
+    if (!s) return { email: email, name: roster[email] || email, xp: 0, level: 1, avatar: null, badges: [], lessons: {}, not_yet: true };
+    return { email: email, name: roster[email] || s.name || email, xp: s.xp, level: levelInfo_(s.xp).level, avatar: s.avatar || null,
+             badges: s.badges, lessons: s.lessons, rostered: email in roster };
+  }).sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+}
+
+/** One gradebook square: how far the student is with an assigned lesson. */
+function gradebookCell_(a, s) {
+  var x = s.lessons[a.lesson_id];
+  var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var status = !x ? 'not-started' : x.pct === 100 ? 'complete' : 'in-progress';
+  return { status: status, pct: x ? x.pct : 0, stage: x ? x.stage : 'mission', steps_done: x ? x.steps_done : 0,
+           steps_total: x ? x.steps_total : 0, quiz_best: x ? x.quiz_best : null, quiz_total: x ? x.quiz_total : 0,
+           share: x ? x.share : '', shipped: !!(x && x.shipped), stars: x ? x.stars : 0, partner: (x && x.partner) || null,
+           late: !!(a.due && a.due < today && status !== 'complete') };
+}
+
+function teacherHome() {
+  var cfg = teacher_(), sum = summary_();
+  return { classes: Object.keys(cfg.classes).map(function (cid) {
+    var c = cfg.classes[cid];
+    return { id: c.id, name: c.name, code: c.code, students: classStudents_(cfg, sum, cid).length, classroom: c.classroom || null,
+             assignments: cfg.assignments.filter(function (a) { return a.class_id === cid; }).length };
+  }) };
+}
+
+function gradebook(cid) {
+  var cfg = teacher_(), c = cfg.classes[cid];
+  if (!c) throw new Error('No such class.');
+  var sum = summary_(), students = classStudents_(cfg, sum, cid);
+  var cols = cfg.assignments.filter(function (a) { return a.class_id === cid && DATA.lessons[a.lesson_id]; }).map(function (a) {
+    var L = DATA.lessons[a.lesson_id];
+    return { id: a.id, lesson_id: L.id, number: L.number, title: L.title, icon: L.icon, due: a.due, note: a.note };
+  });
+  var grid = {};
+  students.forEach(function (s) { cols.forEach(function (a) { grid[s.email + '|' + a.id] = gradebookCell_(a, s); }); });
+  return { cls: c, cols: cols, students: students.map(function (s) {
+             return { email: s.email, name: s.name, xp: s.xp, level: s.level, avatar: s.avatar, not_yet: !!s.not_yet };
+           }), grid: grid,
+           assigned: cols.map(function (a) { return a.lesson_id; }), url: ScriptApp.getService().getUrl() };
+}
+
+function studentDetail(cid, email) {
+  var cfg = teacher_();
+  if (!cfg.classes[cid]) throw new Error('No such class.');
+  var rec = loadStudentFresh_(email);
+  if (!rec && rosterOf_(cfg, cid)[email]) { rec = newStudent_(email); rec.name = rosterOf_(cfg, cid)[email]; }
+  if (!rec) throw new Error('No work saved for that student yet.');
+  var assigned = {};
+  cfg.assignments.forEach(function (a) { if (a.class_id === cid) assigned[a.lesson_id] = 1; });
+  var items = lessonList_().filter(function (L) { return rec.progress[L.id] || assigned[L.id]; }).map(function (L) {
+    var p = rec.progress[L.id] || null;
+    return { id: L.id, number: L.number, title: L.title, icon: L.icon, assigned: !!assigned[L.id], pct: p ? percent_(p, L) : 0,
+             stage: currentStage_(L, p), p: p, feedback: ((cfg.feedback[email] || {})[L.id]) || '',
+             partner: p && p.partner ? partnerName_(cfg, p.partner) : null,
+             steps: L.build.map(function (S) { return { title: S.title, ask: S.ask || '', fields: S.fields || [] }; }),
+             talk_q: L.mission.talk, quiz_total: L.quiz.length,
+             extensions: ((L.ship || {}).extensions || []).map(function (e) { return e.title; }), reflect_q: (L.ship || {}).reflect || [] };
+  });
+  return { cls: cfg.classes[cid], student: { email: email, name: rec.name, xp: rec.xp || 0, level: levelInfo_(rec.xp || 0),
+           avatar: avatarOf_(rec), badges: badgeList_(rec).filter(function (b) { return b.earned; }) }, items: items };
+}
+
+/** The teacher always reads a student's file from Drive, not a cached copy. */
+function loadStudentFresh_(email) {
+  var id = studentFileId_(email);
+  if (!id) return null;
+  try { return readJsonFile_(id); } catch (e) { return null; }
+}
+
+// ---------------------------------------------------------------- Google Classroom grades package
+// Paste the result into the "RoboCode Academy to Google Classroom" sender (robocode-classroom.gs).
+function classroomPackage(cid, how, lessonIds) {
+  if (['complete', 'quiz', 'both'].indexOf(how) < 0) throw new Error('Pick how to score.');
+  var gb = gradebook(cid), wanted = {};
+  (lessonIds || []).forEach(function (l) { wanted[l] = 1; });
+  var cols = gb.cols.filter(function (a) { return wanted[a.lesson_id]; });
+  var students = gb.students.map(function (s, i) {
+    var grades = {};
+    cols.forEach(function (a) {
+      var cell = gb.grid[s.email + '|' + a.id], score = null;
+      if (cell && cell.status !== 'not-started') {
+        var quiz = cell.quiz_total ? Math.round(100 * (cell.quiz_best || 0) / cell.quiz_total) : null;
+        score = how === 'complete' ? cell.pct : how === 'quiz' ? quiz : (quiz === null ? null : Math.round((cell.pct + quiz) / 2));
+      }
+      if (score !== null) grades[a.lesson_id] = score;
+    });
+    return { ref: s.email, name: s.name, grades: grades };
+  });
+  return { source: 'robocode-academy', version: 1, 'class': gb.cls.name, students: students,
+           assignments: cols.map(function (a) { return { key: a.lesson_id, title: a.number + '. ' + a.title, due: a.due || '' }; }) };
+}
+
+// ---------------------------------------------------------------- class display (projector)
+// Same data as the Flask site's /teacher/classes/<id>/screen/data, read by app/static/js/screen.js.
+var WIN_ICONS_ = { badge: '🏅', complete: '🏁', ship: '📦', quiz_perfect: '🧠', bonus: '🍎' };
+
+function winText_(name, w) {
+  var r = w.reason || '', detail = r.indexOf(' · ') >= 0 ? r.slice(r.indexOf(' · ') + 3) : r;
+  if (w.kind === 'badge') return name + ' earned the ' + r.replace('Badge: ', '') + ' badge';
+  if (w.kind === 'complete') return name + ' finished ' + detail;
+  if (w.kind === 'quiz_perfect') return name + ' got a perfect quiz in ' + detail;
+  if (w.kind === 'ship') return name + ' shipped ' + detail;
+  return name + ' got a bonus from the teacher';
+}
+
+/** First names for the projector, with a last initial when two students share one (or robot names). */
+function shownNames_(students, mode) {
+  var first = function (s) { return (String(s.name || '').trim().split(/\s+/)[0]) || 'Student'; }, count = {}, out = {};
+  students.forEach(function (s) { count[first(s)] = (count[first(s)] || 0) + 1; });
+  students.forEach(function (s) {
+    var parts = String(s.name || '').trim().split(/\s+/), n = first(s);
+    if (count[n] > 1 && parts.length > 1) n += ' ' + parts[1].charAt(0) + '.';
+    if (mode === 'robot' && s.avatar && s.avatar.name) n = s.avatar.name;
+    out[s.email] = n;
+  });
+  return out;
+}
+
+function whereIs_(s) {
+  var ids = Object.keys(s.lessons || {}).filter(function (l) { return DATA.lessons[l]; })
+    .sort(function (a, b) { return String(s.lessons[b].updated_at || '').localeCompare(String(s.lessons[a].updated_at || '')); });
+  for (var i = 0; i < ids.length; i++) {
+    var x = s.lessons[ids[i]], L = DATA.lessons[ids[i]];
+    if (x.pct < 100) return { where: L.number + '. ' + L.title, pct: x.pct, status: 'working', lesson_id: L.id };
+  }
+  if (ids.length) { var D = DATA.lessons[ids[0]]; return { where: '✓ ' + D.number + '. ' + D.title, pct: 100, status: 'done', lesson_id: D.id }; }
+  return { where: 'Not started', pct: 0, status: 'waiting', lesson_id: null };
+}
+
+/** Race-track stops: the four stages of a lesson. */
+function trackStops_() { return STAGES_.map(function (st) { return { key: st[0], name: st[1], icon: st[2] }; }); }
+
+function standardsInPlay_(counts, focusId) {
+  var c = Object.keys(counts).length ? counts : (function () { var o = {}; o[focusId] = 0; return o; })(), out = {}, order = [];
+  Object.keys(c).sort(function (a, b) { return c[b] - c[a]; }).forEach(function (lid) {
+    var L = DATA.lessons[lid];
+    (L.standards_full || []).forEach(function (st) {
+      if (!out[st.code]) { out[st.code] = { code: st.code, text: st.text, students: 0, lessons: [] }; order.push(st.code); }
+      out[st.code].students += c[lid];
+      out[st.code].lessons.push(L.number + '. ' + L.title);
+    });
+  });
+  return order.map(function (k) { return out[k]; }).sort(function (a, b) { return b.students - a.students; }).slice(0, 4);
+}
+
+function screenPayload_(cfg, cid) {
+  var c = cfg.classes[cid], saved = c.screen || {};
+  var settings = { lesson_id: saved.lesson_id || '', question: saved.question || '', names: saved.names || 'first',
+                   xp: saved.xp || 'each', bell: saved.bell || '', view: saved.view === 'cards' ? 'cards' : 'track',
+                   goal: saved.goal == null ? '' : saved.goal };
+  var sum = summary_(), students = classStudents_(cfg, sum, cid), names = shownNames_(students, settings.names), wins = [];
+  var wheres = {}, working = {};
+  students.forEach(function (s) {
+    var w = wheres[s.email] = whereIs_(s);
+    if (w.status === 'working') working[w.lesson_id] = (working[w.lesson_id] || 0) + 1;
+  });
+  var L = DATA.lessons[settings.lesson_id];
+  if (!L && Object.keys(working).length) {        // default: the lesson most students are on right now
+    L = DATA.lessons[Object.keys(working).sort().reduce(function (best, lid) { return working[lid] > working[best] ? lid : best; })];
+  }
+  if (!L) {                                         // ...or the next assignment due
+    var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    var mine = cfg.assignments.filter(function (a) { return a.class_id === cid && DATA.lessons[a.lesson_id]; })
+      .sort(function (a, b) { return (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0; });
+    var next = mine.filter(function (a) { return !a.due || a.due >= today; })[0] || mine[0];
+    L = next ? DATA.lessons[next.lesson_id] : lessonList_()[0];
+  }
+  var rows = students.map(function (s) {
+    var w = wheres[s.email], here = (s.lessons || {})[L.id], sd = here && here.stages;
+    var row = { name: names[s.email], avatar: s.avatar || null, level: s.level, where: w.where, pct: w.pct, status: w.status,
+                // race track: stages done in today's lesson (null = busy with a different lesson, or not started)
+                done: here ? (sd ? STAGES_.filter(function (st) { return sd[st[0]]; }).length : 0) : null };
+    if (!here && w.status === 'working') row.elsewhere = w.where;
+    if (settings.xp === 'each') row.xp = s.xp || 0;      // hidden XP never reaches the browser
+    ((sum.students[s.email] || {}).wins || []).forEach(function (x) {
+      wins.push({ icon: WIN_ICONS_[x.kind] || '⭐', text: winText_(names[s.email], x), at: x.at });
+    });
+    return row;
+  }).sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+  // class XP goal for today: XP everyone earned since midnight, against the teacher's goal (blank = 60 per student, 0 = off)
+  var tz = Session.getScriptTimeZone(), day = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'), todayXp = 0;
+  students.forEach(function (s) {
+    ((sum.students[s.email] || {}).xp_recent || []).forEach(function (e) {
+      if (Utilities.formatDate(new Date(e[0]), tz, 'yyyy-MM-dd') === day) todayXp += e[1];
+    });
+  });
+  var goal = settings.goal === '' ? Math.max(100, students.length * 60) : Number(settings.goal) || 0;
+  var since = new Date(Date.now() - 12 * 3600 * 1000).toISOString();
+  wins = wins.filter(function (w) { return w.at >= since; }).sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); }).slice(0, 8);
+  return { settings: settings, students: rows, wins: wins,
+           total_xp: settings.xp === 'hide' ? 0 : students.reduce(function (t, s) { return t + (s.xp || 0); }, 0),
+           goal: settings.xp === 'hide' || !goal ? null : { target: goal, today: todayXp, auto: settings.goal === '' },
+           lesson: { id: L.id, number: L.number, title: L.title }, auto_lesson: !DATA.lessons[settings.lesson_id],
+           track: trackStops_(), question: settings.question || L.mission.big_question || '', big_idea: 'Big idea: ' + L.python,
+           standards: standardsInPlay_(working, L.id), arcade: arcadeTeacher_(cfg, cid) };
+}
+
+function screenData(cid) {
+  var cfg = teacher_();
+  if (!cfg.classes[cid]) throw new Error('No such class.');
+  return screenPayload_(cfg, cid);
+}
+
+function screenSave(cid, d) {
+  var cfg = teacher_(), c = cfg.classes[cid];
+  if (!c) throw new Error('No such class.');
+  d = d || {};
+  c.screen = { lesson_id: DATA.lessons[d.lesson_id] ? d.lesson_id : '', question: String(d.question || '').trim().slice(0, 300),
+               names: d.names === 'robot' ? 'robot' : 'first', view: d.view === 'cards' ? 'cards' : 'track',
+               xp: ['each', 'total', 'hide'].indexOf(d.xp) >= 0 ? d.xp : 'each',
+               bell: /^\d{1,2}:\d{2}$/.test(String(d.bell || '')) ? d.bell : '',
+               goal: String(d.goal == null ? '' : d.goal).trim() === '' ? '' : Math.max(0, Math.min(100000, Math.round(Number(d.goal)) || 0)) };
+  saveConfig_(cfg);
+  return screenPayload_(cfg, cid);
+}
+
+function screenUnits_() {
+  return [{ title: 'Lessons', lessons: lessonList_().map(function (L) { return { id: L.id, number: L.number, title: L.title }; }) }];
+}
+
+// ---------------------------------------------------------------- the icon in the browser tab
+// Apps Script needs a picture at a web address. These are Google's own emoji pictures (fonts.gstatic.com,
+// the same place the fonts load from), so school filters that block other sites still show them.
+var TAB_ICONS_ = [['logo', null, 'RoboCode Academy logo (five dots)'], ['robot', '1f916', '🤖 Robot'], ['rocket', '1f680', '🚀 Rocket'], ['bulb', '1f4a1', '💡 Light bulb'],
+                  ['bolt', '26a1', '⚡ Lightning'], ['wrench', '1f527', '🔧 Wrench'], ['puzzle', '1f9e9', '🧩 Puzzle']];
+
+function faviconUrl_() {
+  var pick = '';
+  try { pick = config_().tab_icon || ''; } catch (e) { pick = ''; }
+  if (/^https:\/\/\S+$/.test(pick)) return pick;
+  var icon = TAB_ICONS_.filter(function (t) { return t[0] === pick; })[0] || TAB_ICONS_[0];
+  if (icon[0] === 'logo') return logoUrl_() || emojiUrl_('1f916');     // '' once Apps Script has refused the logo
+  return emojiUrl_(icon[1]);
+}
+
+function emojiUrl_(code) { return 'https://fonts.gstatic.com/s/e/notoemoji/latest/' + code + '/512.png'; }
+
+/** The logo as a picture in the Drive data folder, shared so browsers can load it. '' if Drive won't allow that. */
+function logoUrl_() {
+  var props = PropertiesService.getScriptProperties(), url = props.getProperty('logo:url');
+  if (props.getProperty('logo:refused')) return '';
+  if (url && !/\.png$/.test(url)) url += '#.png';     // Apps Script wants icon addresses to end in .png or .ico
+  if (url) return url;
+  try {
+    var file = dataFolder_().createFile(Utilities.newBlob(Utilities.base64Decode(LOGO_PNG_), 'image/png', 'maker-lab-tab-icon.png'));
+    try {           // anyone with the link: works on every account and loads fastest
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      url = 'https://lh3.googleusercontent.com/d/' + file.getId() + '#.png';
+    } catch (e) {   // schools often only allow sharing inside the district
+      file.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
+      url = 'https://drive.google.com/uc?export=view&id=' + file.getId() + '#.png';
+    }
+    props.setProperty('logo:url', url);
+    return url;
+  } catch (e) {
+    return '';
+  }
+}
+
+/** Sets the tab icon on a page. If Apps Script refuses it, the page still loads (with the robot). A refused
+ *  logo is remembered and not tried again, so a bad icon can never stop RoboCode Academy from opening. */
+function withIcon_(out) {
+  var url = '';
+  try {
+    url = faviconUrl_();
+    out.setFaviconUrl(url);
+    return out;
+  } catch (e) {
+    if (url && url === logoUrl_()) PropertiesService.getScriptProperties().setProperty('logo:refused', String((e && e.message) || 'refused'));
+  }
+  try { out.setFaviconUrl(emojiUrl_('1f916')); } catch (e2) { /* no icon at all is fine */ }
+  return out;
+}
+
+/** choice: one of the TAB_ICONS_ ids, or the https address of a .png or .ico picture. */
+function setTabIcon(choice) {
+  var cfg = teacher_();
+  choice = String(choice || '').trim();
+  var known = TAB_ICONS_.some(function (t) { return t[0] === choice; });
+  if (!known && !/^https:\/\/\S+\.(png|ico)(\?\S*)?$/i.test(choice)) {
+    throw new Error('Pick one of the icons, or paste a web address that starts with https:// and ends in .png or .ico.');
+  }
+  cfg.tab_icon = choice;
+  saveConfig_(cfg);
+  return { ok: true, url: faviconUrl_() };
+}

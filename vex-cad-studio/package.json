@@ -1,0 +1,17 @@
+{
+  "name": "vex-iq-cad-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A 3D editor for building VEX IQ models from the official CAD parts. Runs on Google Apps Script.",
+  "scripts": {
+    "parts": "node tools/convert-parts.js",
+    "build": "node tools/build-gas.js",
+    "start": "node tools/build-gas.js && node tools/preview.js"
+  },
+  "devDependencies": {
+    "meshoptimizer": "0.22.0",
+    "occt-import-js": "0.0.23",
+    "three": "0.147.0"
+  },
+  "engines": { "node": ">=18" }
+}

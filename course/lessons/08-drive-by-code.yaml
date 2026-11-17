@@ -1,0 +1,451 @@
+id: drive-by-code
+title: Drive by Code
+tagline: Put down the controller. Your program does the driving now.
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 on the real robot
+
+mission:
+  big_question: "How can a robot drive a path with nobody steering?"
+  goal: |
+    In the Battle Bot Challenge **you** steered. From now on the **program** steers.
+    Today you plan a path on paper, then turn it into a **sequence** of drive and turn moves.
+    You'll use a **for loop** to drive a square without typing the same lines four times.
+    Then your real robot drives a square on tape, and you tune it until it ends where it started.
+  picture:
+    type: flow
+    steps:
+      - {icon: "📝", label: "Plan the path on paper", color: "#f5a623"}
+      - {icon: "⌨️", label: "Write the moves in C++", color: "#2f6bff"}
+      - {icon: "🖥️", label: "Test in the simulator", color: "#11b39e"}
+      - {icon: "📏", label: "Run, measure, adjust", color: "#33c95a"}
+    caption: Plan first. It is faster than guessing.
+  you_need:
+    - A partner
+    - Your robot, with a Gyro Sensor
+    - A USB cable for the Brain
+    - Paper and a pencil
+    - A ruler or tape measure
+    - Masking tape on the floor
+  learn:
+    - "a path is a **sequence** of `driveFor` and `turnFor` moves"
+    - "a **for loop** repeats lines a set number of times"
+    - "a **variable** lets you change one number in one place"
+    - "real robots need **calibrating**: measure, adjust, test again"
+  talk: You give a friend directions to the gym, but they must keep their eyes closed. What exactly would you have to tell them? What could go wrong?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: Plan first, then code
+    say: |
+      With no driver, the robot only knows the moves you write. So **plan the path on paper first**.
+      Each grid square on the field is **12 inches**. Count squares to find each distance.
+      You know `driveFor`. The new move is `turnFor`: it spins the robot in place.
+      It needs a direction, an amount and the units.
+    do:
+      - "On paper, sketch the field. Draw an **L-shaped** path from the robot to the green goal that stays away from the wall."
+      - "Next to each part of the path, write the move: how far, or which way to turn."
+      - "Type your moves in order. The first two are shown. You work out the last one."
+      - Press **Run**.
+    code: |
+      int main() {
+        Drivetrain.driveFor(forward, 36, inches);
+        Drivetrain.turnFor(right, 90, degrees);
+        // one more move gets you to the goal
+      }
+    new: "3"
+    what: "`turnFor(right, 90, degrees)` makes a square corner to the right. The robot does not move forward while it turns."
+    tip: "**Watch out:** if the robot turns right first, it runs into the wall. The order of the moves is the path."
+    stuck:
+      - "**Stopped short of the goal?** Count the squares again. Each one is 12 inches, so 5 squares is 60."
+      - "**An error about units?** `turnFor` needs `degrees` and `driveFor` needs `inches`."
+      - "**Turned the wrong way?** Picture yourself sitting on the robot. `right` is the robot's right."
+    sim:
+      starter: |
+        int main() {
+          // TODO: drive forward to the top of the field
+          // TODO: turn right 90 degrees
+          // TODO: drive forward to the green goal
+        }
+      field:
+        start: {x: 18, y: 54, heading: 0}
+        walls: [{x: 36, y: 36, w: 36, h: 36}]
+        goal: {x: 78, y: 18, r: 7}
+      checks:
+        - {type: goal, message: "The robot stops inside the green goal"}
+        - {type: noCollision, message: "It never touches a wall"}
+        - {type: code, pattern: "turnFor\\s*\\(\\s*right\\s*,\\s*90\\s*,\\s*degrees", message: "My program turns right 90 degrees"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 36, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 60, inches);
+        }
+    ask: Did your paper plan work the first time? If not, which number did you change, and why?
+
+  - part: "Part 1: In the simulator"
+    title: Thread the maze
+    say: |
+      A longer path is just a longer **sequence**. This maze has two walls with a gap in each.
+      The robot faces **right** at the start. Plan every move on paper before you type anything.
+      A good plan is a list like: forward 36, left 90, forward 36...
+    do:
+      - "On paper, draw a path through both gaps to the goal. Keep the robot in the **middle** of each gap."
+      - "Write the list of moves. Count grid squares for each distance (12 inches each)."
+      - "Type the moves, one statement per line. The first two are shown."
+      - "Press **Run**. If it hits a wall, find the **first** move that went wrong and fix only that one."
+    code: |
+      int main() {
+        Drivetrain.driveFor(forward, 36, inches);
+        Drivetrain.turnFor(left, 90, degrees);
+        // keep going: forward, turn, forward, turn, forward
+      }
+    stuck:
+      - "**Hit the first wall?** Go under it. Drive right 36 inches before you turn left."
+      - "**Scraped the second wall?** After you go up, turn right and drive only 30 inches. That is two and a half squares."
+      - "**Lost track?** Put a comment like `// up the middle` above each move."
+    sim:
+      starter: |
+        int main() {
+          // The robot starts facing right.
+          // TODO: drive under the first wall
+          // TODO: turn left and drive up the middle
+          // TODO: turn right and drive past the top of the second wall
+          // TODO: turn right and drive down to the goal
+        }
+      field:
+        start: {x: 18, y: 54, heading: 90}
+        walls: [{x: 34, y: 0, w: 4, h: 42}, {x: 70, y: 30, w: 4, h: 42}]
+        goal: {x: 84, y: 54, r: 7}
+      checks:
+        - {type: goal, message: "The robot stops inside the green goal"}
+        - {type: noCollision, message: "It never touches a wall"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 36, inches);
+          Drivetrain.turnFor(left, 90, degrees);
+          Drivetrain.driveFor(forward, 36, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 30, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 36, inches);
+        }
+    ask: How many statements did your maze program need? What makes a long sequence hard to get right?
+
+  - part: "Part 1: In the simulator"
+    title: Four sides, one loop
+    say: |
+      A square is the same two moves, four times: drive a side, turn a corner.
+      Don't type them four times. A **for loop** repeats the lines inside its `{ }`.
+      Read `for (int i = 0; i < 4; i++)` like this: start a counter `i` at 0. Keep going while `i` is less than 4.
+      Add 1 to `i` after each lap. That makes **4 laps**.
+    do:
+      - Type the highlighted loop.
+      - "**Predict** before you run: where will the robot be when the program ends?"
+      - "Press **Run**. The robot should cross all three blue tiles and end back in the goal."
+    code: |
+      int main() {
+        for (int i = 0; i < 4; i++) {
+          Drivetrain.driveFor(forward, 24, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+        }
+      }
+    new: "2-5"
+    what: "The two moves run with `i` = 0, 1, 2 and 3. Then `i` is 4, the test `i < 4` is false, and the loop ends. Four sides and four corners bring the robot back to its start."
+    tip: "**Watch out:** the parts inside `for ( )` are split by **semicolons**, not commas. And the loop line itself has no semicolon at the end."
+    stuck:
+      - "**Only one side?** Both moves must be between the loop's `{` and `}`."
+      - "**An error on the for line?** Check for `int i = 0; i < 4; i++` with two semicolons inside the parentheses."
+      - "**Missed a tile?** Each side is 24 inches, and every turn is `right`."
+    sim:
+      starter: |
+        int main() {
+          // TODO: write a for loop that runs 4 times
+          // TODO: inside it, drive forward 24 inches
+          // TODO: inside it, turn right 90 degrees
+        }
+      field:
+        start: {x: 30, y: 54, heading: 0}
+        tiles:
+          - {x: 25, y: 25, w: 10, h: 10, color: blue}
+          - {x: 49, y: 25, w: 10, h: 10, color: blue}
+          - {x: 49, y: 49, w: 10, h: 10, color: blue}
+        goal: {x: 30, y: 54, r: 6}
+      checks:
+        - {type: code, pattern: "for\\s*\\(", message: "My program uses a for loop"}
+        - {type: code, pattern: "^(?![\\s\\S]*driveFor[\\s\\S]*driveFor)", message: "Only one driveFor line. The loop repeats it."}
+        - {type: visitedTiles, message: "The robot crosses all three blue corner tiles"}
+        - {type: goal, message: "It ends back in the green goal"}
+      solution: |
+        int main() {
+          for (int i = 0; i < 4; i++) {
+            Drivetrain.driveFor(forward, 24, inches);
+            Drivetrain.turnFor(right, 90, degrees);
+          }
+        }
+    ask: Change the 4 to 2 and run it. What shape does the robot drive, and where does it stop? Change it back after.
+
+  - part: "Part 1: In the simulator"
+    title: One number for the size
+    say: |
+      The corner tiles moved. The square must now be **36 inches** on a side.
+      A **variable** is a named box that holds a value. Make one called `side`.
+      Use the name in `driveFor`, and the size of the whole square lives in **one place**.
+      Also speed up: `setDriveVelocity` sets how fast every drive after it goes.
+    do:
+      - Add the highlighted lines to your square program.
+      - "Change the `24` inside `driveFor` to the name `side`."
+      - "Press **Run**. Then try other speeds from 20 to 100."
+    code: |
+      int main() {
+        int side = 36;
+        Drivetrain.setDriveVelocity(80, percent);
+        for (int i = 0; i < 4; i++) {
+          Drivetrain.driveFor(forward, side, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+        }
+      }
+    new: "2-3, 5"
+    what: "`int side = 36;` makes a whole-number variable. Wherever the program says `side`, C++ uses 36. Change that one line and all four sides change."
+    stuck:
+      - "**side was not declared?** The `int side = 36;` line must come before the loop, and the spelling must match."
+      - "**Still a small square?** Make sure `driveFor` says `side`, not `24`."
+    sim:
+      starter: |
+        int main() {
+          // TODO: make a variable called side that holds 36
+          // TODO: set the drive velocity to 80 percent
+          for (int i = 0; i < 4; i++) {
+            // TODO: drive forward one side (use your variable)
+            Drivetrain.turnFor(right, 90, degrees);
+          }
+        }
+      field:
+        start: {x: 30, y: 54, heading: 0}
+        tiles:
+          - {x: 25, y: 13, w: 10, h: 10, color: blue}
+          - {x: 61, y: 13, w: 10, h: 10, color: blue}
+          - {x: 61, y: 49, w: 10, h: 10, color: blue}
+        goal: {x: 30, y: 54, r: 6}
+      checks:
+        - {type: code, pattern: "int\\s+side\\s*=[\\s\\S]*driveFor\\s*\\(\\s*forward\\s*,\\s*side\\s*,\\s*inches", message: "A variable called side sets the distance"}
+        - {type: code, pattern: "setDriveVelocity\\s*\\(", message: "My program sets the drive velocity"}
+        - {type: visitedTiles, message: "The robot crosses all three blue corner tiles"}
+        - {type: goal, message: "It ends back in the green goal"}
+      solution: |
+        int main() {
+          int side = 36;
+          Drivetrain.setDriveVelocity(80, percent);
+          for (int i = 0; i < 4; i++) {
+            Drivetrain.driveFor(forward, side, inches);
+            Drivetrain.turnFor(right, 90, degrees);
+          }
+        }
+    ask: Without the variable, how many lines would you change to resize a square written with no loop? How many now?
+
+  - part: "Part 2: On the real robot"
+    title: Bring back the Drivetrain
+    say: |
+      Your battle bot program used two separate motors, `LeftMotor` and `RightMotor`, so the joysticks could run each one.
+      To drive by code you want a **Drivetrain** again. It runs both motors together and knows inches and degrees.
+      The **Gyro Sensor** feels how far the robot has turned, so a 90 degree turn is really 90.
+    wiring:
+      - "Check the left motor is in **Port 1** and the right motor is in **Port 6**."
+      - "Mount the **Gyro Sensor** flat on the robot, so it sits level. Plug it into **Port 4**."
+    do:
+      - "Open VEXcode IQ. Click **File → New Text Project** and choose **C++**. Your battle bot project stays saved as it was."
+      - "Open **Devices**. Choose the **1st gen** Brain."
+      - "Add a **Drivetrain 2-motor**: left motor **Port 1**, right motor **Port 6**, **Gyro** on **Port 4**."
+      - "Leave the name as **Drivetrain**. Do **not** add `LeftMotor` or `RightMotor` this time."
+    picture: {type: vex, names: [gyro], caption: "The Gyro Sensor measures turning. Mount it flat."}
+    tip: "**Watch out:** a motor port can belong to only one device. A Drivetrain on ports 1 and 6 and a separate motor on Port 1 can't both be in Devices."
+    test:
+      - The Gyro Sensor is flat on the robot and plugged into Port 4
+      - Devices shows a Drivetrain on ports 1 and 6 with the Gyro on Port 4
+      - There are no separate left and right motors in Devices
+
+  - part: "Part 2: On the real robot"
+    title: Shrink the square for the floor
+    say: |
+      A 36 inch square at high speed is too big and too fast for the classroom floor.
+      Here is why the variable was worth it: change **one number** and the square fits your tape.
+      Slow is also more accurate, so turn the speed down for the real robot.
+    do:
+      - "Your square program is in the editor. Change `side` to **12** and the drive velocity to **40**."
+      - Press **Run** to check that it still drives a square.
+      - "Press **Copy for VEXcode**, then **Copy code**."
+      - "In VEXcode, select from `int main() {` to the bottom of the file and paste. Keep the folded device block at the top."
+      - Save the project with your team name and the word Square.
+    picture: {type: shot, name: vx-paste, caption: "Keep the folded device block. Paste over int main() and everything below it."}
+    sim:
+      carry: true
+      starter: |
+        int main() {
+          int side = 36;
+          Drivetrain.setDriveVelocity(80, percent);
+          for (int i = 0; i < 4; i++) {
+            Drivetrain.driveFor(forward, side, inches);
+            Drivetrain.turnFor(right, 90, degrees);
+          }
+        }
+      field: {start: {x: 30, y: 54, heading: 0}, goal: {x: 30, y: 54, r: 6}}
+      checks:
+        - {type: code, pattern: "int\\s+side\\s*=\\s*12\\s*;", message: "The side variable is 12"}
+        - {type: code, pattern: "for\\s*\\([\\s\\S]*driveFor\\s*\\(\\s*forward\\s*,\\s*side\\s*,", message: "A for loop drives each side"}
+        - {type: drove, inches: 40, message: "The robot drives all four sides"}
+        - {type: goal, message: "It ends where it started"}
+      solution: |
+        int main() {
+          int side = 12;
+          Drivetrain.setDriveVelocity(40, percent);
+          for (int i = 0; i < 4; i++) {
+            Drivetrain.driveFor(forward, side, inches);
+            Drivetrain.turnFor(right, 90, degrees);
+          }
+        }
+    test:
+      - My program is pasted into VEXcode under the device block
+      - I saved the project
+
+  - part: "Part 2: On the real robot"
+    title: Run the square on tape
+    say: |
+      In the simulator the square closes perfectly. On the floor, wheels slip and turns are a little off.
+      Each small error adds to the next one. Engineers don't guess how big the error is. They **measure** it.
+    wiring:
+      - "Turn on the Brain and plug in the USB cable. Wait for VEXcode to show the Brain is connected."
+    do:
+      - "Click **Download**. Unplug the cable."
+      - "Put a tape **X** on the floor. Set the robot on it, with a tape line showing which way it faces."
+      - "Start the program, then **hands off**. Keep the robot still for the first few seconds. The Gyro is finding its zero."
+      - "When it stops, measure from the tape X to the same spot on the robot. Run it 3 times."
+    stuck:
+      - "**The robot spins or wanders?** It was moved while the Gyro was getting ready. Start again and don't touch it."
+      - "**It turns left instead of right, or drives backward?** Check ports 1 and 6 in Devices and on the robot."
+      - "**The turns never end?** Check the Gyro cable is pushed in at Port 4, and that Devices says Port 4."
+    test:
+      - The real robot drove four sides and four corners by itself
+      - I measured how far from the start it ended, 3 times
+    fields: ["Run 1 miss (in)", "Run 2 miss (in)", "Run 3 miss (in)"]
+    ask: Were your three runs the same? Did the robot end short, long, or twisted to one side?
+
+  - part: "Part 2: On the real robot"
+    title: Calibrate it
+    say: |
+      **Calibrating** means adjusting the numbers until the real robot does what you meant.
+      Change **one number at a time**, then test again. If you change two things at once, you can't tell which one helped.
+    do:
+      - "**Corners not square?** Try a slower turn. Add `Drivetrain.setTurnVelocity(30, percent);` under your drive velocity line."
+      - "**Still turning too far or not far enough?** Change the `90` a little, such as 88 or 92."
+      - "**Sides too long or too short?** Measure one side, then change `side` a little."
+      - Download and run after every change. Stop when the robot ends within 2 inches of the X, or when time is up.
+    code: |
+      int main() {
+        int side = 12;
+        Drivetrain.setDriveVelocity(40, percent);
+        Drivetrain.setTurnVelocity(30, percent);
+        for (int i = 0; i < 4; i++) {
+          Drivetrain.driveFor(forward, side, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+        }
+      }
+    new: "4"
+    test:
+      - I changed one number at a time and tested after each change
+      - My robot's square ends closer to the start than it did at first
+    fields: ["Turn number I ended with", "Turn velocity I ended with", "Final miss (in)"]
+    ask: Which change helped the most? Why do you think it helped?
+
+quiz:
+  - question: "What does `Drivetrain.turnFor(left, 90, degrees);` do?"
+    choices: ["Drives forward 90 inches, then turns left", "Spins the robot in place to make a square corner to the left", "Turns the left motor off for 90 seconds", "Turns left forever"]
+    answer: 1
+    why: turnFor spins the robot in place by the amount you give. 90 degrees is a square corner.
+  - question: "How far does the robot drive in total?\n\n`for (int i = 0; i < 3; i++) {`\n\n`  Drivetrain.driveFor(forward, 10, inches);`\n\n`}`"
+    choices: ["10 inches", "13 inches", "30 inches", "40 inches"]
+    answer: 2
+    why: "The loop runs with i = 0, 1 and 2. That is 3 laps of 10 inches, so 30 inches."
+  - question: "What does this print on the Brain screen?\n\n`for (int i = 0; i < 4; i++) {`\n\n`  Brain.Screen.print(\"%d \", i);`\n\n`}`"
+    choices: ["1 2 3 4", "0 1 2 3", "0 1 2 3 4", "4 4 4 4"]
+    answer: 1
+    why: "The counter starts at 0 and the loop stops as soon as i is 4, so 4 is never printed. It still runs 4 times."
+  - question: "Why put the side length in a variable like `int side = 12;`?"
+    choices: ["The robot drives faster with variables", "C++ does not allow numbers inside driveFor", "You can change the size of the whole shape by changing one line", "Variables use less battery"]
+    answer: 2
+    why: The variable keeps the number in one place. Change it once and every side changes.
+  - question: Your real robot's square ends 4 inches from where it started. What should you do first?
+    choices: ["Change three numbers at once to save time", "Run it again and measure, then change one number and test", "Go back to the simulator and stay there", "Push the robot to the right spot by hand"]
+    answer: 1
+    why: Measure, change one thing, test again. That is calibrating. Changing one number at a time shows you what helped.
+
+ship:
+  note: Your square program from the last simulator step is turned in with your answers.
+  extensions:
+    - title: Lap counter
+      level: Easier
+      goal: Print the side number on the Brain screen each time the robot starts a new side of the square.
+      where: Inside the for loop, above the `driveFor` line.
+      code: |
+        for (int i = 0; i < 4; i++) {
+          Brain.Screen.print("Side %d", i + 1);
+          Brain.Screen.newLine();
+          Drivetrain.driveFor(forward, side, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+        }
+      new: "2-3"
+      hints:
+        - "`%d` is a blank that gets filled in with the number after the comma."
+        - "The counter starts at 0, so `i + 1` prints 1, 2, 3, 4."
+    - title: Triangle
+      level: Medium
+      goal: Drive a triangle with three equal sides that ends where it started.
+      where: Change the numbers in your for loop.
+      code: |
+        for (int i = 0; i < 3; i++) {
+          Drivetrain.driveFor(forward, side, inches);
+          Drivetrain.turnFor(right, 120, degrees);
+        }
+      new: "1, 3"
+      hints:
+        - "The robot must turn all the way around once by the end: 360 degrees. With 3 corners, each turn is 360 / 3."
+        - "What would the turn be for a shape with 6 sides?"
+    - title: Square spiral
+      level: Challenge
+      goal: Make each side longer than the one before, so the robot drives a square spiral outward.
+      where: Inside the for loop. Start `side` small and run the loop more times.
+      hints:
+        - "A variable can change while the program runs. `side = side + 4;` makes it 4 bigger."
+        - "Put that line inside the loop, after the turn."
+        - "Start with `int side = 8;` and loop 8 times. In the simulator, make sure it stays on the field."
+  reflect:
+    - What was different between the square in the simulator and the square on the floor?
+    - When would you use a for loop instead of typing the moves one by one?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-4) in the simulator. Hand out paper for the path plans
+  and ask to see a plan before a pair types the maze. Fast finishers start an extension.
+  Day 2: Part 2 with the real robots (steps 5-8), then the quiz and Ship it.
+
+  **Before class.** Charge batteries. Make sure each team has a Gyro Sensor and a spare Smart Cable. For Day 2, put a
+  tape X and a heading line on the floor for each team with about 3 feet of clear space around it. Smooth floor
+  works better than carpet. Battle bot wedges and arms can stay on if they don't drag on the floor.
+
+  **Common trouble.** The robot is touched while the Gyro gets ready at the start of the program, so it drifts or
+  spins: restart and keep hands off. `LeftMotor`/`RightMotor` still in Devices along with the Drivetrain (a new project
+  avoids this). A semicolon after the `for (...)` line, so the loop body runs once. Commas instead of semicolons inside
+  `for ( )`. Teams changing several numbers at once while calibrating.
+
+  **Check for understanding.** Ask a pair to read the loop aloud lap by lap: "i is 0, drive, turn. i is 1, drive, turn..."
+  and to say what `i` is when the loop stops.
+
+  **The class display.** Come back to the big question at the end of Day 2: the robot followed the plan with nobody
+  steering, but it could not notice its own mistakes. That sets up the sensors in the next three lessons.
+standards:
+  - code: 6-8.CT.b.1
+    how: Students design a square path that uses a for loop to repeat the drive and turn moves.
+  - code: 6-8.CT.d.3
+    how: Students write programs that carry out a planned path to reach a goal, including a two-wall maze.
+  - code: 6-8.CT.d.4
+    how: Students use a for loop, a variable for the side length, and expressions in C++.
+  - code: 6-8.CT.d.5
+    how: Students predict where the robot will end before running, and trace for loops in the quiz.
+  - code: 6-8.CT.d.6
+    how: Students measure the real robot's error, change one number at a time, and retest to calibrate the square.

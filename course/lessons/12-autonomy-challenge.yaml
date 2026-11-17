@@ -1,0 +1,745 @@
+id: autonomy-challenge
+title: Autonomy Challenge
+tagline: One program, no driver. Your robot runs the whole course by itself
+minutes: 80          # about two class periods: Part 1 plan and build in the simulator, Part 2 official runs on the real course
+
+mission:
+  big_question: "How do sensing, deciding and acting work together to finish a mission?"
+  goal: |
+    This is the end-of-term challenge. Your robot must finish a course with **no driver**: follow the black
+    line, stop before the wall, turn and park in the zone, then turn its LED green and show its time.
+    You'll **break the mission into functions**, test each one in the simulator, then make
+    **three official runs** on the real course.
+  picture:
+    type: flow
+    steps:
+      - {icon: "🛤️", label: "Follow the line (Color Sensor)", color: "#e5484d"}
+      - {icon: "🧱", label: "Stop at the wall (Distance Sensor)", color: "#2f6bff"}
+      - {icon: "🅿️", label: "Turn and park in the zone", color: "#9b51e0"}
+      - {icon: "🟢", label: "LED green, print the time", color: "#33c95a"}
+    caption: Four stages. Each one is a function. Each one is worth points.
+  you_need:
+    - Your team and your robot (Color Sensor, Distance Sensor, Touch LED)
+    - Your line follower from Follow the Line
+    - The taped course on the field
+    - A USB cable for the Brain
+    - A stopwatch or the Brain's timer
+  learn:
+    - "**decompose**: break a big mission into small jobs"
+    - "write the plan first, then code and test **one function at a time**"
+    - "**sense → decide → act**, with every sensor working together"
+    - "improve like an engineer: test, change **one** thing, test again"
+  talk: Think of a big job you have done, like cooking a meal or cleaning a room. How did you break it into smaller jobs? Why is that easier than doing it all at once?
+
+build:
+  - part: "Part 1: Plan and build in the simulator"
+    title: Know the course
+    say: |
+      Read the course before you write any code. The robot starts in the **start box**. After someone presses
+      start, it's **hands off**. Each stage ends when a **sensor** or a **measured move** says so. Your best
+      official run out of three is your score.
+    do:
+      - "**Stage 1 (20 points):** follow the black line to its end."
+      - "**Stage 2 (20 points):** stop by itself before the wall."
+      - "**Stage 3 (20 points):** turn and park. The robot stops inside the parking zone."
+      - "**Stage 4 (20 points):** the Touch LED turns green and the Brain shows the time."
+      - "**Bonus:** +10 if the robot never touches a wall. +10 if the cube ends inside the zone."
+      - "**Rules:** one program. No controller. If you touch the robot, the run ends and you keep the points earned so far. Ties are settled by the faster time."
+      - Walk to the real course with your team. Push your robot through the course by hand, with the power off.
+    test:
+      - I can point to where each of the four stages starts and ends
+      - My team pushed the robot through the course by hand
+    ask: Which sensor ends Stage 1 and Stage 2? Which stage has no sensor to help it, and what could go wrong there?
+
+  - part: "Part 1: Plan and build in the simulator"
+    title: Plan before you code
+    say: |
+      Big programs start as a **plan**. Engineers **decompose**: they break the mission into small jobs and
+      give each job a function. At first each function is a **stub**. A stub has the right name but only
+      prints a message. That lets you test the **order** of the plan before any hard code exists.
+    do:
+      - "Read the plan in the comments at the top. Then read the three stubs."
+      - "In `main()`, call the three functions in the order of the plan."
+      - Press **Run**. The Brain should print the three stages in order.
+    code: |
+      // MISSION PLAN
+      // 1. Follow the black line until the wall is close.
+      // 2. Turn right and drive into the parking zone.
+      // 3. Stop, turn the LED green, print the time.
+
+      void followLineToWall() {
+        Brain.Screen.print("1 line");
+        Brain.Screen.newLine();
+      }
+
+      void park() {
+        Brain.Screen.print("2 park");
+        Brain.Screen.newLine();
+      }
+
+      void finish() {
+        Brain.Screen.print("3 finish");
+        Brain.Screen.newLine();
+      }
+
+      int main() {
+        followLineToWall();
+        park();
+        finish();
+      }
+    new: "22-24"
+    what: "`main()` is now the whole mission in three lines. The robot doesn't move yet, and that's fine. You'll replace one stub at a time with real code."
+    stuck:
+      - "**Nothing prints?** `main()` must call the functions. A call looks like `park();`"
+      - "**The order is wrong?** Calls run top to bottom, like every other statement."
+    sim:
+      starter: |
+        // MISSION PLAN
+        // 1. Follow the black line until the wall is close.
+        // 2. Turn right and drive into the parking zone.
+        // 3. Stop, turn the LED green, print the time.
+
+        void followLineToWall() {
+          Brain.Screen.print("1 line");
+          Brain.Screen.newLine();
+        }
+
+        void park() {
+          Brain.Screen.print("2 park");
+          Brain.Screen.newLine();
+        }
+
+        void finish() {
+          Brain.Screen.print("3 finish");
+          Brain.Screen.newLine();
+        }
+
+        int main() {
+          // TODO: call the three functions in the order of the plan
+
+        }
+      field:
+        start: {x: 14, y: 62, heading: 0}
+        lines: [{points: [[14, 66], [14, 36], [20, 24], [32, 16], [88, 16]], width: 2}]
+        cubes: [{x: 78, y: 30, color: blue}]
+        zones: [{x: 64, y: 36, w: 28, h: 28, color: blue}]
+        goal: {x: 78, y: 50, r: 12}
+      checks:
+        - {type: output, pattern: "1 line[\\s\\S]*2 park[\\s\\S]*3 finish", message: "The Brain prints the three stages in order"}
+        - {type: code, pattern: "int\\s+main\\s*\\(\\s*\\)\\s*\\{[\\s\\S]*followLineToWall\\s*\\(\\s*\\)\\s*;[\\s\\S]*park\\s*\\(\\s*\\)\\s*;[\\s\\S]*finish\\s*\\(\\s*\\)\\s*;", message: "main() calls all three functions"}
+      solution: |
+        // MISSION PLAN
+        // 1. Follow the black line until the wall is close.
+        // 2. Turn right and drive into the parking zone.
+        // 3. Stop, turn the LED green, print the time.
+
+        void followLineToWall() {
+          Brain.Screen.print("1 line");
+          Brain.Screen.newLine();
+        }
+
+        void park() {
+          Brain.Screen.print("2 park");
+          Brain.Screen.newLine();
+        }
+
+        void finish() {
+          Brain.Screen.print("3 finish");
+          Brain.Screen.newLine();
+        }
+
+        int main() {
+          followLineToWall();
+          park();
+          finish();
+        }
+    ask: Why write stubs that only print, before writing the real code? What can you check with them?
+
+  - part: "Part 1: Plan and build in the simulator"
+    title: "Stage 1: line to the wall"
+    say: |
+      Replace the first stub with real code. You already own the hard part: `onLine()` and `followLine()`
+      from Follow the Line. **Reusing** tested functions is what they are for. `followLineToWall()` just
+      calls `followLine()` again and again until the Distance Sensor says the wall is 12 inches away.
+    do:
+      - "Add `threshold`, `onLine()` and `followLine()` above `followLineToWall()`."
+      - "Replace the body of `followLineToWall()` with the `while` loop."
+      - Press **Run**. The robot should follow the line and stop by itself in the green goal. The other two stubs still just print.
+    code: |
+      int threshold = 50;
+
+      bool onLine() {
+        return Color.brightness() < threshold;
+      }
+
+      void followLine() {
+        if (onLine()) {
+          Drivetrain.turnFor(left, 5, degrees);
+        } else {
+          Drivetrain.turnFor(right, 5, degrees);
+        }
+        Drivetrain.driveFor(forward, 1, inches);
+      }
+
+      void followLineToWall() {
+        while (Distance.distance(inches) > 12) {
+          followLine();
+        }
+      }
+    new: "1-14, 17-19"
+    what: "Two sensors work together here. The **Color Sensor** steers every step. The **Distance Sensor** decides when the stage is over."
+    tip: "**Watch out:** functions must be written **above** the code that calls them. Keep this order: `onLine`, `followLine`, `followLineToWall`, then the rest."
+    stuck:
+      - "**onLine was not declared?** It must be above `followLine()`, with the same spelling."
+      - "**The robot spins?** Dark turns **left**, light turns **right**."
+      - "**It hits the wall?** The loop must stop while the wall is still far: `> 12`."
+    sim:
+      carry: true
+      starter: |
+        // MISSION PLAN
+        // 1. Follow the black line until the wall is close.
+        // 2. Turn right and drive into the parking zone.
+        // 3. Stop, turn the LED green, print the time.
+
+        int threshold = 50;
+
+        // TODO: add onLine() and followLine() from Follow the Line here
+
+        void followLineToWall() {
+          // TODO: while the wall is more than 12 inches away, followLine()
+
+        }
+
+        void park() {
+          Brain.Screen.print("2 park");
+          Brain.Screen.newLine();
+        }
+
+        void finish() {
+          Brain.Screen.print("3 finish");
+          Brain.Screen.newLine();
+        }
+
+        int main() {
+          followLineToWall();
+          park();
+          finish();
+        }
+      field:
+        start: {x: 14, y: 62, heading: 0}
+        lines: [{points: [[14, 66], [14, 36], [20, 24], [32, 16], [88, 16]], width: 2}]
+        cubes: [{x: 78, y: 30, color: blue}]
+        zones: [{x: 64, y: 36, w: 28, h: 28, color: blue}]
+        goal: {x: 78, y: 16, r: 8}
+      checks:
+        - {type: goal, message: "Stage 1: the robot follows the line and stops before the wall"}
+        - {type: noCollision, message: "The robot never touches a wall"}
+        - {type: code, pattern: "void\\s+followLineToWall\\s*\\(\\s*\\)\\s*\\{[^}]*Distance\\.distance", message: "followLineToWall() uses the Distance Sensor"}
+      solution: |
+        int threshold = 50;
+
+        bool onLine() {
+          return Color.brightness() < threshold;
+        }
+
+        void followLine() {
+          if (onLine()) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        void followLineToWall() {
+          while (Distance.distance(inches) > 12) {
+            followLine();
+          }
+        }
+
+        void park() {
+          Brain.Screen.print("2 park");
+          Brain.Screen.newLine();
+        }
+
+        void finish() {
+          Brain.Screen.print("3 finish");
+          Brain.Screen.newLine();
+        }
+
+        int main() {
+          followLineToWall();
+          park();
+          finish();
+        }
+    ask: You didn't rewrite the line follower. You reused it. What is one more job on this course that could become its own function?
+
+  - part: "Part 1: Plan and build in the simulator"
+    title: "Stage 2: turn and park"
+    say: |
+      Test one stage **alone**. Here the robot starts where Stage 1 ended, facing the wall. To skip Stage 1
+      for now, turn its call into a **comment** with `//`. Then write `park()`: turn right 90 degrees and
+      drive into the zone. The cube is in the way. Just push it along.
+    do:
+      - "In `main()`, put `//` in front of `followLineToWall();`."
+      - "Replace the body of `park()` with a right turn and a drive of about 32 inches."
+      - Press **Run**. The robot should stop inside the green goal in the parking zone.
+      - Change the distance and run again. Find the shortest and longest drives that still park.
+    code: |
+      void park() {
+        Drivetrain.turnFor(right, 90, degrees);
+        Drivetrain.driveFor(forward, 32, inches);
+      }
+
+      void finish() {
+        Brain.Screen.print("3 finish");
+        Brain.Screen.newLine();
+      }
+
+      int main() {
+        // followLineToWall();
+        park();
+        finish();
+      }
+    new: "2-3, 12"
+    what: "Commenting out a call is how programmers test one piece at a time. Nothing is deleted. You'll bring the line back in the next step."
+    tip: "**Watch out:** this stage has **no sensor**. It trusts the turn and the distance. On the real robot this is the stage most likely to drift, so aim for the **middle** of the zone."
+    stuck:
+      - "**The robot turns the wrong way?** The zone is on the robot's right."
+      - "**It stops short or drives through the zone?** Change the 32 a few inches at a time."
+    sim:
+      carry: true
+      starter: |
+        int threshold = 50;
+
+        bool onLine() {
+          return Color.brightness() < threshold;
+        }
+
+        void followLine() {
+          if (onLine()) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        void followLineToWall() {
+          while (Distance.distance(inches) > 12) {
+            followLine();
+          }
+        }
+
+        void park() {
+          // TODO: turn right 90 degrees, then drive into the zone
+          Brain.Screen.print("2 park");
+          Brain.Screen.newLine();
+        }
+
+        void finish() {
+          Brain.Screen.print("3 finish");
+          Brain.Screen.newLine();
+        }
+
+        int main() {
+          followLineToWall();   // TODO: comment this line out to test park() alone
+          park();
+          finish();
+        }
+      field:
+        start: {x: 78.5, y: 16, heading: 90}
+        lines: [{points: [[14, 66], [14, 36], [20, 24], [32, 16], [88, 16]], width: 2}]
+        cubes: [{x: 78, y: 30, color: blue}]
+        zones: [{x: 64, y: 36, w: 28, h: 28, color: blue}]
+        goal: {x: 78, y: 50, r: 12}
+      checks:
+        - {type: goal, message: "Stage 2: the robot parks inside the zone"}
+        - {type: noCollision, message: "The robot never touches a wall"}
+        - {type: code, pattern: "void\\s+park\\s*\\(\\s*\\)\\s*\\{[^}]*turnFor[^}]*driveFor", message: "park() turns, then drives"}
+      solution: |
+        int threshold = 50;
+
+        bool onLine() {
+          return Color.brightness() < threshold;
+        }
+
+        void followLine() {
+          if (onLine()) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        void followLineToWall() {
+          while (Distance.distance(inches) > 12) {
+            followLine();
+          }
+        }
+
+        void park() {
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 32, inches);
+        }
+
+        void finish() {
+          Brain.Screen.print("3 finish");
+          Brain.Screen.newLine();
+        }
+
+        int main() {
+          // followLineToWall();
+          park();
+          finish();
+        }
+    fields: ["Shortest drive that parks (in)", "Longest drive that parks (in)"]
+    ask: Why is it smart to aim for the middle of the zone, not the nearest edge, on a real robot?
+
+  - part: "Part 1: Plan and build in the simulator"
+    title: The full run
+    say: |
+      Put it all together. Bring Stage 1 back, write `finish()`, and time the run. `Brain.Timer.clear()` sets
+      the Brain's stopwatch to zero. `Brain.Timer.time(seconds)` reads it. The Touch LED shows **red** while
+      the robot works and **green** when the mission is done.
+    do:
+      - "Replace the body of `finish()` with the highlighted lines."
+      - "In `main()`, remove the `//` so Stage 1 runs again. Add the timer and the red LED at the top."
+      - Press **Run** and keep your hands off. This is the whole mission.
+      - Run it three times. Is the time the same every time?
+    code: |
+      void finish() {
+        Drivetrain.stop();
+        TouchLED.setColor(green);
+        Brain.Screen.print("Time: %.1f s", Brain.Timer.time(seconds));
+      }
+
+      int main() {
+        Brain.Timer.clear();
+        TouchLED.setColor(red);
+        followLineToWall();
+        park();
+        finish();
+      }
+    new: "2-4, 8-10"
+    what: "`%.1f` prints the time with one decimal place. Every trip around the line loop is **sense → decide → act**. The whole program is the same idea, one stage after another."
+    stuck:
+      - "**The robot turns right at the start?** `followLineToWall();` is still commented out. Remove the `//`."
+      - "**No time on the screen?** Check the print line has `%.1f` inside the quotes and the timer after the comma."
+      - "**It parks outside the goal?** Go back and check the turn (90) and the drive (about 32)."
+    sim:
+      carry: true
+      starter: |
+        int threshold = 50;
+
+        bool onLine() {
+          return Color.brightness() < threshold;
+        }
+
+        void followLine() {
+          if (onLine()) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        void followLineToWall() {
+          while (Distance.distance(inches) > 12) {
+            followLine();
+          }
+        }
+
+        void park() {
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 32, inches);
+        }
+
+        void finish() {
+          // TODO: stop, turn the Touch LED green, print "Time: " and the timer in seconds
+
+        }
+
+        int main() {
+          // TODO: clear the timer and turn the Touch LED red
+          // followLineToWall();   // TODO: bring Stage 1 back
+          park();
+          finish();
+        }
+      field:
+        start: {x: 14, y: 62, heading: 0}
+        lines: [{points: [[14, 66], [14, 36], [20, 24], [32, 16], [88, 16]], width: 2}]
+        cubes: [{x: 78, y: 30, color: blue}]
+        zones: [{x: 64, y: 36, w: 28, h: 28, color: blue}]
+        goal: {x: 78, y: 50, r: 12}
+      checks:
+        - {type: goal, message: "The robot finishes parked inside the zone"}
+        - {type: noCollision, message: "The robot never touches a wall"}
+        - {type: output, pattern: "Time:\\s*\\d", message: "The Brain prints the time"}
+        - {type: code, pattern: "int\\s+main\\s*\\(\\s*\\)\\s*\\{[\\s\\S]*followLineToWall\\s*\\(\\s*\\)\\s*;[\\s\\S]*park\\s*\\(\\s*\\)\\s*;[\\s\\S]*finish\\s*\\(\\s*\\)\\s*;", message: "main() runs all three stages"}
+      solution: |
+        int threshold = 50;
+
+        bool onLine() {
+          return Color.brightness() < threshold;
+        }
+
+        void followLine() {
+          if (onLine()) {
+            Drivetrain.turnFor(left, 5, degrees);
+          } else {
+            Drivetrain.turnFor(right, 5, degrees);
+          }
+          Drivetrain.driveFor(forward, 1, inches);
+        }
+
+        void followLineToWall() {
+          while (Distance.distance(inches) > 12) {
+            followLine();
+          }
+        }
+
+        void park() {
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 32, inches);
+        }
+
+        void finish() {
+          Drivetrain.stop();
+          TouchLED.setColor(green);
+          Brain.Screen.print("Time: %.1f s", Brain.Timer.time(seconds));
+        }
+
+        int main() {
+          Brain.Timer.clear();
+          TouchLED.setColor(red);
+          followLineToWall();
+          park();
+          finish();
+        }
+    fields: ["Simulator time (s)"]
+    ask: The simulator gives the same time on every run. Will your real robot? Name two things that could change a real run.
+
+  - part: "Part 2: Official runs on the real course"
+    title: Get the real robot ready
+    say: |
+      The simulator proved your **plan**. The real course will test your **numbers**. Three of them came from
+      the simulator and are probably wrong on the real field: the **threshold**, the **wall distance** and the
+      **parking drive**. Measure before you run.
+    do:
+      - "Calibrate like last lesson: read the Color Sensor over the floor and over the tape. Put the middle number in `threshold`."
+      - Measure from the end of the line to the middle of the parking zone with a ruler. Use that for the drive in `park()`.
+      - Go back one step to **The full run**. Press **Copy for VEXcode**, then **Copy code**. Paste it into VEXcode over `int main()` and everything below it.
+      - "Type in your real numbers. Check **Devices** lists the Drivetrain, `Color`, `Distance` and `TouchLED`. Download."
+    stuck:
+      - "**Lots of errors after pasting?** You pasted over the folded device block. Press Ctrl + Z and paste lower."
+      - "**A sensor was not declared?** Its name in Devices must match the code exactly."
+    test:
+      - My real threshold is in the program
+      - My parking drive comes from a ruler, not from the simulator
+      - The program is downloaded to the Brain
+    fields: ["Floor reading", "Tape reading", "My threshold", "Parking drive (in)"]
+
+  - part: "Part 2: Official runs on the real course"
+    title: Practice one stage at a time
+    say: |
+      Don't practice the whole course yet. Test it the way you built it: **one stage at a time**. Start the
+      robot by hand at the beginning of each stage. When a stage works **two times in a row**, move on. Change
+      **one** number between tries, so you know what fixed it.
+    do:
+      - "**Stage 1 and 2:** run from the start box. Does it follow the line and stop before the wall?"
+      - "**Stage 3:** comment out `followLineToWall();`, put the robot at the end of the line, and run. Does it park?"
+      - "**Stage 4:** does the LED turn green and the time show?"
+      - Remove the `//`, download, and make one full practice run.
+    stuck:
+      - "**It loses the line?** Recalibrate the threshold, or start with the sensor right at the tape's left edge."
+      - "**It bumps the wall?** Stop sooner: make the 12 bigger."
+      - "**It misses the zone?** Check the robot's angle when it stops at the wall. Then fix the turn before the drive."
+      - "**It doesn't stop at the wall?** Check the Distance Sensor points straight ahead and its cable is in."
+    test:
+      - Stage 1 and 2 worked two times in a row
+      - Stage 3 worked two times in a row
+      - The LED turns green and the Brain shows a time
+      - We made one full practice run
+    ask: Which stage was the least reliable in practice, and what do you think causes it?
+
+  - part: "Part 2: Official runs on the real course"
+    title: Official run 1
+    say: |
+      Time for the first official run. One teammate places the robot in the start box and presses start.
+      After that it's **hands off** for everyone. A second teammate keeps score. A third watches for wall
+      touches. Whatever happens, write it down. A run that fails still gives you data.
+    do:
+      - Place the robot in the start box. Put the cube back on its mark.
+      - Press start and step back.
+      - "Score it: 20 points for each stage finished. +10 if it never touched a wall. +10 if the cube ended in the zone."
+      - Read the time from the Brain screen. If the robot didn't finish, write DNF.
+    test:
+      - Nobody touched the robot after pressing start
+      - We scored the run with the teacher or another team watching
+    fields: ["Stages finished (0-4)", "Bonus points", "Time (s)", "Total points"]
+    ask: Where did the run lose points or time? Describe exactly what the robot did there.
+
+  - part: "Part 2: Official runs on the real course"
+    title: Fix one thing, then run 2
+    say: |
+      Engineers don't change five things and hope. They pick the **one** problem that cost the most, make
+      **one** change, and test again. That way the next run tells you if the change worked. If run 1 was
+      perfect, make one change to be **faster**.
+    do:
+      - "As a team, agree on the one problem to fix. Find the function it lives in."
+      - Make one change. Test that stage alone if there's time.
+      - Make official run 2, with the same rules, and score it.
+    test:
+      - We changed only one thing between runs
+      - We scored run 2
+    fields: ["The one thing we changed", "Stages finished (0-4)", "Time (s)", "Total points"]
+    ask: Did your one change make run 2 better, worse, or the same? How do you know it was that change?
+
+  - part: "Part 2: Official runs on the real course"
+    title: Run 3 and showcase
+    say: |
+      Last run. Make one more change, or leave the program alone if it is reliable. Then look back.
+      You started this term by lighting one LED with a button. Circuits, then motors and gears, then code,
+      then sensors, and now a robot that runs a mission alone. All of it was **input → decide → output**.
+    do:
+      - Make official run 3 and score it. Your **best** run is your score.
+      - "Showcase: tell the class your best score, the one fix that helped most, and one thing you would add with another week."
+      - Shake hands with the other teams. Charge the batteries.
+    test:
+      - We scored run 3
+      - We shared our best run and our best fix with the class
+    fields: ["Run 3 total points", "Run 3 time (s)", "Best score of the three", "Best time"]
+    ask: Pick one earlier lesson, from circuits to sensors. How did what you learned there show up in your robot today?
+
+quiz:
+  - question: What does it mean to decompose a mission?
+    choices: ["Delete the parts that don't work", "Break it into smaller jobs you can build and test one at a time", "Run it as fast as possible", "Write the whole program before testing anything"]
+    answer: 1
+    why: Small jobs are easier to write, test and fix. Each job on the course became its own function.
+  - question: "The Distance Sensor reads 30, then 18, then 11 on three checks in a row. How many times does `followLine()` run?\n\n`while (Distance.distance(inches) > 12) {`\n\n`  followLine();`\n\n`}`"
+    choices: ["0 times", "1 time", "2 times", "3 times"]
+    answer: 2
+    why: "30 > 12 is true, so it runs. 18 > 12 is true, so it runs again. 11 > 12 is false, so the loop ends. That's 2 times."
+  - question: "`main()` calls `followLineToWall();` then `park();` then `finish();`. The robot loses the line and never sees the wall. What happens?"
+    choices: ["It skips to `park()`", "It stays inside `followLineToWall()` and never reaches `park()`", "It runs `finish()` first", "The Brain restarts the program"]
+    answer: 1
+    why: Statements run in order. The next call can't start until the loop inside `followLineToWall()` ends.
+  - question: Why did you test `park()` with the line-following call commented out?
+    choices: ["To make the program shorter forever", "To test one stage alone, so a problem can only come from that stage", "Because comments make the robot faster", "Because two functions can't be in one program"]
+    answer: 1
+    why: Testing one piece at a time tells you exactly where a bug lives. You brought the call back for the full run.
+  - question: Run 1 scored 40 points. Why change only ONE thing before run 2?
+    choices: ["The rules of C++ only allow one change", "So you know which change caused the new result", "Because downloading takes too long", "So the other teams can't copy you"]
+    answer: 1
+    why: If you change several things and the run gets better or worse, you can't tell which change did it.
+
+ship:
+  turn_in: code
+  note: Your full-run program from the simulator is turned in with your run scores and answers.
+  extensions:
+    - title: Stage lights
+      level: Easier
+      goal: Show which stage the robot is in. Blue while it follows the line, yellow while it parks, green when it's done.
+      where: The first line inside `followLineToWall()` and the first line inside `park()`.
+      code: |
+        void park() {
+          TouchLED.setColor(yellow);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 32, inches);
+        }
+      new: "2"
+      hints:
+        - "Do the same in `followLineToWall()` with `blue`."
+        - "On the real course the colors tell you which function is running when something goes wrong."
+    - title: Park with a sensor
+      level: Medium
+      goal: "Stage 3 trusts a measured drive. Make it sense instead: after the turn, drive in small steps until the Distance Sensor sees the far wall at the right distance."
+      where: "Inside `park()`, in place of the long `driveFor`."
+      code: |
+        void park() {
+          Drivetrain.turnFor(right, 90, degrees);
+          while (Distance.distance(inches) > 18) {
+            Drivetrain.driveFor(forward, 1, inches);
+          }
+        }
+      new: "3-5"
+      hints:
+        - "In the simulator, 18 inches from the far wall is inside the zone. On the real course, measure from the middle of the zone to the wall."
+        - "Which is more reliable on your real robot: counting inches or sensing the wall? Test both."
+    - title: Deliver the cube
+      level: Challenge
+      goal: Earn the cube bonus every time. Make the cube finish inside the zone in the simulator, then on the real course.
+      where: "Tune `followLineToWall()` and `park()`."
+      hints:
+        - "The cube slides off if the robot hits it off-center. Change where the robot stops at the wall, 1 inch at a time, until the cube is dead ahead after the turn."
+        - "The robot's angle at the wall changes from run to run. After the turn, `Gyro.heading()` should be close to 180. Print it to check."
+        - "On the real robot, a wide flat bumper on the front holds the cube better than a narrow one."
+  reflect:
+    - Look back over the term, from your first circuit to today. Which idea helped you most in the challenge, and where did you first learn it?
+    - If you had one more week, what is the first thing you would change on your robot or in your program, and why?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission, then Part 1 (steps 1-5). Teams that finish the full run in the simulator
+  start step 6 (calibrate and paste) so they are ready for Day 2. Day 2: 10 minutes of stage-by-stage practice, then
+  three rounds of official runs, the showcase, the quiz and Ship it. If you can spare a third period, give Day 2
+  entirely to practice and hold the official runs and showcase on Day 3.
+
+  **Taping the course (before Day 1).** The simulator field is the model. Scale it to your field:
+
+  - **Start box:** a 12 inch square in one corner. Mark it with corner marks or light-colored masking tape, **not** black
+    tape, or the Color Sensor will read the box as a line.
+  - **Line:** black electrical tape, two strips side by side (about 1.5 inches wide). About 26 inches straight out of
+    the start box, one gentle bend to the right (two 30-45° kinks, no sharp corner), then a long straight run **square
+    to a field wall**, ending about 8 inches from it. The robot starts with its sensor at the line's **left** edge.
+  - **Parking zone:** a tape box about 28 × 28 inches (any color), on the **right** of the line's end. Its near edge
+    is about 20 inches from the line. Keep it at least 6 inches from the walls.
+  - **Cube:** one cube or block on a tape mark between the line's end and the zone, about 14 inches from the line.
+  - Check that nothing else stands in front of the line's last straight run, or the Distance Sensor will stop early.
+
+  Run the course yourself once with the lesson's solution and your own calibration, so you know the wall distance
+  (12 inches in the simulator) and parking drive that work on your field.
+
+  **Scoring sheet (per run, best of three counts).**
+
+  - Stage 1: follows the line to its end: **20**
+  - Stage 2: stops by itself before the wall: **20**
+  - Stage 3: stops with the whole robot inside the parking zone: **20** (partly inside: 10)
+  - Stage 4: Touch LED green and a time on the Brain: **20**
+  - Bonus: never touched a wall: **+10**. Cube ends inside the zone: **+10**
+  - Maximum **100**. Ties go to the faster time. A touch by a student ends the run; points earned so far stay.
+
+  Students record stages, bonus, time and total in the lesson (steps 8-10). Have a neutral scorer (you or another
+  team) confirm each official run.
+
+  **Running the event.** Call teams to the course in a fixed order, one official run each per round. While waiting,
+  teams make their one change and test that stage on a spare strip of tape or in the simulator. With one course and
+  many teams, cap each turn at 90 seconds.
+
+  **Common trouble.** Threshold not recalibrated for the challenge course or for today's light. The robot's angle at
+  the wall varies by a few degrees, so the parking drive drifts: aim for the middle of the zone, or use the "Park with
+  a sensor" extension. `followLineToWall();` left commented out after stage practice. The Distance Sensor pointing
+  down at the floor or blocked by the Color Sensor mount. Low batteries changing the turns between runs.
+
+  **Grading.** The turned-in program shows decomposition (three stage functions and a short `main()`). The run
+  records and the "one thing we changed" field show the iteration. Weigh those at least as much as the best score.
+
+  **Simulator note.** In the simulator the cube can slide off the round robot, so the cube is a bonus and is not
+  checked. The simulator only checks parking, the time and wall touches.
+standards:
+  - code: 6-8.CS.a.5
+    how: Teams design and demonstrate a robot that finishes a multi-stage course with no driver, in three scored runs.
+  - code: 6-8.CS.a.4
+    how: Students use the Color Sensor, Distance Sensor, timer, motors and Touch LED together and explain which sensor ends each stage.
+  - code: 6-8.CT.b.3
+    how: Students decompose the mission into followLineToWall(), park() and finish(), first as stubs, then build and test each one.
+  - code: 6-8.CT.d.2
+    how: Each stage is a function, so main() is a five-line plan that hides the detail.
+  - code: 6-8.CT.d.4
+    how: The program uses while loops, if / else, comparison expressions, a threshold variable and functions that call other functions.
+  - code: 6-8.CT.d.6
+    how: Students test one stage at a time, then change exactly one thing between official runs and record whether it helped.
+  - code: 6-8.CT.d.3
+    how: The team writes one program that implements the whole mission and reaches the goal in the simulator and on the real course.

@@ -1,0 +1,312 @@
+id: hello-brain
+title: Hello, Brain
+tagline: Write your first C++ program and run it on your real robot
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 on the real Brain
+
+mission:
+  big_question: "How does a robot know what to do first, second and third?"
+  goal: |
+    Your drive base has motors and a Brain, but the Brain is empty. Today you write your **first C++ program**.
+    You'll test it in the **simulator**, then move it into **VEXcode IQ** and download it to the real Brain.
+    By the end, your robot prints a message and drives on its own.
+  picture:
+    type: flow
+    steps:
+      - {icon: "⌨️", label: "Write C++ here", color: "#2f6bff"}
+      - {icon: "🖥️", label: "Test in the simulator", color: "#11b39e"}
+      - {icon: "📋", label: "Copy to VEXcode IQ", color: "#9b51e0"}
+      - {icon: "🤖", label: "Download to the Brain", color: "#33c95a"}
+    caption: Every program in this course follows the same path.
+  you_need:
+    - A partner
+    - Your drive base from Build the Drive Base
+    - A USB cable for the Brain
+    - A ruler or tape measure
+  learn:
+    - "a program starts at `int main()` and runs **top to bottom**"
+    - "every C++ **statement** ends with a semicolon `;`"
+    - "how to move code from the simulator to the real Brain"
+  talk: You tell a friend how to make a sandwich, but they do the steps in the wrong order. What goes wrong? Why does order matter to a robot?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: Say hello
+    say: |
+      A C++ program for the robot starts at `int main()`. The Brain runs the lines between `{` and `}`,
+      **one at a time, top to bottom**. Each line is a **statement**, and each statement ends with a
+      **semicolon** `;`. Your first statement prints words on the Brain's screen.
+    do:
+      - Find the `// TODO` line in the editor. A line that starts with `//` is a **comment**, a note for people. The Brain skips it.
+      - Under it, type the highlighted line. Put your own team name inside the quotation marks if you like, but keep the word **Hello**.
+      - Press **Run** and look at the Brain screen under the field.
+    code: |
+      int main() {
+        // TODO: print Hello on the Brain screen
+        Brain.Screen.print("Hello, Team Bolt!");
+      }
+    new: "3"
+    what: "`Brain.Screen.print` shows whatever is inside the quotation marks. The quotation marks tell C++ these are words to show, not code to run."
+    stuck:
+      - "**An error about a semicolon?** The line must end with `;`."
+      - "**An error about a quote?** The words need a `\"` before and after them."
+      - "**Brain was not declared?** C++ cares about capital letters. It's `Brain.Screen.print`, not `brain.screen.print`."
+    sim:
+      starter: |
+        int main() {
+          // TODO: print Hello on the Brain screen
+
+        }
+      field: {start: {x: 48, y: 50, heading: 0}}
+      checks:
+        - {type: output, pattern: "Hello", message: "The Brain screen says Hello"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Hello, Team Bolt!");
+        }
+    ask: What do you think happens if you delete the semicolon? Try it, read the error, then put it back.
+
+  - part: "Part 1: In the simulator"
+    title: Order matters
+    say: |
+      Statements run in **sequence**: the first line finishes before the second line starts.
+      Now add a statement that moves the robot. `Drivetrain.driveFor` needs three things inside its
+      parentheses: which way, how far, and the units.
+    do:
+      - Add the highlighted lines under your print line.
+      - "Before you press Run, **predict**: will the robot print first, or drive first?"
+      - Press **Run**. The robot should stop inside the green goal.
+    code: |
+      int main() {
+        Brain.Screen.print("Ready");
+        Brain.Screen.newLine();
+        Drivetrain.driveFor(forward, 24, inches);
+        Brain.Screen.print("Done");
+      }
+    new: "3-5"
+    what: "`newLine()` moves to the next line of the screen. `driveFor(forward, 24, inches)` drives 24 inches and only then lets the next statement run. So **Done** prints after the robot stops."
+    tip: "**Watch out:** `driveFor` always needs units. `Drivetrain.driveFor(forward, 24);` is an error, because the robot can't tell 24 inches from 24 millimeters."
+    sim:
+      starter: |
+        int main() {
+          Brain.Screen.print("Ready");
+          // TODO: go to the next line of the screen
+          // TODO: drive forward 24 inches
+          // TODO: print Done
+        }
+      field: {start: {x: 48, y: 60, heading: 0}, goal: {x: 48, y: 36, r: 6}}
+      checks:
+        - {type: output, pattern: "Ready[\\s\\S]*Done", message: "It prints Ready, then Done"}
+        - {type: goal, message: "The robot stops inside the green goal"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Ready");
+          Brain.Screen.newLine();
+          Drivetrain.driveFor(forward, 24, inches);
+          Brain.Screen.print("Done");
+        }
+    ask: Move the Done line above the driveFor line and run it. What changed, and why?
+
+  - part: "Part 1: In the simulator"
+    title: Bug hunt
+    say: |
+      A **bug** is a mistake in a program. C++ is strict: one missing symbol and nothing runs.
+      Good programmers aren't the ones who never make bugs. They're the ones who **read the error message**
+      and fix one thing at a time. This program has **three bugs**.
+    do:
+      - Press **Run**. Read the red error message. It names a line.
+      - Fix that one bug, then run again.
+      - Keep going until the robot drives to the goal and prints both lines.
+    stuck:
+      - "Line 2 is missing something at the very end."
+      - "Line 3: count the quotation marks."
+      - "Line 4: check the capital letters in `Drivetrain`, and look for the units."
+    sim:
+      starter: |
+        int main() {
+          Brain.Screen.print("Bug hunt")
+          Brain.Screen.newLine();
+          Brain.Screen.print("Fixed!);
+          drivetrain.driveFor(forward, 30);
+        }
+      field: {start: {x: 48, y: 62, heading: 0}, goal: {x: 48, y: 32, r: 6}}
+      checks:
+        - {type: output, pattern: "Bug hunt[\\s\\S]*Fixed", message: "It prints Bug hunt, then Fixed!"}
+        - {type: goal, message: "The robot stops inside the green goal"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Bug hunt");
+          Brain.Screen.newLine();
+          Brain.Screen.print("Fixed!");
+          Drivetrain.driveFor(forward, 30, inches);
+        }
+    ask: Which bug was the hardest to spot? What will you check first the next time you see an error?
+
+  - part: "Part 2: On the real Brain"
+    title: Start a VEXcode IQ project
+    say: |
+      The simulator is for testing ideas fast. To run code on the **real** Brain you need **VEXcode IQ**, VEX's own app.
+      It opens in its own tab, so you can flip between it and this page.
+    do:
+      - Click the green **Open VEXcode IQ** button on the right. On a Chromebook, press **Alt + [** in VEXcode and **Alt + ]** here to put them side by side.
+      - In VEXcode IQ, click **File → New Text Project**, then choose **C++**.
+    picture: {type: shot, name: vx-new-project, caption: "File → New Text Project"}
+    test:
+      - VEXcode IQ is open in its own tab
+      - I have a new C++ text project
+
+  - part: "Part 2: On the real Brain"
+    title: Tell VEXcode about your robot
+    say: |
+      VEXcode doesn't know what is plugged into your Brain until you tell it. The **Devices** window is where you
+      list each motor and sensor, its **port** and its **name**. The name must match your code exactly.
+    do:
+      - Open **Devices**. Next to **IQ Robot Brain**, choose **1st gen**.
+      - "Click **Add a device** and choose **Drivetrain 2-motor**. Set the left motor to **Port 1** and the right motor to **Port 6**. Choose **Gyro** on **Port 4** if your robot has one."
+      - Leave the name as **Drivetrain** and click **Done**.
+    picture: {type: shot, name: vx-brain, caption: "In Devices, choose the 1st gen Brain"}
+    tip: "**Watch out:** if the ports in Devices don't match where the cables are really plugged in, the robot spins in a circle or doesn't move."
+    test:
+      - Devices shows the 1st gen Brain
+      - I added a Drivetrain on ports 1 and 6
+
+  - part: "Part 2: On the real Brain"
+    title: Paste your program
+    say: |
+      VEXcode's `main.cpp` starts with a folded line, `#pragma region VEXcode Generated Robot Configuration`.
+      That is your Devices setup. **Don't delete it.** Your program goes lower down, in place of `int main()`.
+    do:
+      - Your program from the last step is in the editor below. Press **Copy for VEXcode**, then **Copy code**.
+      - In VEXcode, select from `int main() {` down to the very bottom of the file.
+      - Paste with **Ctrl + V**.
+      - Click the project name at the top, name it with your team name, and click **Save**.
+    picture: {type: shot, name: vx-paste, caption: "Keep the folded device block. Paste over int main() and everything below it."}
+    stuck:
+      - "**Lots of errors after pasting?** You probably pasted over the folded device block. Press Ctrl + Z, then paste again over `int main()` and below only."
+    sim:
+      carry: true
+      starter: |
+        int main() {
+          Brain.Screen.print("Ready");
+          Brain.Screen.newLine();
+          Drivetrain.driveFor(forward, 24, inches);
+          Brain.Screen.print("Done");
+        }
+      field: {start: {x: 48, y: 62, heading: 0}, goal: {x: 48, y: 38, r: 6}}
+      checks:
+        - {type: code, pattern: "driveFor\\s*\\(\\s*forward\\s*,\\s*24\\s*,\\s*inches", message: "My program drives forward 24 inches"}
+        - {type: goal, message: "It still works in the simulator"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Ready");
+          Brain.Screen.newLine();
+          Drivetrain.driveFor(forward, 24, inches);
+          Brain.Screen.print("Done");
+        }
+    test:
+      - My program is pasted into VEXcode under the device block
+      - I saved the project with my team name
+
+  - part: "Part 2: On the real Brain"
+    title: Download and run
+    say: |
+      **Downloading** copies your program from the Chromebook into a **slot** on the Brain.
+      After that the robot doesn't need the computer. Real robots never match the simulator perfectly,
+      so engineers always **measure**.
+    wiring:
+      - "Turn on the Brain. Plug the USB cable into the **Brain** and the **Chromebook**."
+      - "Wait for the **Brain** icon in VEXcode to show it is connected. If Chrome asks, choose the VEX Brain."
+    do:
+      - Click **Download**. Wait until it finishes.
+      - Unplug the cable. Put the robot on a tape start line with room in front. Everyone stands back.
+      - On the Brain, choose your program and press the check button.
+      - Measure how far the robot really drove. Run it 3 times.
+    stuck:
+      - "**VEXcode can't find the Brain?** Check the Brain is on, try the other end of the cable, and close other VEXcode tabs."
+      - "**The robot spins or drives backward?** A motor is in the wrong port. Check ports 1 and 6."
+      - "**Nothing happens?** Check the battery is charged and clicked in."
+    test:
+      - The real Brain screen says Ready, then Done
+      - The real robot drove forward and stopped by itself
+    fields: ["Run 1 (in)", "Run 2 (in)", "Run 3 (in)"]
+    ask: The code says 24 inches. Did your real robot drive exactly 24? Give one reason a real robot and a simulator can differ.
+
+quiz:
+  - question: Where does a C++ robot program start running?
+    choices: ["At the top of the file, whatever is there", "At `int main()`", "At the first comment", "At the last line"]
+    answer: 1
+    why: The Brain always starts at `int main()` and runs the statements inside its curly braces.
+  - question: "What is wrong with this line? `Brain.Screen.print(\"Go\")`"
+    choices: ["print should be Print", "The quotation marks should be removed", "It is missing a semicolon at the end", "Nothing is wrong"]
+    answer: 2
+    why: Every C++ statement ends with a semicolon.
+  - question: "This program runs. What is on the screen while the robot is still driving?\n\n`Brain.Screen.print(\"A\");`\n\n`Drivetrain.driveFor(forward, 12, inches);`\n\n`Brain.Screen.print(\"B\");`"
+    choices: ["A", "B", "AB", "Nothing"]
+    answer: 0
+    why: Statements run in order. B is not printed until the drive has finished.
+  - question: In VEXcode IQ, what is the Devices window for?
+    choices: ["Changing the color of the code", "Telling VEXcode which motors and sensors are on which ports", "Charging the battery", "Sharing your project"]
+    answer: 1
+    why: The program can only use a motor or sensor that is listed in Devices with the right port and name.
+  - question: Your real robot drove 22 inches when the code said 24. What should an engineer do?
+    choices: ["Decide the robot is broken", "Measure again, change the number a little, and test again", "Only use the simulator from now on", "Delete the program"]
+    answer: 1
+    why: Real floors, wheels and batteries are never perfect. Measuring and adjusting is called calibrating.
+
+ship:
+  note: Your program from the last simulator step is turned in with your answers.
+  extensions:
+    - title: Three-line greeting
+      level: Easier
+      goal: Make the Brain show three lines, such as your team name, your robot's name and "Ready".
+      where: At the top of `int main()`, before the robot drives.
+      code: |
+        Brain.Screen.print("Team Bolt");
+        Brain.Screen.newLine();
+        Brain.Screen.print("Robot: Sparky");
+        Brain.Screen.newLine();
+        Brain.Screen.print("Ready");
+      hints:
+        - "Each `newLine()` moves down one line. The 1st gen screen has 5 lines."
+    - title: There and back
+      level: Medium
+      goal: Drive forward 24 inches, wait one second, then drive back to where you started.
+      where: After your first `driveFor`.
+      code: |
+        Drivetrain.driveFor(forward, 24, inches);
+        wait(1, seconds);
+        Drivetrain.driveFor(reverse, 24, inches);
+      new: "2-3"
+      hints:
+        - "`reverse` is the opposite of `forward`."
+        - "On the real robot, mark the start with tape. Does it come back to the same spot?"
+    - title: Turn the corner
+      level: Challenge
+      goal: Drive forward, turn right 90 degrees, and drive forward again, printing a different word at each stage.
+      where: Replace your driving lines.
+      hints:
+        - "The turn statement is `Drivetrain.turnFor(right, 90, degrees);`"
+        - "Use `Brain.Screen.newLine();` between words so they don't run together."
+  reflect:
+    - What was different between the simulator and your real robot?
+    - Which error message did you see most today, and how did you fix it?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-3) in the simulator; fast finishers start an extension.
+  Day 2: Part 2 with the real robots, then the quiz and Ship it.
+
+  **Before class.** Charge batteries. Check each Brain's firmware in VEXcode IQ once, so students aren't stopped by an
+  update prompt. Put a tape start line on the floor or field for each team.
+
+  **Common trouble.** Pasting over the folded device block in `main.cpp` (undo, paste lower). Motors in the wrong
+  ports (the robot spins). A Drivetrain added without the 1st gen Brain selected.
+
+  **Check for understanding.** Ask a pair to read their program aloud as "first… then… then…" before they run it.
+standards:
+  - code: 6-8.CT.d.3
+    how: Students write a program that prints messages and drives the robot to a goal.
+  - code: 6-8.CT.d.5
+    how: Students predict the order of printing and driving before running, and trace a three-line program in the quiz.
+  - code: 6-8.CT.d.6
+    how: Students fix three planted bugs one at a time, reading the error message each time.
+  - code: 6-8.CS.a.7
+    how: Students diagnose connection, port and battery problems when downloading to the real Brain.

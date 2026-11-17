@@ -1,0 +1,493 @@
+id: see-it-coming
+title: See It Coming
+tagline: Use sound to measure distance, and stop before the crash
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 on the real robot
+
+mission:
+  big_question: "How can a robot stop before it hits something?"
+  goal: |
+    The bumper only knows about a wall **after** the crash. Today your robot gets a **Distance Sensor**.
+    It sends out a sound and times the echo, like a bat. Now the robot knows how far away things are.
+    You'll use a **while loop** to keep driving until the reading gets small, then park close to a wall without touching it.
+  picture:
+    type: flow
+    steps:
+      - {icon: "🔊", label: "The sensor sends a sound pulse", color: "#2f6bff"}
+      - {icon: "🧱", label: "It bounces off the wall", color: "#f5a623"}
+      - {icon: "⏱️", label: "The sensor times the echo", color: "#9b51e0"}
+      - {icon: "📏", label: "Longer wait = farther away", color: "#33c95a"}
+    caption: Sonar. Bats and submarines use the same trick.
+  you_need:
+    - A partner
+    - Your robot from Feel the Wall
+    - A Distance Sensor and a Smart Cable
+    - A USB cable for the Brain
+    - A ruler or tape measure
+    - A flat wall or a big box
+  learn:
+    - "the Distance Sensor measures how far away something is, using sound"
+    - "`while (condition)` repeats until the condition becomes false"
+    - "a **threshold** is the number where the robot changes what it does"
+    - "printing a sensor reading shows you what the robot sees"
+  talk: A bat can fly in the dark without hitting anything. How do you think it knows where things are?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: See what the sensor sees
+    say: |
+      The Distance Sensor is a **sonar**. It sends a sound pulse too high for you to hear, then times the echo.
+      A longer wait means the thing is farther away. `Distance.distance(inches)` gives the answer as a **number**.
+      Before you trust a sensor, **look at its numbers**. Print the reading, drive closer, and print again.
+    do:
+      - "Type the two highlighted lines inside the loop."
+      - "**Predict:** the robot drives 10 inches each lap. What will happen to the reading?"
+      - Press **Run** and read the three numbers on the Brain screen.
+    code: |
+      int main() {
+        for (int i = 0; i < 3; i++) {
+          Brain.Screen.print("%.1f", Distance.distance(inches));
+          Brain.Screen.newLine();
+          Drivetrain.driveFor(forward, 10, inches);
+        }
+      }
+    new: "3-4"
+    what: "`%.1f` is a blank for a number with one digit after the decimal point, such as 42.5. The value after the comma fills it in. The bumper gave only `true` or `false`. This sensor gives a number that changes as the robot moves."
+    tip: "**Watch out:** the sensor measures from the **front of the robot**, not from its middle. And it only looks straight ahead."
+    stuck:
+      - "**It prints %.1f instead of a number?** The reading goes after the comma, inside the parentheses of `print`."
+      - "**All the numbers are on one line?** Add `Brain.Screen.newLine();` after the print."
+      - "**Distance was not declared?** It is `Distance.distance(inches)`, with a capital D on the first word only."
+    sim:
+      starter: |
+        int main() {
+          for (int i = 0; i < 3; i++) {
+            // TODO: print the Distance Sensor reading in inches
+            // TODO: go to the next line of the screen
+            Drivetrain.driveFor(forward, 10, inches);
+          }
+        }
+      field:
+        start: {x: 48, y: 60, heading: 0}
+        walls: [{x: 24, y: 8, w: 48, h: 4}]
+      checks:
+        - {type: output, pattern: "4\\d\\.\\d+\\s+3\\d\\.\\d+\\s+2\\d\\.\\d+", message: "It prints three readings, and they get smaller"}
+        - {type: code, pattern: "Distance\\.distance\\s*\\(\\s*inches\\s*\\)", message: "My program reads the Distance Sensor in inches"}
+      solution: |
+        int main() {
+          for (int i = 0; i < 3; i++) {
+            Brain.Screen.print("%.1f", Distance.distance(inches));
+            Brain.Screen.newLine();
+            Drivetrain.driveFor(forward, 10, inches);
+          }
+        }
+    ask: How much did the reading change each lap? What does that tell you the sensor is measuring to?
+
+  - part: "Part 1: In the simulator"
+    title: Stop before the wall
+    say: |
+      Now use the number to make a decision. A **while loop** repeats **as long as its condition is true**.
+      Start driving. Then wait in a loop while the wall is still more than 6 inches away.
+      When the reading drops to 6 or less, the condition is false, the loop ends, and the next line stops the robot.
+    do:
+      - Type the highlighted lines.
+      - "**Predict:** will the robot touch the wall?"
+      - "Press **Run**. The robot should park in the green goal without touching the wall."
+    code: |
+      int main() {
+        Drivetrain.drive(forward);
+        while (Distance.distance(inches) > 6) {
+          wait(20, msec);
+        }
+        Drivetrain.stop();
+      }
+    new: "3-6"
+    what: "`drive(forward)` starts the motors and moves on. The loop does nothing but wait and check, 50 times a second. `driveFor` could not do this: you would need to know the distance ahead of time. This program works from **any** starting spot."
+    tip: "**Watch out:** `>` means *greater than*. If you type `<` by mistake, the condition is false right away and the robot never moves."
+    stuck:
+      - "**It drives into the wall?** Check `Drivetrain.stop();` comes after the loop's closing `}`."
+      - "**It never moves?** Check the sign is `>`, and that `Drivetrain.drive(forward);` is above the loop."
+    sim:
+      starter: |
+        int main() {
+          // TODO: start driving forward
+          // TODO: while the distance is more than 6 inches, wait 20 msec
+          // TODO: stop the Drivetrain
+        }
+      field:
+        start: {x: 48, y: 62, heading: 0}
+        walls: [{x: 24, y: 8, w: 48, h: 4}]
+        goal: {x: 48, y: 24, r: 6}
+      checks:
+        - {type: code, pattern: "while\\s*\\([^{]*Distance\\.distance\\s*\\(", message: "A while loop watches the Distance Sensor"}
+        - {type: goal, message: "The robot parks inside the green goal"}
+        - {type: noCollision, message: "It never touches the wall"}
+      solution: |
+        int main() {
+          Drivetrain.drive(forward);
+          while (Distance.distance(inches) > 6) {
+            wait(20, msec);
+          }
+          Drivetrain.stop();
+        }
+    ask: Your program has no distance to drive in it. How does the robot know when to stop?
+
+  - part: "Part 1: In the simulator"
+    title: Pick the threshold
+    say: |
+      The 6 in your loop is a **threshold**: the number where the robot changes what it does.
+      Too small, and the robot stops very late. A real robot coasts a little, so that means a crash.
+      Too big, and it stops far too early. The parking spot here is farther from the wall.
+      Find a threshold that works by **trying values** and reading the result.
+    do:
+      - "The threshold is now a variable, `stopAt`. Run the program with `stopAt = 2`. Does it stop too close or too far away? Write it down."
+      - "Change it to **30** and run again. Too close or too far?"
+      - "Now find a value that parks the robot inside the green goal."
+    code: |
+      int main() {
+        int stopAt = 2;
+        Drivetrain.drive(forward);
+        while (Distance.distance(inches) > stopAt) {
+          wait(20, msec);
+        }
+        Drivetrain.stop();
+        Brain.Screen.print("%.1f", Distance.distance(inches));
+      }
+    what: "The last line prints the reading after the robot has stopped. That is the gap between the front of the robot and the wall."
+    stuck:
+      - "**Stops too close?** Make `stopAt` bigger."
+      - "**Stops too far away?** Make `stopAt` smaller."
+      - "**Still hunting?** The middle of the goal is about 15 inches from the wall, measured from the robot's front."
+    sim:
+      starter: |
+        int main() {
+          int stopAt = 2;   // TODO: try 2, then 30, then find a value that parks in the goal
+          Drivetrain.drive(forward);
+          while (Distance.distance(inches) > stopAt) {
+            wait(20, msec);
+          }
+          Drivetrain.stop();
+          Brain.Screen.print("%.1f", Distance.distance(inches));
+        }
+      field:
+        start: {x: 48, y: 62, heading: 0}
+        walls: [{x: 24, y: 8, w: 48, h: 4}]
+        goal: {x: 48, y: 32, r: 6}
+      checks:
+        - {type: goal, message: "The robot parks inside the green goal"}
+        - {type: noCollision, message: "It never touches the wall"}
+        - {type: output, pattern: "\\d+\\.\\d", message: "It prints the final reading"}
+      solution: |
+        int main() {
+          int stopAt = 14;
+          Drivetrain.drive(forward);
+          while (Distance.distance(inches) > stopAt) {
+            wait(20, msec);
+          }
+          Drivetrain.stop();
+          Brain.Screen.print("%.1f", Distance.distance(inches));
+        }
+    fields: ["stopAt = 2 (too close or too far?)", "stopAt = 30 (too close or too far?)", "The threshold I chose"]
+    ask: In the simulator the final reading matches your threshold. Do you think a real robot will stop that exactly? Why or why not?
+
+  - part: "Part 1: In the simulator"
+    title: Obstacle avoider
+    say: |
+      Put two lessons together. In Feel the Wall, `if / else` inside `while (true)` made a bounce bot.
+      Swap the bumper for the Distance Sensor and the robot turns away **before** it touches anything.
+      The condition is now a **comparison**: is the reading less than 10 inches?
+    do:
+      - "Type the highlighted `if / else`."
+      - "Press **Run**. The robot should find its way to the green goal and never touch a wall or the box."
+      - "This program loops forever, so stop it yourself once the robot has reached the goal."
+    code: |
+      int main() {
+        while (true) {
+          if (Distance.distance(inches) < 10) {
+            Drivetrain.turnFor(right, 90, degrees);
+          } else {
+            Drivetrain.drive(forward);
+          }
+          wait(20, msec);
+        }
+      }
+    new: "3-7"
+    what: "Something closer than 10 inches? Turn right. Otherwise, drive. After the turn the loop checks again, sees open space, and the `else` branch drives on."
+    stuck:
+      - "**It hits the wall?** Check the sign is `<` and the threshold is big enough. Try 10."
+      - "**It spins and never drives?** `Drivetrain.drive(forward);` goes in the `else` branch."
+    sim:
+      starter: |
+        int main() {
+          while (true) {
+            // TODO: if the distance is less than 10 inches, turn right 90 degrees
+            // TODO: else, drive forward
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 12, y: 60, heading: 0}
+        walls: [{x: 4, y: 22, w: 20, h: 4}]
+        goal: {x: 80, y: 52, r: 7}
+      checks:
+        - {type: reachGoal, message: "The robot finds its way to the green goal"}
+        - {type: noCollision, message: "It never touches a wall or the box"}
+        - {type: code, pattern: "if\\s*\\([^{]*Distance\\.distance\\s*\\(", message: "An if compares the Distance Sensor reading"}
+      solution: |
+        int main() {
+          while (true) {
+            if (Distance.distance(inches) < 10) {
+              Drivetrain.turnFor(right, 90, degrees);
+            } else {
+              Drivetrain.drive(forward);
+            }
+            wait(20, msec);
+          }
+        }
+    ask: Change the 10 to 25 and run it. How does the path change? Does the robot still reach the goal? Change it back when you are done.
+
+  - part: "Part 2: On the real robot"
+    title: Mount the Distance Sensor
+    say: |
+      The Distance Sensor has two round openings. One sends the sound out, and the other listens for the echo.
+      It must point **straight ahead** with a clear view. A beam or a cable in front of it would bounce the sound
+      right back, and the robot would think a wall is always there.
+    wiring:
+      - "Pin the **Distance Sensor** to the front of the robot, facing forward, level with the floor."
+      - "Make sure no beam, wheel, bumper or cable is in front of the two round openings."
+      - "Plug the Distance Sensor into **Port 7**."
+    do:
+      - "Open your VEXcode project from Feel the Wall. Open **Devices**."
+      - "Add a **Distance** sensor on **Port 7**. Name it exactly `Distance`."
+      - "Check the Drivetrain, `Bumper` and `TouchLED` are still in the list."
+      - Save the project under a new name, such as your team name and the word Sonar.
+    picture: {type: shot, name: vx-devices, caption: "Add the Distance sensor on Port 7 and name it Distance"}
+    tip: "**Watch out:** VEXcode may suggest a name with a number on the end, such as Distance7. Type over it so it matches your code."
+    test:
+      - The Distance Sensor faces forward with nothing in front of it
+      - It is plugged into Port 7
+      - Devices shows Distance on Port 7
+
+  - part: "Part 2: On the real robot"
+    title: What does the real sensor see?
+    say: |
+      The simulator's sensor is perfect. A real one is not, so **test it against a ruler** before you trust it.
+      This short program shows the reading on the Brain screen, five times a second. The robot does not drive.
+      Sound bounces well off hard, flat things. Soft or slanted things can fool it.
+    do:
+      - "In VEXcode, type this program in place of `int main()` and everything below it. Download it and run it."
+      - "Hold the robot so its front is **6 inches** from a flat wall. Use the ruler. Write down the reading."
+      - "Do the same at **12 inches** and at **24 inches**."
+      - "Now point it at other things: a hand, a sweatshirt, a wall at a slant. Watch the number."
+    code: |
+      int main() {
+        while (true) {
+          Brain.Screen.clearScreen();
+          Brain.Screen.setCursor(1, 1);
+          Brain.Screen.print("%.1f in", Distance.distance(inches));
+          wait(200, msec);
+        }
+      }
+    what: "Each lap clears the screen, goes back to the top left, and prints a fresh reading. This kind of program is how engineers check any new sensor."
+    stuck:
+      - "**The number never changes?** Something on the robot is in front of the sensor, or the cable is not in Port 7."
+      - "**The number jumps around?** Hold the robot still and square to the wall. Slanted walls bounce the sound away."
+      - "**An error that Distance was not declared?** Check the name in Devices."
+    test:
+      - The Brain screen shows a number that changes as I move the robot
+      - I tested the reading against a ruler at three distances
+    fields: ["Reading at 6 in", "Reading at 12 in", "Reading at 24 in"]
+    ask: How close were the readings to the ruler? What kind of thing was hardest for the sensor to see?
+
+  - part: "Part 2: On the real robot"
+    title: Wall parking contest
+    say: |
+      The contest: park as **close to the wall as you can without touching it**. Closest gap wins. Touch the wall and the run does not count.
+      A real robot can't stop in an instant. It **coasts** a little after `stop()`. So your threshold has to leave room for that.
+    do:
+      - "In VEXcode, change your program to the parking program below. Download it."
+      - "Start with the robot about 3 feet from the wall, facing it squarely. Hands off while the Gyro gets ready."
+      - "Measure the gap from the front of the robot to the wall."
+      - "Change `stopAt`, download and run again. Record your three best runs."
+      - "Then try a faster speed. Does the same threshold still work?"
+    code: |
+      int main() {
+        int stopAt = 6;
+        Drivetrain.setDriveVelocity(30, percent);
+        Drivetrain.drive(forward);
+        while (Distance.distance(inches) > stopAt) {
+          wait(20, msec);
+        }
+        Drivetrain.stop();
+      }
+    tip: "**Watch out:** the faster the robot goes, the farther it coasts. Speed and threshold have to be tuned together."
+    stuck:
+      - "**It never moves?** The sensor already sees something closer than `stopAt`. Check nothing is in front of it."
+      - "**It hits the wall every time?** Make `stopAt` bigger or the speed lower, and check the wall is hard and flat."
+    test:
+      - My real robot stopped by itself before the wall
+      - I measured the gap for at least three runs
+      - I changed the threshold and saw the gap change
+    fields: ["My best threshold", "Speed (percent)", "Smallest gap without touching (in)"]
+    ask: The robot stopped closer than your threshold said. Where did the extra distance come from?
+
+  - part: "Part 2: On the real robot"
+    title: Let it roam
+    say: |
+      Last test: the obstacle avoider on the real floor. Set up a few boxes and let the robot find its own way around.
+      Nobody steers and nobody planned the path. The robot senses, decides and acts by itself.
+    do:
+      - "Your obstacle avoider is in the editor. Press **Run** once, then **Copy for VEXcode** and **Copy code**."
+      - "In VEXcode, paste it over `int main() {` and everything below. Keep the folded device block. Download it."
+      - "Set the robot down in a space with walls and a few big boxes. Start it and step back."
+      - "Watch for one minute. Count how many times it touches something."
+      - "Tune the threshold and the turn amount to get fewer touches."
+    picture: {type: shot, name: vx-paste, caption: "Keep the folded device block. Paste over int main() and everything below it."}
+    stuck:
+      - "**It clips boxes with its corner?** The sensor only sees straight ahead. Use a bigger threshold, so it turns sooner."
+      - "**It misses thin things, like chair legs?** Sound mostly bounces off wide, flat things. Use boxes."
+      - "**It turns on the spot forever?** It is boxed in. Give it more room, or try a different turn amount."
+    sim:
+      carry: true
+      starter: |
+        int main() {
+          while (true) {
+            if (Distance.distance(inches) < 10) {
+              Drivetrain.turnFor(right, 90, degrees);
+            } else {
+              Drivetrain.drive(forward);
+            }
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 12, y: 60, heading: 0}
+        walls: [{x: 4, y: 22, w: 20, h: 4}]
+        goal: {x: 80, y: 52, r: 7}
+      checks:
+        - {type: code, pattern: "while\\s*\\(\\s*true\\s*\\)[\\s\\S]*if\\s*\\([^{]*Distance\\.distance\\s*\\(", message: "The Distance Sensor is read inside while (true)"}
+        - {type: reachGoal, message: "It still works in the simulator"}
+      solution: |
+        int main() {
+          while (true) {
+            if (Distance.distance(inches) < 10) {
+              Drivetrain.turnFor(right, 90, degrees);
+            } else {
+              Drivetrain.drive(forward);
+            }
+            wait(20, msec);
+          }
+        }
+    test:
+      - My real robot turned away from a wall or box before touching it
+      - It kept roaming for one minute
+    fields: ["Touches in one minute", "Threshold I ended with (in)"]
+    ask: What could the real robot not see? How would you change the robot or the code to fix that?
+
+quiz:
+  - question: How does the Distance Sensor measure how far away a wall is?
+    choices: ["It touches the wall with a switch", "It sends a sound pulse and times how long the echo takes", "It takes a photo of the wall", "It counts how many times the wheels turn"]
+    answer: 1
+    why: It is a sonar. A longer wait for the echo means the wall is farther away.
+  - question: "The robot is driving at a wall. The sensor reads 30, then 18, then 9, then 5. At which reading does this loop end?\n\n`while (Distance.distance(inches) > 8) {`\n\n`  wait(20, msec);`\n\n`}`"
+    choices: ["30", "18", "9", "5"]
+    answer: 3
+    why: "The loop keeps going while the reading is greater than 8. 9 is still greater than 8. 5 is not, so the loop ends there."
+  - question: "What does this print?\n\n`int d = 20;`\n\n`while (d > 5) {`\n\n`  d = d - 5;`\n\n`}`\n\n`Brain.Screen.print(\"%d\", d);`"
+    choices: ["20", "10", "5", "0"]
+    answer: 2
+    why: "d goes 20, 15, 10, 5. When d is 5, the test 5 > 5 is false, so the loop ends and 5 is printed."
+  - question: Your robot stops 2 feet away from the wall. You wanted it closer. What should you change?
+    choices: ["Make the threshold smaller", "Make the threshold bigger", "Change `>` to `<`", "Add a second Distance Sensor"]
+    answer: 0
+    why: The threshold is the reading where the robot stops. A smaller number lets it get closer before the loop ends.
+  - question: What can the Distance Sensor do that the Bumper Switch can't?
+    choices: ["Tell the Brain something is there before the robot touches it", "Work without a Smart Cable", "Make the motors stronger", "Show a color"]
+    answer: 0
+    why: The bumper is only true once the robot is touching. The Distance Sensor gives a number while the robot is still far away.
+
+ship:
+  note: Your obstacle avoider from the last simulator step is turned in with your answers.
+  extensions:
+    - title: Distance light
+      level: Easier
+      goal: Show what the robot sees on the Touch LED. Green when the way is clear, red when something is close.
+      where: Inside your obstacle avoider's `if` and `else` branches.
+      code: |
+        if (Distance.distance(inches) < 10) {
+          TouchLED.setColor(red);
+          Drivetrain.turnFor(right, 90, degrees);
+        } else {
+          TouchLED.setColor(green);
+          Drivetrain.drive(forward);
+        }
+      new: "2, 5"
+      hints:
+        - "The Touch LED is still on Port 2 from Feel the Wall."
+        - "Want a third color? Use `else if` with a second, bigger threshold for yellow."
+    - title: Slow down first
+      level: Medium
+      goal: Park more gently. Drive fast when the wall is far away, slow down when it is under 20 inches, and stop at your threshold.
+      where: In the parking program, inside the while loop.
+      code: |
+        while (Distance.distance(inches) > stopAt) {
+          if (Distance.distance(inches) < 20) {
+            Drivetrain.setDriveVelocity(20, percent);
+          } else {
+            Drivetrain.setDriveVelocity(60, percent);
+          }
+          Drivetrain.drive(forward);
+          wait(20, msec);
+        }
+      new: "2-7"
+      hints:
+        - "A slower robot coasts less, so it can use a smaller threshold."
+        - "The `drive(forward)` line after the `if / else` makes the new speed take effect."
+    - title: Follow me
+      level: Challenge
+      goal: Make the robot keep about 10 inches from your hand or a box. If you move away it follows. If you move closer it backs up.
+      where: A new program with `while (true)` and three branches.
+      hints:
+        - "Use `if`, `else if` and `else`: farther than 12 inches, drive forward. Closer than 8 inches, drive in reverse. Otherwise, stop."
+        - "`Drivetrain.drive(reverse);` drives backward until you tell it something else."
+        - "Why two thresholds and not one? Try it with only one number and watch the robot shake."
+  reflect:
+    - When is a Distance Sensor a better choice than a Bumper Switch? When might the bumper be better?
+    - How did you pick your threshold for the real robot? What did you try that did not work?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-4) in the simulator, then mount the sensor (step 5) if
+  there is time. Day 2: steps 5-8 with the real robots. Run the wall parking contest as a class event for the last
+  10 minutes before the quiz, with each team's best gap on the board.
+
+  **Before class.** Charge batteries. Each team needs a Distance Sensor (the 1st gen sonar), a Smart Cable and a ruler.
+  Set up a hard, flat wall for parking: the field wall, a row of heavy boxes, or the classroom wall. Mark a start line
+  about 3 feet back. Collect a few big boxes for the roaming step.
+
+  **About the sensor.** The 1st gen Distance Sensor is ultrasonic. It works best on hard, flat things that face it squarely.
+  Soft things (clothes, a backpack), slanted walls and thin things (chair legs) give odd readings or none. Very close
+  up, under an inch or two, it is not reliable. Two robots facing each other can hear each other's pulses.
+  These are good things for students to find for themselves in step 6.
+
+  **About the simulator.** The simulated robot stops instantly and its sensor is exact, so a small threshold does not
+  crash there. On the floor it will. Say this out loud before the contest. The obstacle avoider loops forever, so
+  students stop it themselves. Its goal check only needs the robot to reach the goal once.
+
+  **Common trouble.** A beam, the bumper or a cable in front of the sensor, so it always reads a small number and the
+  robot never moves. The device named `Distance7` in VEXcode. `<` and `>` mixed up. `Drivetrain.stop()` typed inside
+  the while loop. Printing the reading with `%d`: the reading is a decimal number, so use `%.1f`.
+
+  **Check for understanding.** Call out readings one at a time ("30... 22... 14... 7...") and have the class say
+  "wait" or "stop" for the loop `while (Distance.distance(inches) > 10)`.
+standards:
+  - code: 6-8.CS.a.4
+    how: Students explain how the Distance Sensor works and use it as the input that controls the motors.
+  - code: 6-8.CS.a.6
+    how: Students collect sensor readings at measured distances and compare them with a ruler.
+  - code: 6-8.CT.b.5
+    how: Students find the threshold where the robot should change behavior, and see what happens when it is too small or too big.
+  - code: 6-8.CT.d.4
+    how: Students use a while loop with a sensor condition, a variable for the threshold, and if / else with a comparison.
+  - code: 6-8.CT.d.5
+    how: Students predict how readings will change, and trace while loops in the quiz.
+  - code: 6-8.CT.d.6
+    how: Students tune the threshold and speed over repeated runs in the wall parking contest.

@@ -1,0 +1,456 @@
+id: feel-the-wall
+title: Feel the Wall
+tagline: Give your robot its first sense, so it knows when it bumps into something
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 on the real robot
+
+mission:
+  big_question: "How can a robot know it has hit something?"
+  goal: |
+    Last lesson your robot followed a plan, but it was blind. Today it gets its first **sensor**:
+    a **Bumper Switch**. It is a switch, like the button in Light It Up.
+    Your program reads it with `if / else` and shows what it feels on a **Touch LED**.
+    You'll finish with a bounce bot that finds its own way around the field.
+  picture:
+    type: flow
+    loop: true
+    steps:
+      - {icon: "🧱", label: "Sense: is the bumper pressed?", color: "#f5a623"}
+      - {icon: "🤔", label: "Decide: if / else", color: "#2f6bff"}
+      - {icon: "🚦", label: "Act: motors and the Touch LED", color: "#33c95a"}
+    caption: Input, decide, output. The same loop as Light It Up, now on wheels.
+  you_need:
+    - A partner
+    - Your robot from Drive by Code
+    - A Bumper Switch and a Touch LED
+    - Two Smart Cables
+    - A USB cable for the Brain
+    - A wall, a box or a big book to bump into
+  learn:
+    - "a **sensor** is an input: it tells the Brain about the world"
+    - "the Bumper Switch is a switch: pressed is `true`, not pressed is `false`"
+    - "`if / else` inside `while (true)` checks a sensor again and again"
+    - "the Touch LED is an **output** that shows what the robot is thinking"
+  talk: You walk through a dark room with your hands out in front of you. How do you know where the wall is? What do you do when you touch it?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: A switch you can read
+    say: |
+      In Light It Up, pressing a button **closed a circuit**. The Bumper Switch is the same kind of part.
+      Pushed in, the circuit is closed, and `Bumper.pressing()` is `true`. Let go, and it is `false`.
+      In Battle Bot Design, `if / else` read a controller button. A sensor is read the same way.
+      The `if` sits inside `while (true)`, so the Brain checks it over and over.
+    do:
+      - "Type the highlighted `if / else` inside the loop."
+      - "**Predict:** when will the robot's light change from green to red?"
+      - Press **Run** and watch the light on the robot. This program loops forever, so stop it yourself when you have seen the change.
+    code: |
+      int main() {
+        Drivetrain.drive(forward);
+        while (true) {
+          if (Bumper.pressing()) {
+            TouchLED.setColor(red);
+          } else {
+            TouchLED.setColor(green);
+          }
+          wait(20, msec);
+        }
+      }
+    new: "4-8"
+    what: "`Drivetrain.drive(forward)` starts the robot and does not wait. The loop then asks the bumper the same question 50 times a second: pressed? Red. Not pressed? Green."
+    tip: "**Watch out:** `pressing()` needs its empty parentheses. `if (Bumper.pressing)` is an error."
+    stuck:
+      - "**The light never changes?** The `if / else` must be inside the `{ }` of `while (true)`."
+      - "**An error near else?** Check the braces: `} else {` closes the `if` part and opens the `else` part."
+      - "**Bumper was not declared?** Capital B. Capital T, L, E and D in `TouchLED`."
+    sim:
+      starter: |
+        int main() {
+          Drivetrain.drive(forward);
+          while (true) {
+            // TODO: if the bumper is pressed, make the Touch LED red
+            // TODO: else, make the Touch LED green
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 48, y: 60, heading: 0}
+        walls: [{x: 24, y: 16, w: 48, h: 4}]
+        goal: {x: 48, y: 27, r: 6}
+      checks:
+        - {type: code, pattern: "if\\s*\\(\\s*!?\\s*Bumper\\.pressing\\s*\\(\\s*\\)", message: "An if reads the bumper"}
+        - {type: code, pattern: "^(?=[\\s\\S]*setColor\\s*\\(\\s*red)(?=[\\s\\S]*setColor\\s*\\(\\s*green)[\\s\\S]*\\belse\\b", message: "if / else picks red or green"}
+        - {type: reachGoal, message: "The robot reaches the wall"}
+      solution: |
+        int main() {
+          Drivetrain.drive(forward);
+          while (true) {
+            if (Bumper.pressing()) {
+              TouchLED.setColor(red);
+            } else {
+              TouchLED.setColor(green);
+            }
+            wait(20, msec);
+          }
+        }
+    ask: The light turns red, but the robot keeps pushing on the wall. Why doesn't it stop?
+
+  - part: "Part 1: In the simulator"
+    title: Stop at the wall
+    say: |
+      The light changed, but the wheels kept spinning. A sensor only **tells** the Brain something.
+      Your code has to **decide** what to do about it.
+      Put more statements inside each branch: when the bumper is pressed, stop and say so. Otherwise, drive.
+    do:
+      - "Delete the `Drivetrain.drive(forward);` line above the loop. Driving now goes in the `else` branch."
+      - Add the highlighted lines.
+      - "Press **Run**. The robot should stop at the wall, turn red and print **Bump!**"
+    code: |
+      int main() {
+        while (true) {
+          if (Bumper.pressing()) {
+            Drivetrain.stop();
+            TouchLED.setColor(red);
+            Brain.Screen.setCursor(1, 1);
+            Brain.Screen.print("Bump!");
+          } else {
+            Drivetrain.drive(forward);
+            TouchLED.setColor(green);
+          }
+          wait(20, msec);
+        }
+      }
+    new: "4, 6-7, 9"
+    what: "Each branch can hold as many statements as you like. `setCursor(1, 1)` moves back to the top left of the screen first, so **Bump!** is printed in the same place each lap of the loop and does not fill the screen."
+    stuck:
+      - "**It never prints?** The print lines go inside the `if` branch, before `} else {`."
+      - "**It doesn't move at all?** `Drivetrain.drive(forward);` goes inside the `else` branch."
+    sim:
+      starter: |
+        int main() {
+          while (true) {
+            if (Bumper.pressing()) {
+              // TODO: stop the Drivetrain
+              TouchLED.setColor(red);
+              // TODO: move the cursor to row 1, column 1 and print Bump!
+            } else {
+              // TODO: drive forward
+              TouchLED.setColor(green);
+            }
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 24, y: 58, heading: 0}
+        walls: [{x: 6, y: 20, w: 36, h: 4}]
+        goal: {x: 24, y: 31, r: 6}
+      checks:
+        - {type: reachGoal, message: "The robot drives to the wall"}
+        - {type: code, pattern: "Drivetrain\\.stop\\s*\\(\\s*\\)", message: "My program stops the Drivetrain"}
+        - {type: output, pattern: "Bump", message: "The Brain screen says Bump!"}
+      solution: |
+        int main() {
+          while (true) {
+            if (Bumper.pressing()) {
+              Drivetrain.stop();
+              TouchLED.setColor(red);
+              Brain.Screen.setCursor(1, 1);
+              Brain.Screen.print("Bump!");
+            } else {
+              Drivetrain.drive(forward);
+              TouchLED.setColor(green);
+            }
+            wait(20, msec);
+          }
+        }
+    ask: Which statements run when the bumper is pressed? Which run when it is not? Can both branches run in the same lap of the loop?
+
+  - part: "Part 1: In the simulator"
+    title: Bounce bot
+    say: |
+      Stopping is safe, but the robot is stuck at the wall forever. A better reaction: **back up, turn, and try again**.
+      Only the `if` branch changes. The loop does the rest. Every time the robot finds a wall, it reacts and drives on.
+      With nothing but one switch, it can work its way around the field.
+    do:
+      - "In the `if` branch, take out the stop and the print lines."
+      - "Add the two highlighted moves: back up 6 inches, then turn right 90 degrees."
+      - "Press **Run**. Watch the robot bounce its way to the green goal. Stop the program when it gets there."
+    code: |
+      int main() {
+        while (true) {
+          if (Bumper.pressing()) {
+            TouchLED.setColor(red);
+            Drivetrain.driveFor(reverse, 6, inches);
+            Drivetrain.turnFor(right, 90, degrees);
+          } else {
+            Drivetrain.drive(forward);
+            TouchLED.setColor(green);
+          }
+          wait(20, msec);
+        }
+      }
+    new: "5-6"
+    what: "`driveFor` and `turnFor` finish before the loop goes on. So after a bump the robot backs away, turns, and then the loop checks the bumper again. It isn't pressed any more, so the `else` branch drives forward."
+    tip: "**Watch out:** back up **before** you turn. A robot that turns while it is against a wall can get stuck on it."
+    stuck:
+      - "**It shakes at the wall and never leaves?** Check it backs up with `reverse`, not `forward`."
+      - "**It never gets to the goal?** Check the turn is 90 degrees. Then be patient: it takes three walls."
+    sim:
+      starter: |
+        int main() {
+          while (true) {
+            if (Bumper.pressing()) {
+              TouchLED.setColor(red);
+              // TODO: back up 6 inches
+              // TODO: turn right 90 degrees
+            } else {
+              // TODO: drive forward
+              TouchLED.setColor(green);
+            }
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 12, y: 60, heading: 0}
+        goal: {x: 84, y: 58, r: 8}
+      checks:
+        - {type: reachGoal, message: "The robot bounces its way to the green goal"}
+        - {type: code, pattern: "driveFor\\s*\\(\\s*reverse", message: "It backs up after a bump"}
+        - {type: code, pattern: "if\\s*\\(\\s*!?\\s*Bumper\\.pressing\\s*\\(\\s*\\)", message: "The bumper decides when to turn"}
+      solution: |
+        int main() {
+          while (true) {
+            if (Bumper.pressing()) {
+              TouchLED.setColor(red);
+              Drivetrain.driveFor(reverse, 6, inches);
+              Drivetrain.turnFor(right, 90, degrees);
+            } else {
+              Drivetrain.drive(forward);
+              TouchLED.setColor(green);
+            }
+            wait(20, msec);
+          }
+        }
+    ask: Your program never says where the walls are. How does the robot still get to the goal?
+
+  - part: "Part 2: On the real robot"
+    title: Wire the bumper and the light
+    say: |
+      Time to give the real robot the same parts. The Bumper Switch is an **input**: it sends a signal **to** the Brain.
+      The Touch LED is an **output** here: the Brain sends a signal **to** it. Both use a Smart Cable and a Smart Port.
+      The bumper must be the **first thing to touch** a wall, so it goes at the very front.
+    wiring:
+      - "Pin the **Bumper Switch** to the front of the robot, in the middle, with its button facing forward. Nothing should stick out past it."
+      - "Plug the Bumper Switch into **Port 8**."
+      - "Pin the **Touch LED** on top of the robot where everyone can see it."
+      - "Plug the Touch LED into **Port 2**."
+    do:
+      - Push each cable in until it clicks. Tuck the cables away from the wheels.
+      - Push the robot gently into a wall by hand. Check the bumper's button gets pushed in before any other part touches.
+    picture: {type: vex, names: [bumper, touchled], caption: "The Bumper Switch (input) and the Touch LED (output)"}
+    tip: "**Watch out:** if a battle bot wedge or plow sticks out past the bumper, the bumper never gets pressed. Take it off or move the bumper forward."
+    test:
+      - The Bumper Switch is at the front and plugged into Port 8
+      - The Touch LED is plugged into Port 2
+      - When I push the robot into a wall by hand, the bumper clicks first
+
+  - part: "Part 2: On the real robot"
+    title: Add them in Devices
+    say: |
+      The Brain can't use a sensor until VEXcode knows about it. Each device needs the right **port** and the right **name**.
+      Your code says `Bumper` and `TouchLED`, so the names in Devices must be spelled exactly that way, capitals and all.
+    do:
+      - "Open your VEXcode project from Drive by Code. It already has the Drivetrain and the Gyro."
+      - "Open **Devices**. Add a **Bumper** on **Port 8**. Name it exactly `Bumper`."
+      - "Add a **Touch LED** on **Port 2**. Name it exactly `TouchLED`."
+      - "Check the **Drivetrain** is still there on ports 1 and 6, with the Gyro on Port 4."
+      - Save the project under a new name, such as your team name and the word Bounce.
+    picture: {type: shot, name: vx-devices, caption: "Every sensor gets a port and a name in Devices"}
+    tip: "**Watch out:** VEXcode may suggest a name with a number on the end, such as Bumper8. Type over it. The name has to match your code."
+    test:
+      - Devices shows Bumper on Port 8
+      - Devices shows TouchLED on Port 2
+      - The Drivetrain is still in Devices
+
+  - part: "Part 2: On the real robot"
+    title: Download the bounce bot
+    say: |
+      Move your bounce bot into VEXcode. Before you let it loose, test the sensor **by hand**.
+      Hold the robot up so the wheels are off the table, then press the bumper with a finger.
+      A hand test finds wiring mistakes before the robot drives into anything.
+    do:
+      - "Your bounce bot is in the editor. Press **Run** once to check it, then **Copy for VEXcode** and **Copy code**."
+      - "In VEXcode, paste it over `int main() {` and everything below. Keep the folded device block."
+      - "Plug in the USB cable, click **Download**, then unplug."
+      - "Hold the robot with its wheels in the air. Start the program. Wait a few seconds for the Gyro."
+      - "Press the bumper with a finger and let go. Watch the light and the wheels."
+    stuck:
+      - "**An error that Bumper or TouchLED was not declared?** The name in Devices doesn't match. Check the spelling and capitals."
+      - "**The light stays green when you press?** The bumper is in the wrong port, or its cable is loose."
+      - "**The wheels never stop to back up?** Hold the bumper in a little longer. The loop checks it 50 times a second, but a very quick tap can be missed while the robot is turning."
+    sim:
+      carry: true
+      starter: |
+        int main() {
+          while (true) {
+            if (Bumper.pressing()) {
+              TouchLED.setColor(red);
+              Drivetrain.driveFor(reverse, 6, inches);
+              Drivetrain.turnFor(right, 90, degrees);
+            } else {
+              Drivetrain.drive(forward);
+              TouchLED.setColor(green);
+            }
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 12, y: 60, heading: 0}
+        goal: {x: 84, y: 58, r: 8}
+      checks:
+        - {type: code, pattern: "while\\s*\\(\\s*true\\s*\\)[\\s\\S]*if\\s*\\(\\s*!?\\s*Bumper\\.pressing\\s*\\(\\s*\\)", message: "The bumper is read inside while (true)"}
+        - {type: reachGoal, message: "It still works in the simulator"}
+      solution: |
+        int main() {
+          while (true) {
+            if (Bumper.pressing()) {
+              TouchLED.setColor(red);
+              Drivetrain.driveFor(reverse, 6, inches);
+              Drivetrain.turnFor(right, 90, degrees);
+            } else {
+              Drivetrain.drive(forward);
+              TouchLED.setColor(green);
+            }
+            wait(20, msec);
+          }
+        }
+    test:
+      - The real Touch LED is green when the bumper is not pressed
+      - It turns red when I press the bumper
+      - The wheels reverse and turn after I press the bumper
+
+  - part: "Part 2: On the real robot"
+    title: Wall finder and bumper tag
+    say: |
+      Now put it on the floor. Two activities, same program.
+      **Wall finder:** the robot explores a taped-off area by itself, bouncing off walls and boxes.
+      **Bumper tag:** a teammate is the wall. They tap the bumper with a hand or a pool noodle, and the robot must turn away.
+    do:
+      - "**Wall finder.** Set the robot down facing a wall about 3 feet away. Start it and step back. Count how many bumps it makes in one minute."
+      - "**Bumper tag.** Let the robot drive in open space. One teammate tags the bumper. Take turns being the tagger."
+      - "Change the numbers. Try backing up 3 inches or 10. Try turning 45 or 135 degrees. Download and test each change."
+      - "To end the program, press the **X** button on the Brain."
+    tip: "**Watch out:** tag the bumper gently, and keep fingers away from the wheels. Catch the robot before it reaches a table edge or the stairs."
+    stuck:
+      - "**It hits the wall at an angle and keeps pushing?** The corner of the robot touched first, so the bumper was missed. A wider bar across the front of the bumper helps."
+      - "**It gets stuck in a corner?** Try a different turn amount, such as 120 degrees."
+    test:
+      - My real robot backed up and turned away from a real wall by itself
+      - We played bumper tag and the robot reacted to every tag
+      - I tried at least one different back-up distance or turn amount
+    fields: ["Bumps in one minute", "Best back-up distance (in)", "Best turn (degrees)"]
+    ask: Which back-up distance and turn amount worked best in your space? What went wrong with the ones that did not?
+
+quiz:
+  - question: "The bumper is pushed in against a wall. What does `Bumper.pressing()` give?"
+    choices: ["`true`", "`false`", "The distance to the wall", "The color of the wall"]
+    answer: 0
+    why: A pushed-in bumper is a closed switch. pressing() is true while it is held in, and false when it is let go.
+  - question: Which part from Light It Up works most like the Bumper Switch?
+    choices: ["The LED", "The resistor", "The button", "The battery"]
+    answer: 2
+    why: Both are switches. Pressing one closes a circuit, and the computer reads that as an input.
+  - question: "The bumper is **not** pressed. What does this print?\n\n`if (Bumper.pressing()) {`\n\n`  Brain.Screen.print(\"Ouch\");`\n\n`} else {`\n\n`  Brain.Screen.print(\"Clear\");`\n\n`}`\n\n`Brain.Screen.print(\"!\");`"
+    choices: ["Ouch!", "Clear!", "OuchClear!", "Clear"]
+    answer: 1
+    why: "pressing() is false, so only the else branch runs and prints Clear. The last line is outside the if / else, so it always runs and adds the !"
+  - question: "Why does the `if` that reads the bumper go inside `while (true)`?"
+    choices: ["So the robot drives faster", "So the bumper is checked again and again, not just once", "Because `if` is an error outside a loop", "So the Touch LED stays cool"]
+    answer: 1
+    why: Without the loop the Brain would check the bumper one time, at the very start, and never again.
+  - question: In this lesson, which one is an **output**?
+    choices: ["The Bumper Switch", "The Smart Cable", "The Touch LED showing a color", "The wall"]
+    answer: 2
+    why: An output is something the Brain controls. The Brain tells the Touch LED which color to show. The bumper is an input.
+
+ship:
+  note: Your bounce bot from the last simulator step is turned in with your answers.
+  extensions:
+    - title: Warning light
+      level: Easier
+      goal: Show a third color. Make the Touch LED yellow while the robot is backing up and turning, so people know it is about to move.
+      where: Inside the `if` branch, in place of the red line.
+      code: |
+        if (Bumper.pressing()) {
+          TouchLED.setColor(red);
+          wait(300, msec);
+          TouchLED.setColor(yellow);
+          Drivetrain.driveFor(reverse, 6, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+        } else {
+      new: "3-4"
+      hints:
+        - "The colors are `red`, `green`, `blue`, `yellow`, `orange`, `purple` and `white`."
+        - "The short `wait` keeps red on long enough to see."
+    - title: Bump counter
+      level: Medium
+      goal: Count every bump in a variable and show the count on the Brain screen.
+      where: Make the variable above `while (true)`. Add to it inside the `if` branch.
+      code: |
+        int bumps = 0;
+        while (true) {
+          if (Bumper.pressing()) {
+            bumps = bumps + 1;
+            Brain.Screen.setCursor(1, 1);
+            Brain.Screen.print("Bumps: %d", bumps);
+            TouchLED.setColor(red);
+      new: "1, 4-6"
+      hints:
+        - "`bumps = bumps + 1;` takes the old count, adds 1, and puts the answer back in the box."
+        - "`%d` is a blank that gets filled in with the value of `bumps`."
+        - "The variable must be made **above** the loop. Inside the loop it would start over at 0 every lap."
+    - title: Five bumps and done
+      level: Challenge
+      goal: Make the robot stop for good after 5 bumps and turn the Touch LED blue.
+      where: Use the bump counter from the Medium extension, and change the loop's first line.
+      hints:
+        - "`while (true)` never ends. A loop can test something else: `while (bumps < 5)` keeps going only while the count is under 5."
+        - "Statements after the loop's closing `}` run when the loop ends. Put `Drivetrain.stop();` and `TouchLED.setColor(blue);` there."
+        - "You will use loops like this with a sensor in the next lesson."
+  reflect:
+    - How is the Bumper Switch like the button in Light It Up? How is what you did with it different?
+    - The bumper only works when the robot touches something. Name one job where that is a problem.
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-3) in the simulator, then step 4 (mounting and wiring) if
+  there is time. Day 2: steps 4-7 with the real robots, then the quiz and Ship it.
+
+  **Before class.** Charge batteries. Each team needs a Bumper Switch, a Touch LED and two Smart Cables. Set up places to
+  bump into: the field walls, heavy boxes, or books on edge. Light boxes get pushed along instead of pressing the bumper.
+  Pool noodles are good taggers. Mark off a floor area for each team with tape or boxes.
+
+  **About the simulator.** The programs in this lesson loop forever, so students stop them when they have seen enough.
+  The goal checks only need the robot to reach the goal at some point. In the simulator the bumper counts as pressed
+  while the robot's front is touching a wall. Touching a wall is the whole idea here, so no step asks for "no collisions".
+
+  **Common trouble.** The device names in VEXcode don't match the code (`Bumper8` or `TouchLED2` instead of `Bumper` and
+  `TouchLED`). A battle bot wedge sticks out past the bumper. The robot meets a wall at an angle, so a corner touches
+  and the bumper doesn't: a beam across the bumper's button makes a wider target. `if (Bumper.pressing)` with no
+  parentheses. The `if / else` typed below the loop instead of inside it.
+
+  **Check for understanding.** Ask a pair to act it out: one is the Brain reading the loop aloud, one is the robot.
+  Tap the "robot" on the shoulder for a bump. Do they take the right branch each lap?
+
+  **The class display.** The bumper only knows about a wall after the crash. Ask what kind of sensor would be better.
+  That is the next lesson.
+standards:
+  - code: 6-8.CS.a.4
+    how: Students name the Bumper Switch as a sensor (input) and the Touch LED and motors as outputs, and wire both to the Brain.
+  - code: 6-8.CT.b.1
+    how: Students design a bounce bot that repeats an if / else decision inside a loop.
+  - code: 6-8.CT.d.4
+    how: Students use a loop and a conditional statement that reads a sensor, and extend it with a counter variable.
+  - code: 6-8.CT.d.5
+    how: Students predict when the light will change before running, and trace an if / else in the quiz.
+  - code: 6-8.CS.a.7
+    how: Students test the sensor by hand and diagnose port, cable and device-name problems on the real robot.

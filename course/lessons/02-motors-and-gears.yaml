@@ -1,0 +1,290 @@
+id: motors-and-gears
+title: Motors and Gears
+tagline: Trade speed for strength with two gears and your own hands
+minutes: 80          # about two class periods: Part 1 builds and counts, Part 2 does the math and the torque test
+
+mission:
+  big_question: "Why can't a robot be as fast AND as strong as possible?"
+  goal: |
+    A robot moves because **motors** turn **gears** and wheels. Today there is no code. You open up the idea of a
+    Smart Motor, build a **gear tester**, turn it by hand and **count**. You'll find the rule every robot builder
+    uses: gears can give you **speed** or **strength**, never both. Then you'll pick the gearing for a pushing battle bot.
+  picture:
+    type: compare
+    items:
+      - {icon: "🐢", title: "Small gear drives big gear", text: "slower, but stronger"}
+      - {icon: "🐇", title: "Big gear drives small gear", text: "faster, but weaker"}
+    caption: The same two gears. Which one you turn changes everything.
+  you_need:
+    - A partner or a team of three
+    - 1 Smart Motor and 1 Smart Cable
+    - "Gears: one 12-tooth and one 36-tooth"
+    - 2 shafts, 4 rubber shaft collars and a long beam or plate
+    - A marker or small stickers, string, and a small weight
+  learn:
+    - "a **Smart Motor** is a motor, gears and a turn-counting sensor in one case"
+    - "a **gear ratio** tells you how many turns in for one turn out"
+    - "**torque** is turning strength"
+    - "gears trade **speed** for **torque**"
+  talk: A bike has low gears and high gears. Which do you use to climb a steep hill? What do your legs feel, and how fast do you go?
+
+build:
+  - part: "Part 1: Motor and gears"
+    title: A motor is a circuit too
+    say: |
+      In Light It Up, electricity went around a loop and an LED did the work. A **Smart Motor** is the same idea
+      with a bigger job. Inside the case are three things: an **electric motor** that spins, **gears** that slow
+      it down and make it stronger, and a **sensor** that counts how far it has turned.
+      The **Smart Cable** carries **power** to the motor and **data** back to the Brain.
+    picture: {type: vex, names: [smartmotor], caption: "A Smart Motor. The square hole is where a shaft goes in. The Smart Cable clicks into its socket."}
+    do:
+      - Pick up your Smart Motor. Find the **square hole** that turns and the **socket** for the cable.
+      - Push a Smart Cable into the socket until it **clicks**. To take it out, press the tab and pull.
+      - Push a shaft into the square hole and turn it slowly with your fingers. Feel the gears inside push back.
+    test:
+      - I found the square hole and the cable socket
+      - I clicked a Smart Cable in and took it out again
+      - I turned the motor by hand with a shaft
+    ask: In Light It Up the output was an LED. What is the output here? What does the Smart Cable carry that your jumper wires did not?
+
+  - part: "Part 1: Motor and gears"
+    title: Square shafts, round holes
+    say: |
+      A VEX **shaft** is **square**. Push it into a **square hole** and the two are locked: turn one and the other
+      must turn. That is how a motor grips a shaft, and how a shaft grips a gear or a wheel.
+      Push the same shaft through a **round hole** in a beam and it spins freely. The beam just holds it in place.
+    picture: {type: vex, names: [shaftlock, shafts], caption: "A square hole grips the shaft. A round hole lets it spin."}
+    do:
+      - Push a shaft through a round hole in a beam. Spin the shaft. The beam should not move.
+      - Push the shaft into the square hole in the middle of a gear. Turn the shaft. The gear turns too.
+      - Slide a **rubber shaft collar** onto a shaft. It grips, so it stops the shaft sliding out.
+    test:
+      - My shaft spins freely in a round hole
+      - My shaft turns a gear through its square hole
+    ask: A wheel must turn when the motor turns. Does the shaft go in a square hole or a round hole in the wheel? What about in the robot's frame?
+
+  - part: "Part 1: Motor and gears"
+    title: Build the gear tester
+    say: |
+      Two gears whose teeth lock together are **meshed**. When one turns, it pushes the other.
+      The gear you turn is the **driving gear**. The gear that gets pushed is the **driven gear**.
+      Build a tester with a **12-tooth** gear and a **36-tooth** gear so you can turn one and watch the other.
+    do:
+      - Lay a long beam or plate flat. Push a shaft through a round hole near the middle.
+      - Push the second shaft through another hole, leaving **one empty hole** between the two shafts.
+      - Put a rubber shaft collar on each shaft under the beam, so the shafts can't fall out.
+      - Slide the **12-tooth** gear onto one shaft and the **36-tooth** gear onto the other. The teeth should mesh.
+      - Add a collar above each gear. With a marker or sticker, mark **one tooth** on each gear.
+    stuck:
+      - "**The gears don't touch, or they jam?** Move one shaft over by one hole and try again."
+      - "**A gear slides up the shaft?** Add a rubber shaft collar on top of it."
+      - "**Stiff to turn?** The collars are squeezing the beam. Leave a tiny gap."
+    test:
+      - Both shafts spin freely in the beam
+      - The two gears mesh, and turning one turns the other
+      - Each gear has one marked tooth
+    ask: Count the teeth on each gear to check them. How many times bigger is the count on the large gear?
+
+  - part: "Part 1: Motor and gears"
+    title: Small drives big
+    say: |
+      First test: the **12-tooth** gear is the **driving** gear. Turn it with your fingers and count.
+      One partner turns and counts out loud. The other watches the mark on the big gear.
+      Every tooth on one gear pushes exactly one tooth on the other. Keep that in mind as you count.
+    do:
+      - Line up both marks so they point straight at you.
+      - Turn the small gear **slowly**. Count each full turn of the small gear.
+      - Stop when the **big** gear's mark comes all the way around once.
+      - Write both numbers. Swap jobs and do it again to check.
+    test:
+      - I counted the turns of the small gear for one turn of the big gear
+      - My partner got the same count
+    fields: ["Small gear turns (driving)", "Big gear turns (driven)"]
+    ask: Which gear turned more slowly? Did the two gears turn the same way round, or opposite ways?
+
+  - part: "Part 1: Motor and gears"
+    title: Flip it
+    say: |
+      Second test: same gears, same tester. This time the **36-tooth** gear is the **driving** gear.
+      Nothing about the parts has changed. Only the gear you turn has changed.
+    do:
+      - "**Predict** first: if you turn the big gear once, how many times will the small gear turn?"
+      - Line up both marks again.
+      - Turn the **big** gear exactly **one** full turn. Count the turns of the small gear.
+      - Write both numbers.
+    test:
+      - I turned the big gear once and counted the small gear's turns
+      - I checked my prediction
+    fields: ["Big gear turns (driving)", "Small gear turns (driven)"]
+    ask: When the big gear drives, is the driven gear faster or slower than the gear you turn? How does that compare with the first test?
+
+  - part: "Part 2: Speed or strength"
+    title: Gear ratio
+    say: |
+      A **gear ratio** puts your counting into numbers. Divide the teeth on the **driven** gear by the teeth on the
+      **driving** gear. Small drives big: 36 ÷ 12 = **3**. We say **3 to 1**: the gear you turn goes around
+      3 times for 1 turn of the driven gear. Big drives small: 12 ÷ 36 = **⅓**. We say **1 to 3**:
+      one turn in gives 3 turns out.
+    picture:
+      type: compare
+      items:
+        - {icon: "🐢", title: "12 drives 36", text: "36 ÷ 12 = 3. Ratio 3 to 1. The output is 3 times slower."}
+        - {icon: "🐇", title: "36 drives 12", text: "12 ÷ 36 = ⅓. Ratio 1 to 3. The output is 3 times faster."}
+      caption: "Gear ratio = driven teeth ÷ driving teeth."
+    do:
+      - Check each ratio against the turns you counted in Part 1. They should match.
+      - "Now use the rule on a pair you have **not** built: a 12-tooth gear driving a **60-tooth** gear."
+    test:
+      - My counted turns match 3 to 1 and 1 to 3
+      - I worked out the ratio for 12 driving 60
+    fields: ["12 drives 60: ratio", "Turns in for 1 turn out"]
+    ask: A ratio is bigger than 1. Is the driven gear slower or faster than the driving gear? How can you tell without building it?
+
+  - part: "Part 2: Speed or strength"
+    title: The torque test
+    say: |
+      **Torque** is turning strength: how hard something twists. Speed is how fast it turns.
+      Test the torque of both setups. A string on the **driven** shaft lifts a weight while you turn the **driving** shaft.
+      Feel how hard your fingers have to work. For a fair test, hold the driving shaft the same way both times.
+    do:
+      - Stand the tester up, or hang it over the edge of the table, so a string can hang down from a shaft.
+      - Tie the string tightly to the **36-tooth** gear's shaft. Tie the weight to the other end.
+      - "**Setup A:** turn the **12-tooth** gear's shaft with your fingers to wind up the string. Count the turns to lift the weight to the top."
+      - Move the string to the **12-tooth** gear's shaft.
+      - "**Setup B:** turn the **36-tooth** gear's shaft to lift the same weight to the same height. Count again."
+    stuck:
+      - "**The string slips on the shaft?** Tie it around the shaft, then pin the knot with a rubber shaft collar."
+      - "**Can't feel a difference?** Use a heavier weight, and pinch the bare shaft, not a gear."
+      - "**The shafts tip over?** Have a partner hold the beam with both hands."
+    test:
+      - Both setups lifted the same weight to the same height
+      - I felt which setup was easier on my fingers
+    fields: ["Setup A: turns to lift", "Setup B: turns to lift", "Easier to turn (A or B)"]
+    ask: Which setup lifted the weight with less effort? Which lifted it in fewer turns? Was it the same setup?
+
+  - part: "Part 2: Speed or strength"
+    title: The trade
+    say: |
+      Here is the rule you just felt. A motor has only so much power. Gears can't add any. They only **trade**.
+      A **3 to 1** ratio makes the output **3 times slower** and about **3 times stronger**.
+      A **1 to 3** ratio makes it **3 times faster** and about **3 times weaker**.
+      More torque costs speed. More speed costs torque. You never get both from the same motor.
+    picture:
+      type: compare
+      items:
+        - {icon: "💪", title: "Gear down (small drives big)", text: "more torque, less speed: lifting, pushing, climbing"}
+        - {icon: "💨", title: "Gear up (big drives small)", text: "more speed, less torque: racing on a flat floor"}
+    do:
+      - Look back at your torque test numbers with your team.
+      - Decide together which setup was the **strong** one and which was the **fast** one.
+      - Remember the gears **inside** the Smart Motor from step 1. Talk about which trade they make.
+    test:
+      - I can say which setup is strong and slow, and which is fast and weak
+      - My team agrees on the reason
+    ask: The little motor inside a Smart Motor spins very fast but is weak. The gears in the case slow it down. Why is that a good trade for a robot?
+
+  - part: "Part 2: Speed or strength"
+    title: Gear up for battle
+    say: |
+      In a few lessons you'll build a **battle bot**. Its job is to **push** another robot out of a ring.
+      Your team has to choose how the motors drive the wheels: geared for speed, geared for torque, or straight
+      from the motor with no extra gears. There is no perfect answer. Every choice gives something up.
+    do:
+      - As a team, pick the gearing you would want for a pushing robot.
+      - Set up your gear tester to show that choice.
+      - "Show your teacher: turn it, say which gear is driving, and give its **gear ratio**."
+      - Take your tester apart and sort the parts back into the kit.
+    test:
+      - Our tester shows the gearing we chose
+      - We told our teacher the driving gear, the ratio and what we give up
+      - Our parts are sorted back into the kit
+    fields: ["Our choice", "Its gear ratio", "What we give up"]
+    ask: A battle bot geared for torque pushes hard but moves slowly. Describe one moment in a match when being slow could lose it for you.
+
+quiz:
+  - question: What three things are inside a Smart Motor's case?
+    choices: ["A battery, a wheel and a light", "An electric motor, gears and a sensor that counts turns", "A Brain, a radio and a screen", "Only an electric motor"]
+    answer: 1
+    why: The motor spins, the gears slow it down and make it stronger, and the sensor tells the Brain how far it has turned.
+  - question: A 12-tooth gear drives a 36-tooth gear. You turn the 12-tooth gear 3 full turns. How far does the 36-tooth gear turn?
+    choices: ["3 turns", "9 turns", "1 turn", "Half a turn"]
+    answer: 2
+    why: 3 turns of 12 teeth is 36 teeth, and 36 teeth is exactly one turn of the big gear. The ratio is 3 to 1.
+  - question: Which setup gives the driven shaft the most torque (turning strength)?
+    choices: ["A small gear driving a big gear", "A big gear driving a small gear", "Two gears of the same size", "It makes no difference"]
+    answer: 0
+    why: When a small gear drives a big gear, the output turns more slowly but with more torque.
+  - question: A team wants a robot that is 3 times faster AND 3 times stronger, using the same motor. What should you tell them?
+    choices: ["Use bigger gears", "Use more gears", "Gears only trade speed for torque, so they can't have both", "Turn the gears around twice"]
+    answer: 2
+    why: Gears don't add power. Gaining speed costs torque, and gaining torque costs speed.
+  - question: Why must a wheel have a square hole for the shaft?
+    choices: ["So the wheel can spin freely on the shaft", "So the square shaft grips the wheel and turns it", "Square holes are easier to make", "So the wheel is lighter"]
+    answer: 1
+    why: A square shaft in a square hole can't slip, so the wheel has to turn with it. Round holes are for places where the shaft should spin freely.
+
+ship:
+  turn_in: show
+  note: Show your teacher your gear tester and your team's choice for a pushing robot.
+  extensions:
+    - title: Same size, same speed
+      level: Easier
+      goal: Mesh two gears of the same size. Count turns in and turns out, and write the gear ratio.
+      where: On your gear tester, in place of the 12-tooth and 36-tooth gears.
+      hints:
+        - "You may need to move a shaft to a different hole so the teeth mesh."
+        - "Divide driven teeth by driving teeth, just as before."
+        - "Ask yourself: if the speed doesn't change, does the torque?"
+    - title: A gear in the middle
+      level: Medium
+      goal: Add a third gear between the 12-tooth and the 36-tooth gear. Find out what it changes and what it doesn't.
+      where: On your gear tester. You'll need a third shaft and one more gear.
+      hints:
+        - "Count turns of the first gear for one turn of the last gear. Is it still 3?"
+        - "Watch which way the last gear turns now, compared with the first gear."
+        - "The middle gear is called an **idler**."
+    - title: Two stages
+      level: Challenge
+      goal: Build a gear train where the last shaft turns 9 times slower than the first. Prove it by counting.
+      where: On a longer beam or plate, with two 12-tooth and two 36-tooth gears.
+      hints:
+        - "One 12-drives-36 pair gives 3 to 1. What do two pairs in a row give?"
+        - "The first 36-tooth gear and the second 12-tooth gear must sit on the **same shaft**, so they turn together."
+        - "3 × 3 = 9."
+  reflect:
+    - In your own words, what do gears trade? Use the words speed and torque.
+    - Which gearing did your team choose for a pushing robot, and what did you give up to get it?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5): the Smart Motor, shafts, building the tester and both
+  counting tests. Day 2: Part 2 (steps 6-9): gear ratio, the torque test, the trade and the team's choice, then the quiz.
+  Leave the testers built between days if you can.
+
+  **Before class.** Bag one set per team: 1 Smart Motor, 1 Smart Cable, a 12-tooth and a 36-tooth gear, 2 shafts
+  (long enough to hold while turning), 4 rubber shaft collars, one long beam or plate, about 50 cm of string and a
+  small weight (a few wheels in a bag, or a full pencil case). **Build one tester yourself first.** With VEX IQ gears
+  a 12-tooth and a 36-tooth gear should mesh with one empty hole between the shafts; check this with your own parts.
+  Two beams joined by standoffs, with the gears between them, make a much steadier tester if you have time and parts.
+
+  **Expected results.** Small drives big: 3 turns in for 1 turn out. Big drives small: 1 turn in for 3 turns out.
+  Meshed gears turn opposite ways. 12 driving 60 is 5 to 1. In the torque test, Setup A (12 drives 36) is easy to turn
+  but takes about 9 times as many turns as Setup B to lift the weight the same height.
+
+  **Common trouble.** Gears on shafts in the wrong holes (jammed or not touching). Counting turns of the wrong gear:
+  the marked tooth fixes this. Students say "bigger gear = stronger"; push for "small **driving** big = stronger output".
+  Ratio language: this lesson always uses driven ÷ driving, the way VEX does.
+
+  **Optional demo.** If you have a Brain and a paired controller ready, plug a Smart Motor into Port 1, attach it to
+  the driving shaft and run the Brain's built-in Driver Control program. Students can try to stop the driven gear
+  with a finger in each setup. The Brain can also show a plugged-in motor's live readings on its device information
+  screen, which makes the turn-counting sensor visible.
+
+  **Looking ahead.** There is no single right answer in step 9. A torque-geared bot pushes hard but is slow to get
+  position. Pushing force is also limited by how well the wheels grip the floor, which teams meet in Build the Drive Base.
+standards:
+  - code: 6-8.CS.a.4
+    how: Students identify the parts of a Smart Motor (motor, gears, turn-counting sensor) and how its cable carries power and data to and from the Brain.
+  - code: 6-8.CT.b.2
+    how: Students predict how many turns come out for a given number of turns in, for gear pairs they have and have not built, then test the prediction.
+  - code: 6-8.CS.a.5
+    how: Teams build a gear tester, use it to lift a weight two ways, and show the teacher the gearing they would choose for a pushing robot.

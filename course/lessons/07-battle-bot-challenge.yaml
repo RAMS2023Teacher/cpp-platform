@@ -1,0 +1,306 @@
+id: battle-bot-challenge
+title: Battle Bot Challenge
+tagline: Inspect, practice, improve, and compete in robot sumo
+minutes: 90          # one or two class periods: Part 1 gets ready, Part 2 is the tournament
+
+mission:
+  big_question: "How do engineers make a robot better between one match and the next?"
+  goal: |
+    It's tournament day. Your battle bot meets other robots in the ring, and **you** are the driver.
+    Winning teams don't just show up. They **inspect** their robot, **practice**, **change one thing**, and
+    **test again**. Today you'll pass tech inspection, warm up, keep an engineering log, and play your matches
+    like good sports.
+  picture:
+    type: flow
+    loop: true
+    steps:
+      - {icon: "🔍", label: "Test", color: "#2f6bff"}
+      - {icon: "📝", label: "Record what happened", color: "#9b51e0"}
+      - {icon: "🔧", label: "Change ONE thing", color: "#ff8a1f"}
+      - {icon: "🏆", label: "Compete", color: "#e0a800"}
+    caption: Every match is also a test.
+  you_need:
+    - Your team and your battle bot
+    - Your Controller, paired with your Brain
+    - Charged batteries for the robot and the Controller
+    - The ring, taped on the floor
+    - A ruler and a timer
+  learn:
+    - "how a **tech inspection** catches problems before a match"
+    - "how to **test, change one thing, and test again**"
+    - "how gears, traction and center of gravity decide a real match"
+  talk: Your robot loses its first round. What are two helpful things your team could do in the next two minutes? What is one thing that would not help?
+
+build:
+  - part: "Part 1: Get ready"
+    title: Tech inspection
+    say: |
+      Every robot competition starts with a **tech inspection**. It keeps matches fair and safe, and it
+      catches small problems before they cost you a round. Go down the list as a team. Fix anything that fails
+      before you move on.
+    do:
+      - "**Size:** measure your robot. It must fit inside your teacher's size limit."
+      - "**Batteries:** the robot battery and the Controller battery are charged and clicked in."
+      - "**Cables:** every cable is pushed in until it clicks, and tucked inside the frame."
+      - "**Code:** your battle bot program is downloaded. Start it and check that both sticks and your buttons work."
+      - "**Driver:** choose a driver for the first match. Everyone else is pit crew."
+    tip: "**Watch out:** a loose battery is the most common reason a robot \"dies\" in the middle of a match."
+    test:
+      - Our robot fits inside the size limit
+      - Batteries are charged and cables are tucked in
+      - Our program is on the Brain and the Controller drives the robot
+      - We chose our first driver
+    fields: ["First driver", "Pit crew"]
+
+  - part: "Part 1: Get ready"
+    title: Fix the pit crew's bug
+    say: |
+      Another team's driver says, "My robot goes forward and back, but it **won't turn**!" Their program is in
+      the editor. It has **one** bug, and the bug is not a typing mistake, so there is no error message.
+      Find it by testing.
+    do:
+      - Press **Run**. Try to spin the robot with **W** and the **down arrow**. Watch what the right wheel does.
+      - Read the two lines that make `leftSpeed` and `rightSpeed`. Which stick does each one read?
+      - Fix the bug. Then warm up as a driver.
+      - Push **both** cubes out of the ring without letting your robot's center cross the line.
+    stuck:
+      - "**Can't find it?** The left stick is `AxisA`. The right stick is `AxisD`."
+      - "**You keep falling out?** Hold **Z** for slow mode near the edge."
+      - "**A cube slid away?** You can also push a cube with the back of the robot."
+    sim:
+      drive: true
+      pilot: [[0, {A: 100, D: 100}], [1.3, {A: -100, D: -100}], [2.6, {A: 50, D: -50}], [3.38, {A: 100, D: 100}], [4.7, {}], [5.2, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            int leftSpeed = Controller.AxisA.position();
+            int rightSpeed = Controller.AxisA.position();
+            if (Controller.ButtonLDown.pressing()) {
+              leftSpeed = leftSpeed / 2;
+              rightSpeed = rightSpeed / 2;
+            }
+            LeftMotor.setVelocity(leftSpeed, percent);
+            RightMotor.setVelocity(rightSpeed, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 48, y: 36, heading: 0}
+        ring: {x: 48, y: 36, r: 24}
+        cubes: [{x: 48, y: 22, color: red}, {x: 62, y: 36, color: blue}]
+      checks:
+        - {type: code, pattern: "rightSpeed\\s*=\\s*Controller\\.AxisD\\.position", message: "The right motor's speed comes from the right stick (AxisD)"}
+        - {type: cubesOutOfRing, message: "Both cubes are out of the ring"}
+        - {type: stayInRing, message: "My robot stayed in the ring"}
+      solution: |
+        int main() {
+          while (true) {
+            int leftSpeed = Controller.AxisA.position();
+            int rightSpeed = Controller.AxisD.position();
+            if (Controller.ButtonLDown.pressing()) {
+              leftSpeed = leftSpeed / 2;
+              rightSpeed = rightSpeed / 2;
+            }
+            LeftMotor.setVelocity(leftSpeed, percent);
+            RightMotor.setVelocity(rightSpeed, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    ask: There was no error message. How did you find the bug anyway?
+
+  - part: "Part 1: Get ready"
+    title: Practice match
+    say: |
+      A practice match doesn't count, so use it to **learn**. The driver drives. The pit crew **watches the
+      robot**, not the other team. Look for three things: do the wheels slip, does the robot tip, and does
+      anything bend or fall off?
+    do:
+      - Find another team that is ready. Take turns in the practice ring, or push your textbook stack if the ring is busy.
+      - Play one round. Start only when the referee says "3, 2, 1, go".
+      - Right after the round, tell each other what you saw. Write it down before you forget.
+    test:
+      - We played a practice round or did a timed push
+      - The pit crew watched for slipping, tipping and loose parts
+    fields: ["What worked", "What went wrong"]
+    ask: What is the ONE problem that hurt your robot the most in practice?
+
+  - part: "Part 1: Get ready"
+    title: Pit stop
+    say: |
+      Now fix that one problem. This is your **engineering log**. Real engineers write down what they changed
+      and what happened, so they know what worked. Change **one** thing only. If you change two things and
+      the robot gets better, you won't know why.
+    do:
+      - "Wheels slipped? Move weight over the drive wheels, or check that the wedge isn't lifting them."
+      - "Robot tipped? Move heavy parts lower, or make the mechanism shorter."
+      - "Something bent or fell off? Add a pin or a brace."
+      - "Driver trouble? Practice with slow mode, or switch drivers."
+      - Make your one change. Test it with a push against the textbooks or another practice round.
+    tip: "**Watch out:** measure the robot again after any change. It still has to fit the size limit."
+    test:
+      - We changed ONE thing
+      - We tested the robot after the change
+      - The robot still passes inspection
+    fields: ["The problem", "The ONE thing we changed", "Test result after the change"]
+    ask: Did the change fix the problem? How do you know?
+
+  - part: "Part 2: The tournament"
+    title: Rules and good sports
+    say: |
+      Your teacher will put the match list on the board. Before the first match, everyone agrees on the
+      rules and on how to treat each other. A team that wins rudely has not really won.
+    do:
+      - "**Rules check:** two robots start inside the ring. You lose a round if your robot leaves the ring or doesn't move for 10 seconds. A match is the best of 3 rounds."
+      - "**Allowed:** pushing. **Not allowed:** damaging the other robot or lifting it off the ground."
+      - "**The referee's call is final.** Only drivers touch controllers. Nobody touches a robot until the referee says \"stop\"."
+      - "**Before each match:** say \"good luck\". **After:** say \"good match\", win or lose."
+      - "**Stay behind the tape** around the ring unless you are placing or picking up your robot."
+    test:
+      - Our team can say the two ways to lose a round
+      - We know only the driver touches the controller during a match
+      - We agreed to say good luck and good match
+    ask: What does a good teammate say to a driver who just lost a round?
+
+  - part: "Part 2: The tournament"
+    title: Match time
+    say: |
+      When your team is called, bring your robot and Controller to the ring. Put the robot down where the
+      referee shows you. Start your program. Hands off until "go". After each match, write down the result
+      right away.
+    do:
+      - Find your matches on the board. When you are not playing, watch the other robots. You can learn from every match.
+      - Play your matches. Switch drivers between matches if your team wants to.
+      - "For each match, write who you played and the score in rounds, like **W 2-1** or **L 0-2**."
+      - Pick up your robot only after the referee says "stop". Stop the program first.
+    stuck:
+      - "**The robot won't move at the start?** Check that the program is running and the Controller is on."
+      - "**It died in the middle of a round?** Check the battery and the motor cables before the next round."
+    test:
+      - We played all our matches
+      - We wrote down every result
+    fields: ["Match 1: other team and score", "Match 2: other team and score", "Match 3: other team and score", "Wins and losses"]
+
+  - part: "Part 2: The tournament"
+    title: Between matches
+    say: |
+      The time between matches is short, and it matters. Do a quick check first: battery, cables, loose
+      parts. Then decide if you want to change **one** thing for the next robot you face. Sometimes the
+      smartest choice is to change nothing.
+    do:
+      - "Quick check: battery clicked in, cables tucked, nothing loose, wheels turn freely."
+      - Talk about the robot you face next. Is it fast? Heavy? Does it have a wedge?
+      - Make one change, or choose a new plan for the driver. Write it in your log.
+    test:
+      - We did a quick check between matches
+      - We wrote down a change or a plan for the next match
+    fields: ["What we saw in our last match", "Our change or plan for the next one"]
+    ask: Did your change or plan work in the next match? What is your evidence?
+
+  - part: "Part 2: The tournament"
+    title: Debrief
+    say: |
+      The matches are over. Now think like an engineer about **why** robots won. It was not luck. It was
+      **gears** (pushing power or speed), **traction** (grip on the floor), **center of gravity** (staying
+      upright), a strong frame, and a calm driver.
+    do:
+      - Think of the robot that was hardest to beat. Talk about what made it so good.
+      - Think of a round your robot lost. Was it traction, tipping, power, something breaking, or driving?
+      - Shake hands with a team you played and tell them one thing you liked about their robot.
+      - Show your teacher your robot and your engineering log.
+    test:
+      - We talked about why the best robot was hard to beat
+      - We told another team one thing we liked about their robot
+      - We showed our teacher our robot and our log
+    fields: ["The hardest robot to beat, and why", "What we would change first"]
+    ask: Pick traction, center of gravity or gears. Explain how it helped or hurt a robot in a match you saw today.
+
+quiz:
+  - question: Your robot lost a practice round. Your team changes the wedge, moves the battery and switches drivers, all at once. The robot does better. What is the problem?
+    choices: ["Nothing, because better is better", "You can't tell which change helped", "Three changes are against the rules", "The robot is now too heavy"]
+    answer: 1
+    why: Change one thing and test again. Then you know exactly what made the difference.
+  - question: In a match, your wheels spin but your robot doesn't push the other robot. What does your robot need?
+    choices: ["More traction", "A higher center of gravity", "A longer program", "A taller frame"]
+    answer: 0
+    why: Spinning wheels mean the tires are slipping. Rubber tires and more weight over the drive wheels add traction.
+  - question: A tall robot keeps falling over when it gets pushed. Which fix helps the most?
+    choices: ["Add a flag on top", "Move the Brain and battery lower", "Drive faster", "Take off the rubber tires"]
+    answer: 1
+    why: Moving heavy parts lower gives the robot a lower center of gravity, so it is harder to tip.
+  - question: "A driver pushes only the **left stick** all the way up. What does the robot do?\n\n`int leftSpeed = Controller.AxisA.position();`\n\n`int rightSpeed = Controller.AxisA.position();`\n\n`LeftMotor.setVelocity(leftSpeed, percent);`\n\n`RightMotor.setVelocity(rightSpeed, percent);`"
+    choices: ["Spins in place", "Drives straight forward", "Turns left", "Nothing"]
+    answer: 1
+    why: Both variables read AxisA, the left stick. Both motors get 100, so the robot drives straight and the right stick does nothing.
+  - question: Which of these is part of a tech inspection?
+    choices: ["Checking the size, batteries, cables and code before a match", "Taking the other team's robot apart", "Picking the winner before the match", "Painting the robot"]
+    answer: 0
+    why: Inspection makes sure every robot is legal, safe and ready, so matches are fair and nothing fails for a silly reason.
+
+ship:
+  turn_in: show
+  note: Show your teacher your battle bot and your engineering log. Your match results are turned in with your answers.
+  extensions:
+    - title: Robot name card
+      level: Easier
+      goal: Make a name card for your robot with its name, its mechanism and its biggest strength. Tape it to your pit table.
+      hints:
+        - "Add your win and loss record at the end of the day."
+        - "You can also print the robot's name on the Brain screen, above the `while (true)` loop."
+    - title: Scout report
+      level: Medium
+      goal: Watch a match you are not in. Write down each robot's mechanism and why the winner won, using traction, center of gravity or gears.
+      hints:
+        - "Watch the wheels. Did they slip?"
+        - "Watch the moment the round was decided. What happened just before it?"
+    - title: Version 2 plan
+      level: Challenge
+      goal: Sketch version 2 of your battle bot. Label three changes and the reason for each, using what you saw in your matches.
+      hints:
+        - "Every change needs evidence, like \"we tipped twice, so the battery moves down\"."
+        - "Would you trade speed for pushing power with different gears? Why or why not?"
+  reflect:
+    - What was the most useful change your team made today, and what was your evidence that it worked?
+    - How was your team a good sport today? Give one example.
+
+teacher_notes: |
+  **Pacing.** Two periods works best. Day 1: Mission and Part 1 (inspection, the simulator warm-up, practice
+  matches and one pit stop). Day 2: Part 2 (the tournament and debrief), then the quiz and Ship it. For one
+  period, do inspection and the pit stop quickly, skip the practice match, and run a short bracket.
+
+  **Before class.** Tape the ring on a smooth floor (about 4 feet across works for two IQ robots) with a second
+  line a step back for spectators. Tape a practice ring too if you have room. Charge every battery and have spares.
+  Post the size limit and the rules. Draw the match list on the board: a **round robin** in groups of 3 or 4 teams
+  gives every team at least 2 or 3 matches; the group winners can then play a short **bracket**. Students record
+  their own results in the Match time step.
+
+  **Running matches.** One referee (you or a student) counts "3, 2, 1, go", watches the line and counts out loud
+  when a robot stops moving. Decide ahead what "leaves the ring" means (for example, any wheel fully outside the
+  tape) and say it before the first match. Give each round a time limit, such as 60 seconds; if nobody is out, the
+  robot nearer the center wins the round. Teams waiting for a match can be timers, scorekeepers or scouts.
+
+  **Common trouble.** Crossed controllers: label each Controller and Brain with the team number, and turn on only
+  the two robots in the ring if links get confused. Dead batteries mid-match. Robots that grew past the size limit
+  during a pit stop. Teams changing several things at once (send them back to the Pit stop step).
+
+  **Safety.** Everyone except the two drivers stays behind the spectator line. Nobody reaches into the ring until
+  the referee says "stop" and both programs are stopped. Robots are carried with two hands, never by the
+  mechanism. No sharp, loose or spinning attachments. Stop a round at once if a robot is being damaged, a part
+  breaks off, or a robot leaves the ring toward people's feet.
+
+  **Sportsmanship.** Give a "good sport" shout-out or the Teacher's Pick badge to a team that helped another team
+  fix its robot. Keep the debrief on why robots won, not on who won.
+standards:
+  - code: 6-8.CS.a.5
+    how: Teams demonstrate their battle bot in driver-controlled matches under a shared set of rules.
+  - code: 6-8.CT.d.6
+    how: Teams keep an engineering log, changing one thing at a time and testing after every change.
+  - code: 6-8.CS.a.7
+    how: Students run a tech inspection and diagnose battery, cable and controller problems between matches.
+  - code: 6-8.CT.d.5
+    how: Students trace a driving program to find a logic bug that gives no error message.
+  - code: 6-8.CT.e.3
+    how: Students use the simulator to practice and test a driving plan before the real matches.

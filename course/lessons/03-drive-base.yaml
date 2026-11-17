@@ -1,0 +1,295 @@
+id: drive-base
+title: Build the Drive Base
+tagline: Build the robot you'll drive, code and battle with all course
+minutes: 80          # about two class periods: Part 1 frame, motors and wheels; Part 2 Brain, ports and testing
+
+mission:
+  big_question: "What makes a robot strong enough to trust?"
+  goal: |
+    Today your team builds the **BaseBot** drive base from the VEX IQ build instructions. It is the robot you'll
+    use for the rest of the course, so it has to be built **right**. You'll learn why joints need two pins,
+    work in **roles**, pass three **checkpoints**, plug the motors into the correct **Smart Ports**, and drive it.
+  picture: {type: vex, names: [basebot], caption: "The finished BaseBot: a frame, two motors, wheels, and the Brain on top."}
+  you_need:
+    - A team of two or three
+    - A VEX IQ kit (1st generation) with a charged battery
+    - The BaseBot build instructions (paper or on a screen)
+    - 2 Smart Motors, the Brain and Smart Cables
+    - A Gyro Sensor, if your kit has one
+  learn:
+    - "**two pins** stop a joint from swinging, and **bracing** stops a frame from leaning"
+    - "how a team builds with **roles** and **checkpoints**"
+    - "the Brain only knows a motor by its **Smart Port**"
+    - "how to **inspect** a robot before you trust it"
+  talk: Think of something you built that wobbled or fell apart, like a shelf, a tent or a tower of blocks. What made it weak? What would have fixed it?
+
+build:
+  - part: "Part 1: Frame, motors and wheels"
+    title: Know your parts
+    say: |
+      VEX IQ parts all fit one grid. The distance from one hole to the next is called the **pitch**, and it is
+      always the same. A **beam** is named by its holes: a **1x8** beam is 1 hole wide and 8 holes long.
+      A **2x12** beam is 2 wide and 12 long. The build instructions name every part this way, so
+      counting holes is how you find the right one.
+    picture: {type: vex, names: [beams, beamlengths], caption: "Beams and plates are named by their holes: width x length."}
+    do:
+      - Open your kit. Find one beam and count its holes. Say its name, such as "1x8".
+      - Open the build instructions to the first page. Find the list of parts for step 1.
+      - Find each part for step 1 in the kit and lay it on the table.
+    tip: "**Watch out:** a 1x8 and a 1x10 beam look almost the same. Count the holes every time, or line the beam up against the life-size picture in the instructions if there is one."
+    test:
+      - I can name a beam by counting its holes
+      - The parts for step 1 are on the table
+    ask: Why do you think every VEX IQ part uses the same distance between holes?
+
+  - part: "Part 1: Frame, motors and wheels"
+    title: One pin swings, two pins hold
+    say: |
+      A **pin** snaps two parts together. But one pin is also a **hinge**: the parts can swing around it.
+      A second pin stops the swing. Four beams pinned into a rectangle can still lean over into a slanted shape.
+      A **brace**, such as a diagonal beam that makes a **triangle** or a corner connector, locks it. Triangles don't lean.
+    picture: {type: vex, names: [pins, connectors], caption: "Pins join parts flat together. Corner connectors join them at an angle."}
+    do:
+      - Join two beams with **one** pin. Try to swing them like scissors.
+      - Add a **second** pin. Try to swing them again.
+      - Push a pin in until you feel it **click**. A pin that is only halfway in will work loose later.
+    test:
+      - With one pin, my two beams swing
+      - With two pins, my two beams are stiff
+    ask: Look at the frame in the build instructions. Find one joint that uses two or more pins. What would happen to the robot if it had only one?
+
+  - part: "Part 1: Frame, motors and wheels"
+    title: Pick your roles
+    say: |
+      Good teams don't all grab parts at once. Each person has a **role**, and the roles **swap at every checkpoint**
+      so everyone builds. With two people, the Builder's partner is both Parts Manager and Inspector.
+    picture:
+      type: compare
+      items:
+        - {icon: "🔧", title: "Builder", text: "puts the parts together, one step at a time"}
+        - {icon: "🧰", title: "Parts Manager", text: "reads the step, finds the parts, counts the holes"}
+        - {icon: "🔍", title: "Inspector", text: "checks each step against the picture before the next one starts"}
+    do:
+      - Decide who starts in each role.
+      - Agree on one rule now. The Builder does not start the next step until the Inspector says "checked".
+    test:
+      - Everyone on my team has a role
+      - We know when we will swap
+    fields: ["Builder", "Parts Manager", "Inspector"]
+    ask: Why is it faster in the end to have someone check every step, even though it feels slower right now?
+
+  - part: "Part 1: Frame, motors and wheels"
+    title: "Checkpoint 1: the frame"
+    say: |
+      Start building. Follow the build instructions **one step at a time**, in order.
+      The first steps make the **frame** (also called the chassis). Everything else hangs on it, so it must be
+      flat, square and stiff. When the frame is done, stop for Checkpoint 1.
+    picture: {type: vex, names: [basebotbuild], caption: "The frame carries everything: motors, wheels, the Brain and the battery."}
+    do:
+      - Build the frame steps from the instructions.
+      - "**Inspector:** hold the frame by one corner and give it a gentle twist and shake."
+      - "**Inspector:** compare it with the picture in the instructions from the top and from the side."
+      - Fix anything that fails, then swap roles.
+    stuck:
+      - "**A pin won't go in?** Check you have the right hole. Don't force it. Line the holes up first."
+      - "**The frame doesn't match the picture?** Count holes from the end of the beam. A part is usually one hole off."
+      - "**Need to pull a pin out?** Push it from the back with a spare shaft or beam, not your teeth."
+    test:
+      - The frame matches the picture, hole for hole
+      - Every pin is pushed in until it clicked
+      - The frame does not bend or lean when twisted gently
+    ask: The Inspector twisted the frame. What was that test looking for?
+
+  - part: "Part 1: Frame, motors and wheels"
+    title: "Checkpoint 2: motors and wheels"
+    say: |
+      Next come the **Smart Motors**, the **shafts** and the **wheels**. Remember Motors and Gears: a square shaft
+      **grips** a square hole and **spins** in a round one. The wheels touch the floor, so their **grip** is what
+      turns motor power into movement. A wheel that slips wastes it.
+    do:
+      - Build the motor and wheel steps from the instructions.
+      - "**Inspector:** lift the robot and spin each wheel by hand. It should turn smoothly, with a little push back from the motor."
+      - "**Inspector:** put the robot on the table. All the wheels should touch. Push it gently forward and back."
+      - Feel the tires. Are they rubber, or do they have small rollers around the edge? Tell your team what you notice.
+      - Fix anything that fails, then swap roles.
+    stuck:
+      - "**A wheel is very stiff?** Something is rubbing. Look for a wheel or collar pressed tight against a beam."
+      - "**A wheel wobbles or slides off?** The shaft is not all the way in, or a shaft collar is missing."
+      - "**A wheel spins but the motor doesn't feel connected?** The shaft is not in the motor's square hole."
+    test:
+      - Both motors are fixed to the frame and do not wiggle
+      - Every wheel turns smoothly and does not rub
+      - All the wheels touch the table at the same time
+    ask: A rubber tire grips the floor well. When would lots of grip help a robot? Can you think of a time it might get in the way?
+
+  - part: "Part 2: Brain, ports and testing"
+    title: "Checkpoint 3: Brain and battery"
+    say: |
+      The **Brain** is the robot's computer. The **battery** is its power, the first thing every circuit needs.
+      Together they are also the heaviest parts, so where they sit matters. The instructions put them low
+      and near the middle so the robot does not tip.
+    do:
+      - Build the steps that mount the Brain onto the frame.
+      - Slide the battery into the Brain until it **clicks**.
+      - "**Inspector:** check the screen and buttons face up and are easy to reach, and the ports are not blocked."
+      - "**Inspector:** hold the robot and tilt it gently in every direction. Nothing should slide or rattle."
+      - Fix anything that fails, then swap roles.
+    stuck:
+      - "**The battery won't click in?** Check it is the right way round and slide it in straight."
+      - "**The Brain rocks on the frame?** A pin under it is missing or not pushed in."
+    test:
+      - The Brain is pinned to the frame and does not rock
+      - The battery is clicked in
+      - I can reach the screen, the buttons and the ports
+    ask: Why do the instructions put the heavy Brain and battery low and near the middle, not high up or hanging off one end?
+
+  - part: "Part 2: Brain, ports and testing"
+    title: Plug into Smart Ports
+    say: |
+      The Brain has 12 numbered **Smart Ports**. Each one is a socket for one Smart Cable, and each cable makes a
+      circuit that carries power and data, like in Light It Up. The Brain cannot see your robot.
+      It only knows "the motor on Port 1". So every team uses the **same ports**, and code written for one
+      robot works on all of them.
+    wiring:
+      - "Find the small numbers printed next to the ports on the Brain."
+      - "Plug the **left** motor into **Port 1**. Left means the robot's left, when you stand behind it."
+      - "Plug the **right** motor into **Port 6**."
+      - "If you have a **Gyro Sensor**, attach it where the instructions show and plug it into **Port 4**."
+      - "Push each plug in until it **clicks**. Tuck loose cable away from the wheels."
+    tip: "**Watch out:** left and right are easy to mix up when the robot faces you. Stand **behind** the robot, the way a driver sits in a car."
+    stuck:
+      - "**A cable won't reach?** Swap it for a longer one. Don't stretch it."
+      - "**A plug falls out?** It did not click. Push until you hear it."
+    test:
+      - The left motor is in Port 1
+      - The right motor is in Port 6
+      - Every plug clicked, and no cable can touch a wheel
+    ask: Two teams swap the cables in Ports 1 and 6 by mistake. Their code says "turn left". What do you think the robot does, and why?
+
+  - part: "Part 2: Brain, ports and testing"
+    title: Smoke test
+    say: |
+      Engineers call the first power-up a **smoke test**: switch it on and see that nothing goes wrong.
+      The Brain comes with a built-in program called **Driver Control**. It lets the **controller** drive the motors
+      with no code at all. You will write your own driving code in Take the Wheel.
+    do:
+      - Ask your teacher how to **pair the controller** with your Brain.
+      - Put the robot on the floor with clear space around it. Turn on the Brain.
+      - Find **Driver Control** in the Brain's list of programs and start it.
+      - Push the joysticks **gently**. Try forward, backward, and a turn each way.
+      - Swap drivers so everyone on the team has a turn.
+    stuck:
+      - "**Nothing moves?** Check the battery is clicked in, the Brain is on, and the controller is paired."
+      - "**Only one side moves?** A cable is loose, or a motor is in the wrong port. Check Ports 1 and 6."
+      - "**It drives the wrong way or spins on the spot?** The two motor cables are probably swapped."
+      - "**It drives, then a wheel drops off?** Back to Checkpoint 2."
+    test:
+      - Both sides of the robot drive forward and backward
+      - The robot can turn left and turn right
+      - Nothing came loose while driving
+    ask: The robot moved without any code from you. So where did its instructions come from?
+
+  - part: "Part 2: Brain, ports and testing"
+    title: Final inspection
+    say: |
+      Real robot teams pass an **inspection** before every match. Yours happens now.
+      The Inspector leads, and the whole team answers for the robot. Then show your teacher.
+      From today on, this robot is your team's responsibility.
+    picture: {type: vex, names: [basebot], caption: "Compare your robot with the finished BaseBot one last time."}
+    do:
+      - "**Shake test:** hold the robot up and shake it gently. Nothing rattles, nothing falls off."
+      - "**Pin check:** look along every side. No pin is sticking out halfway."
+      - "**Wheel check:** every wheel turns smoothly, and all of them touch the floor."
+      - "**Port check:** left motor Port 1, right motor Port 6, Gyro Sensor Port 4 if you have one."
+      - "**Tidy check:** cables are clear of the wheels, the robot is switched off, and spare parts are back in the kit."
+    test:
+      - Our robot passed the shake test and the pin check
+      - Our robot passed the wheel check and the port check
+      - Spare parts are sorted back into the kit
+      - We showed our teacher the robot driving
+    fields: ["Inspector", "One thing we had to fix"]
+    ask: What was the most important problem your Inspector caught? What would have happened later if nobody had caught it?
+
+quiz:
+  - question: Two beams are joined with a single pin. What can they still do?
+    choices: ["Nothing. They are locked", "Swing around the pin like a hinge", "Slide apart", "Carry more weight"]
+    answer: 1
+    why: One pin is a pivot. A second pin stops the swing and makes the joint stiff.
+  - question: What does "1x8" mean on a VEX IQ beam?
+    choices: ["It weighs 8 grams", "It is 1 hole wide and 8 holes long", "It is 8 inches long", "It needs 8 pins"]
+    answer: 1
+    why: Beams are named by their holes, width by length. Counting holes is how you find the right part.
+  - question: Which Smart Ports does every team use for the drive motors?
+    choices: ["Left motor Port 1, right motor Port 6", "Left motor Port 6, right motor Port 1", "Both motors in Port 1", "Any ports that are free"]
+    answer: 0
+    why: The Brain only knows a motor by its port. If every robot uses Ports 1 and 6, the same code works on all of them.
+  - question: In the smoke test, only the left side of the robot drives. What should you check first?
+    choices: ["Rebuild the whole frame", "The right motor's cable and its port", "The color of the wheels", "Get a new controller"]
+    answer: 1
+    why: Start with the simplest cause. A cable that is loose or in the wrong port is the most common reason a motor does not run.
+  - question: Why does the Inspector check each step before the Builder goes on?
+    choices: ["To slow the team down", "A mistake found early is quick to fix, but a buried one means taking the robot apart", "Because the Builder is not allowed to look at the instructions", "So only one person does the work"]
+    answer: 1
+    why: A part that is one hole off in step 3 can stop step 12 from fitting. Catching it right away saves time.
+
+ship:
+  turn_in: show
+  note: Show your teacher your finished drive base driving with the controller, and your inspection checklist.
+  extensions:
+    - title: Name it
+      level: Easier
+      goal: Give your robot a name and a team label, so nobody mixes it up with another team's robot.
+      where: On the frame or the Brain, where the label can't touch a wheel or cover a port.
+      hints:
+        - "Masking tape and a marker work well and peel off cleanly."
+        - "Add your class period, so your teacher can find the robot's shelf."
+    - title: Driving test
+      level: Medium
+      goal: Mark a start line and a finish line with tape, about 6 feet apart. Each driver drives there and back three times. Time each run.
+      where: On the floor, with the Brain's Driver Control program.
+      hints:
+        - "Does the robot drift to one side on its own? Look for a wheel that rubs."
+        - "Compare drivers. Is the fastest run also the straightest?"
+    - title: Add a brace
+      level: Challenge
+      goal: Find the place where your robot flexes the most when you twist it gently. Add one beam or connector to stiffen it, without blocking a wheel, a port or the battery.
+      where: Anywhere on the frame. Keep the motors on Ports 1 and 6.
+      hints:
+        - "Twist the robot gently and watch where the gaps open."
+        - "A diagonal beam makes a triangle, and triangles don't lean."
+        - "Make sure the battery can still slide out for charging."
+  reflect:
+    - Which role did you like best, and what did your team do well as a team?
+    - The Brain only knows a motor by its port. Explain why putting a motor in the wrong port causes trouble.
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5). Keep steps 1-3 to about 10 minutes so teams get
+  25-30 minutes on the frame, motors and wheels. Day 2: Part 2 (steps 6-9), the quiz and Ship it. A team that falls
+  behind on Day 1 can finish Checkpoint 2 at the start of Day 2; the smoke test takes only a few minutes per team.
+
+  **Before class.** Charge every battery. Print the BaseBot build instructions for 1st generation kits, or put the
+  PDF where students can open it. Check that each kit has its two Smart Motors, wheels, Brain, cables and (if you
+  use it) a Gyro Sensor. Make sure radios are fitted in the Brains and controllers, and decide how you will pair them:
+  do it yourself before class, or show the class once at the start of Day 2. Label each kit and a shelf space per team.
+
+  **The checkpoints.** The three checkpoints follow the order of the build instructions: frame, then motors and
+  wheels, then Brain and battery. If your instructions use a different order, tell the class which pages belong to
+  which checkpoint. Initial each team's checkpoint as you walk around, or let Inspectors sign off and spot-check.
+
+  **Common trouble.** Beams one hole off (a 1x8 where a 1x10 belongs). Pins only half pushed in. Shafts not fully in the
+  motor. A wheel pressed against the frame so it rubs. Motor cables swapped between Ports 1 and 6. Cables hanging
+  into the wheels. A controller paired to a different team's Brain.
+
+  **Things to check on your own kits.** The exact name and place of the Driver Control program on your Brains, which
+  joystick drives which motor in it, and what a robot with swapped motor cables does. Students are told to ask you
+  about pairing rather than follow written steps.
+
+  **Check for understanding.** Ask a team: "Which port is your left motor in? What would the Brain do if you moved it?"
+  Ask an Inspector to show you one thing they caught.
+standards:
+  - code: 6-8.CS.a.5
+    how: Teams build a drive base together in roles and show it driving under controller control.
+  - code: 6-8.CS.a.4
+    how: Students connect the robot's actuators (Smart Motors) and a sensor (Gyro) to its control system (the Brain) and explain why the port matters.
+  - code: 6-8.CS.a.7
+    how: Students diagnose power, cable and port problems during the smoke test, and inspect the robot against a checklist.

@@ -1,0 +1,573 @@
+id: battle-bot-design
+title: Battle Bot Design
+tagline: Design, build and code a robot that wins a pushing match
+minutes: 90          # about two class periods: Part 1 design and build, Part 2 code and test
+
+mission:
+  big_question: "What makes one robot able to push another robot out of the ring?"
+  goal: |
+    Next lesson is the **Battle Bot Challenge**: robot sumo, with you driving. Today your team turns your drive
+    base into a battle bot. You'll learn what wins a pushing match, read the rules, sketch a design, and build
+    **one** mechanism. Then you'll code controller **buttons** with `if / else` and test your robot against
+    something heavy.
+  picture: {type: vex, names: [plowbot], caption: "A plow on the front turns a drive base into a pusher."}
+  you_need:
+    - Your team and your drive base
+    - Your Controller and a USB cable
+    - Extra beams, plates, pins and connectors
+    - One more Smart Motor, if you build a lifter arm
+    - A heavy thing to push, like a stack of 3 textbooks
+    - Paper and a pencil
+  learn:
+    - "**traction** (grip) and a **low center of gravity** win pushing matches"
+    - "`if / else if / else` lets a button choose what a motor does"
+    - "a **variable** can hold a speed, so one button can cut it in half"
+  talk: A small, low sumo wrestler sometimes beats a taller one. How could a robot that is not the strongest still win a pushing match?
+
+build:
+  - part: "Part 1: Design and build"
+    title: Grip wins
+    say: |
+      A wheel can only push as hard as it **grips** the floor. That grip is called **traction**. When a wheel
+      spins but the robot doesn't move, traction has run out. Two things give more traction: **rubber tires**
+      (rubber grips, hard plastic slides) and more **weight** pressing down on the wheels the motors turn.
+    do:
+      - Put your robot on the floor facing a stack of 3 textbooks. Run your driving program from Take the Wheel.
+      - Push both sticks up. Do the books move, or do the wheels spin in place?
+      - Now rest one more book flat on top of your robot, over the drive wheels. Try again.
+      - "Write down what happened each time: **moved**, **slipped** or **stalled** (the motors stopped)."
+    tip: "**Watch out:** if the motors stall and the robot doesn't move, let go of the sticks. Holding a stalled motor wastes battery and heats the motor."
+    test:
+      - We tried to push the books with no extra weight
+      - We tried again with weight over the drive wheels
+    fields: ["With no extra weight", "With weight over the drive wheels"]
+    ask: Which try pushed better? Use the word traction to explain why.
+
+  - part: "Part 1: Design and build"
+    title: Stay low
+    say: |
+      Every robot has a **center of gravity**: the balance point of all its weight. A **high** center of gravity
+      tips over easily. A **low** one stays planted. Keep heavy parts, like the Brain and battery, low and
+      between the wheels. A **wedge** is a low ramp on the front. It slides under the other robot and lifts
+      its wheels a little, so that robot loses traction.
+    do:
+      - "Tip test: slowly tilt your robot to one side with a finger until it starts to fall over. Then tilt it forward. Notice how far it leans each time."
+      - Find the heaviest parts of your robot. Are they high up or low down?
+      - Look at the front of your robot from the side. Could another robot's wedge slide under it?
+    picture:
+      type: compare
+      items:
+        - {icon: "🗼", title: "Tall and narrow", text: "Weight is high. A small push tips it over."}
+        - {icon: "🐢", title: "Low and wide", text: "Weight is low. It stays on its wheels and keeps pushing."}
+    test:
+      - We did the tip test to the side and to the front
+      - We found the heaviest parts of our robot
+    ask: Which way does your robot tip most easily? What could you move or add to make it harder to tip?
+
+  - part: "Part 1: Design and build"
+    title: Know the rules
+    say: |
+      Engineers design for the rules. These are the rules of the **Battle Bot Challenge**. Read them before
+      you sketch anything.
+    do:
+      - "**Start:** two robots start inside a taped circle, the ring."
+      - "**You lose a round if** your robot leaves the ring, or it does not move for 10 seconds."
+      - "**A match** is the best of 3 rounds."
+      - "**Allowed:** pushing. **Not allowed:** damaging the other robot, or lifting it off the ground."
+      - "**Size:** your robot must fit inside the size limit your teacher sets. Ask for it and write it down."
+    test:
+      - We read every rule out loud as a team
+      - We wrote down the size limit
+    fields: ["Size limit (from your teacher)"]
+    ask: Which rule will change your design the most? Why?
+
+  - part: "Part 1: Design and build"
+    title: Sketch and choose
+    say: |
+      You have time to build **one** mechanism well. Choose a **front wedge or plow** (no motor, hard to break)
+      or a **lifter arm** on a third motor (it raises and lowers a plow, but there is more to build and code).
+      Also think back to Motors and Gears: gearing for **strength** makes you slower, and gearing for
+      **speed** makes you weaker.
+    do:
+      - Each teammate draws a quick side view of an idea. Two minutes, no talking.
+      - Share the sketches. Pick one design, or mix the best parts.
+      - "On the team sketch, label: the mechanism, where the weight goes, and where you'll add a brace."
+      - Show your sketch to your teacher before you build.
+    tip: "**Watch out:** an arm may tilt the other robot's front edge. It may **not** lift that robot off the ground."
+    test:
+      - Everyone on the team drew an idea
+      - We chose ONE mechanism and labeled our sketch
+      - Our teacher saw the sketch
+    fields: ["Our mechanism", "Where our weight goes"]
+    ask: Why did your team pick this mechanism? Name one thing you gave up to get it.
+
+  - part: "Part 1: Design and build"
+    title: Build it
+    say: |
+      Build your mechanism onto the drive base. Remember Build the Drive Base: a part held by **one** pin
+      spins. Two pins hold it straight. A **brace** makes a triangle, and a triangle doesn't fold when it is
+      hit. Your battle bot will be hit a lot.
+    wiring:
+      - "Lifter arm teams only: plug the arm's Smart Motor into **Port 10**."
+      - "Tuck every cable inside the frame so nothing can snag it."
+    do:
+      - Build the wedge, plow or arm from your sketch. Keep it low, close to the floor but not dragging.
+      - "Wiggle test: grab the mechanism and shake it gently. Add pins or a brace to anything that moves."
+      - Check the size limit with a ruler.
+      - Drive it. Make sure the wheels still turn freely and nothing rubs.
+    picture: {type: vex, names: [plowbot], caption: "A plow bot. Your design can look different."}
+    stuck:
+      - "**The plow drags on the floor?** Raise it by one hole. It only needs to be lower than the other robot's frame."
+      - "**The robot tips forward when it stops?** Too much weight is out front. Make the mechanism shorter or move the battery back."
+      - "**Too big?** Shorten the mechanism before you remove a brace."
+    test:
+      - Our mechanism passed the wiggle test
+      - Our robot fits inside the size limit
+      - The robot still drives and nothing rubs or drags
+
+  - part: "Part 2: Code and test"
+    title: Buttons make choices
+    say: |
+      A button gives `true` while it is held and `false` when it isn't. An **if statement** uses that to choose.
+      `if` runs its block when the test is true. `else if` checks a second test. `else` runs when **nothing**
+      above was true. Only **one** of the three blocks runs each time around the loop.
+    do:
+      - Add the highlighted lines inside the loop, under the driving lines.
+      - "Press **Run**. In the simulator, **E** is the R Up button and **C** is R Down."
+      - The simulator robot has no arm to watch, so the checks read your code. You'll see it move on your real robot.
+    code: |
+      int main() {
+        while (true) {
+          LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+          RightMotor.setVelocity(Controller.AxisD.position(), percent);
+          LeftMotor.spin(forward);
+          RightMotor.spin(forward);
+
+          if (Controller.ButtonRUp.pressing()) {
+            ArmMotor.spin(forward);
+          } else if (Controller.ButtonRDown.pressing()) {
+            ArmMotor.spin(reverse);
+          } else {
+            ArmMotor.stop();
+          }
+          wait(20, msec);
+        }
+      }
+    new: "8-14"
+    what: "Hold R Up and the arm motor spins one way. Hold R Down and it spins the other way. Let go of both and the `else` block stops it. Without the `else`, the arm would keep going after you let go."
+    tip: "**Wedge teams:** type this too. Every team needs to know `if / else`, and you may add an arm later."
+    stuck:
+      - "**An error near else?** Each block needs its own `{` and `}`. `else` goes right after a `}`."
+      - "**An error about pressing?** It needs empty parentheses: `pressing()`."
+    sim:
+      drive: true
+      pilot: [[0, {RUp: 1}], [1, {RDown: 1}], [2, {A: 50, D: 50}], [3, {}], [3.5, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            // TODO: if R Up is pressed, spin ArmMotor forward
+            // TODO: else if R Down is pressed, spin ArmMotor in reverse
+            // TODO: else stop ArmMotor
+
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 44, heading: 0}, ring: {x: 48, y: 36, r: 22}}
+      checks:
+        - {type: code, pattern: "if\\s*\\(\\s*Controller\\.ButtonRUp\\.pressing\\s*\\(\\s*\\)\\s*\\)\\s*\\{\\s*ArmMotor\\.spin\\s*\\(\\s*forward", message: "R Up spins the arm motor forward"}
+        - {type: code, pattern: "else\\s+if\\s*\\(\\s*Controller\\.ButtonRDown\\.pressing\\s*\\(\\s*\\)\\s*\\)\\s*\\{\\s*ArmMotor\\.spin\\s*\\(\\s*reverse", message: "R Down spins it in reverse"}
+        - {type: code, pattern: "else\\s*\\{\\s*ArmMotor\\.stop\\s*\\(\\s*\\)", message: "With no button pressed, the arm motor stops"}
+        - {type: drove, inches: 5, message: "The robot still drives"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+            wait(20, msec);
+          }
+        }
+    ask: A driver holds R Up and R Down at the same time. Which block runs? How do you know?
+
+  - part: "Part 2: Code and test"
+    title: Slow mode
+    say: |
+      Full speed is hard to control near the edge of the ring. A **variable** is a named box that holds a
+      number. Put each stick's number in a variable. Then an `if` can **change** the number before the motor
+      gets it. Hold L Down and both speeds are cut in half.
+    do:
+      - Change the top of the loop to match the highlighted lines.
+      - "Press **Run**. Hold **Z** (L Down) and drive toward the edge of the ring with **W** and the **up arrow**."
+      - Stop before the robot's center crosses the line. Then try it without Z and feel the difference.
+    code: |
+      int main() {
+        while (true) {
+          int leftSpeed = Controller.AxisA.position();
+          int rightSpeed = Controller.AxisD.position();
+          if (Controller.ButtonLDown.pressing()) {
+            leftSpeed = leftSpeed / 2;
+            rightSpeed = rightSpeed / 2;
+          }
+          LeftMotor.setVelocity(leftSpeed, percent);
+          RightMotor.setVelocity(rightSpeed, percent);
+          LeftMotor.spin(forward);
+          RightMotor.spin(forward);
+
+          if (Controller.ButtonRUp.pressing()) {
+            ArmMotor.spin(forward);
+          } else if (Controller.ButtonRDown.pressing()) {
+            ArmMotor.spin(reverse);
+          } else {
+            ArmMotor.stop();
+          }
+          wait(20, msec);
+        }
+      }
+    new: "3-10"
+    what: "`int leftSpeed` makes a variable for a whole number. `leftSpeed = leftSpeed / 2;` means: take what's in the box, divide it by 2, and put the answer back. This `if` has no `else`, because when the button is up there is nothing to change."
+    stuck:
+      - "**leftSpeed was not declared?** The `int leftSpeed = ...` line must come before the lines that use it."
+      - "**Slow mode does nothing?** Check that `setVelocity` uses `leftSpeed` and `rightSpeed`, not the sticks."
+    sim:
+      drive: true
+      pilot: [[0, {A: 100, D: 100, LDown: 1}], [2, {}], [2.5, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            // TODO: make int variables leftSpeed and rightSpeed from the two sticks
+            // TODO: if L Down is pressed, cut both speeds in half
+            // TODO: use the variables in the two setVelocity lines
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 36, heading: 0}, ring: {x: 48, y: 36, r: 20}}
+      checks:
+        - {type: code, pattern: "if\\s*\\(\\s*Controller\\.ButtonLDown\\.pressing\\s*\\(\\s*\\)\\s*\\)", message: "My program checks the L Down button"}
+        - {type: code, pattern: "setVelocity\\s*\\(\\s*leftSpeed\\s*,", message: "The left motor's speed comes from the variable leftSpeed"}
+        - {type: drove, inches: 12, message: "I drove at least 12 inches toward the edge"}
+        - {type: stayInRing, message: "The robot stayed inside the ring"}
+      solution: |
+        int main() {
+          while (true) {
+            int leftSpeed = Controller.AxisA.position();
+            int rightSpeed = Controller.AxisD.position();
+            if (Controller.ButtonLDown.pressing()) {
+              leftSpeed = leftSpeed / 2;
+              rightSpeed = rightSpeed / 2;
+            }
+            LeftMotor.setVelocity(leftSpeed, percent);
+            RightMotor.setVelocity(rightSpeed, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+            wait(20, msec);
+          }
+        }
+    ask: The left stick is all the way up and L Down is held. What number is in leftSpeed when it reaches setVelocity?
+
+  - part: "Part 2: Code and test"
+    title: Sumo practice
+    say: |
+      Time to practice a round. The red cube is the "other robot". Push it out of the ring, but keep your own
+      robot in. In the simulator you are out when your robot's **center** crosses the line. No new code:
+      this is driver practice.
+    do:
+      - Press **Run**. Drive into the cube and push it over the line.
+      - Use slow mode (**Z**) as you get close to the edge, then stop.
+      - Take turns driving. The partner who is not driving calls out "edge!" when the robot gets close.
+    stuck:
+      - "**You keep falling out?** Let go of the sticks sooner. The cube only needs to cross the line, not your robot."
+      - "**The cube slid off to the side?** Back up, line up behind it, and push again."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [2.15, {}], [2.7, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            int leftSpeed = Controller.AxisA.position();
+            int rightSpeed = Controller.AxisD.position();
+            if (Controller.ButtonLDown.pressing()) {
+              leftSpeed = leftSpeed / 2;
+              rightSpeed = rightSpeed / 2;
+            }
+            LeftMotor.setVelocity(leftSpeed, percent);
+            RightMotor.setVelocity(rightSpeed, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 48, y: 52, heading: 0}
+        ring: {x: 48, y: 36, r: 22}
+        cubes: [{x: 48, y: 34, color: red}]
+      checks:
+        - {type: cubesOutOfRing, message: "The cube is out of the ring"}
+        - {type: stayInRing, message: "My robot stayed in the ring"}
+      solution: |
+        int main() {
+          while (true) {
+            int leftSpeed = Controller.AxisA.position();
+            int rightSpeed = Controller.AxisD.position();
+            if (Controller.ButtonLDown.pressing()) {
+              leftSpeed = leftSpeed / 2;
+              rightSpeed = rightSpeed / 2;
+            }
+            LeftMotor.setVelocity(leftSpeed, percent);
+            RightMotor.setVelocity(rightSpeed, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+            wait(20, msec);
+          }
+        }
+    ask: In a real match the other robot pushes back. How should you drive differently from this practice?
+
+  - part: "Part 2: Code and test"
+    title: Put it on your robot
+    say: |
+      Your new program names a third motor, **ArmMotor**. VEXcode needs it in **Devices**, or the code won't
+      build. Open the project you saved in Take the Wheel. It already has LeftMotor, RightMotor and the
+      Controller.
+    do:
+      - "In VEXcode IQ, open your Take the Wheel project. In **Devices**, add a **Motor** on **Port 10** and name it **ArmMotor**. Every team does this, even with no arm."
+      - Your program is in the editor below. Press **Copy for VEXcode**, then **Copy code**.
+      - In VEXcode, select from `int main() {` to the bottom of the file and paste. Save.
+      - Plug in the USB cable, click **Download**, then unplug.
+    picture: {type: shot, name: vx-devices, caption: "Add ArmMotor on Port 10 in Devices"}
+    stuck:
+      - "**ArmMotor was not declared?** Check the name in Devices. It must be exactly `ArmMotor`."
+      - "**The arm goes down when you press R Up?** Swap `forward` and `reverse` in the arm lines, or switch on Reverse for ArmMotor in Devices."
+      - "**No arm on your robot?** The arm lines do nothing with no motor plugged in. If VEXcode complains, delete the `if / else if / else` block for the arm."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [1, {RUp: 1}], [2, {}], [2.5, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            int leftSpeed = Controller.AxisA.position();
+            int rightSpeed = Controller.AxisD.position();
+            if (Controller.ButtonLDown.pressing()) {
+              leftSpeed = leftSpeed / 2;
+              rightSpeed = rightSpeed / 2;
+            }
+            LeftMotor.setVelocity(leftSpeed, percent);
+            RightMotor.setVelocity(rightSpeed, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 46, heading: 0}, ring: {x: 48, y: 36, r: 22}}
+      checks:
+        - {type: code, pattern: "ArmMotor\\.stop", message: "My program has the arm buttons"}
+        - {type: code, pattern: "leftSpeed\\s*/\\s*2", message: "My program has slow mode"}
+        - {type: drove, inches: 5, message: "It still drives in the simulator"}
+      solution: |
+        int main() {
+          while (true) {
+            int leftSpeed = Controller.AxisA.position();
+            int rightSpeed = Controller.AxisD.position();
+            if (Controller.ButtonLDown.pressing()) {
+              leftSpeed = leftSpeed / 2;
+              rightSpeed = rightSpeed / 2;
+            }
+            LeftMotor.setVelocity(leftSpeed, percent);
+            RightMotor.setVelocity(rightSpeed, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+            wait(20, msec);
+          }
+        }
+    test:
+      - Devices shows LeftMotor, RightMotor, ArmMotor and the Controller
+      - The real robot drives, and slow mode works when I hold L Down
+
+  - part: "Part 2: Code and test"
+    title: Push test
+    say: |
+      Now find out if your design works. Engineers **test, change one thing, and test again**. If you change
+      two things at once, you can't tell which one helped.
+    do:
+      - Mark a start line with tape. Put the stack of 3 textbooks on the line.
+      - Drive into the books and push for 5 seconds. Measure how far they moved.
+      - "Choose **one** thing to change: move weight over the drive wheels, lower the wedge, or add a brace."
+      - Push again for 5 seconds and measure.
+      - Robots on the floor only. Keep fingers away from the wheels and the arm while the program runs.
+    test:
+      - We measured a push before our change
+      - We changed ONE thing and measured again
+      - Our robot still fits the size limit
+    fields: ["Push 1 distance (in)", "The one thing we changed", "Push 2 distance (in)"]
+    ask: Did the change help? Explain what happened using traction or center of gravity.
+
+quiz:
+  - question: Two robots have the same motors. Robot A has rubber tires. Robot B has smooth plastic wheels. Which one wins a pushing match, and why?
+    choices: ["Robot B, because smooth wheels spin faster", "Robot A, because rubber has more traction", "Robot B, because it is lighter", "Neither, because the motors are the same"]
+    answer: 1
+    why: A wheel can only push as hard as it grips the floor. Rubber grips. Smooth plastic slips.
+  - question: Why does a low center of gravity help a battle bot?
+    choices: ["It makes the motors stronger", "It makes the robot harder to tip over", "It makes the battery last longer", "It makes the robot faster"]
+    answer: 1
+    why: When the weight is low and between the wheels, a push has to tilt the robot much farther before it falls over.
+  - question: "The driver is holding **no buttons**. What does the arm motor do?\n\n`if (Controller.ButtonRUp.pressing()) {`\n\n`  ArmMotor.spin(forward);`\n\n`} else if (Controller.ButtonRDown.pressing()) {`\n\n`  ArmMotor.spin(reverse);`\n\n`} else {`\n\n`  ArmMotor.stop();`\n\n`}`"
+    choices: ["Spins forward", "Spins in reverse", "Stops", "Keeps doing what it did last"]
+    answer: 2
+    why: Both tests are false, so the `else` block runs and the motor stops.
+  - question: "The left stick is at 80 and L Down is pressed. What speed does the left motor get?\n\n`int leftSpeed = Controller.AxisA.position();`\n\n`if (Controller.ButtonLDown.pressing()) {`\n\n`  leftSpeed = leftSpeed / 2;`\n\n`}`\n\n`LeftMotor.setVelocity(leftSpeed, percent);`"
+    choices: ["80", "40", "160", "0"]
+    answer: 1
+    why: The variable starts at 80. The button is pressed, so the `if` block cuts it in half to 40.
+  - question: In the Battle Bot Challenge, which of these loses you a round?
+    choices: ["Pushing the other robot", "Using a wedge", "Your robot not moving for 10 seconds", "Driving backward"]
+    answer: 2
+    why: You lose a round by leaving the ring or by not moving for 10 seconds. Pushing and wedges are allowed.
+
+ship:
+  turn_in: code
+  note: Your program from the last simulator step is turned in with your answers and push test results.
+  extensions:
+    - title: Name on the screen
+      level: Easier
+      goal: Show your robot's name on the Brain screen so the referee knows who is who.
+      where: At the top of `int main()`, above `while (true)`.
+      code: |
+        Brain.Screen.print("Team Bolt");
+        Brain.Screen.newLine();
+        Brain.Screen.print("Robot: Crusher");
+      hints:
+        - "This goes **before** the loop, so it prints only once."
+    - title: Turbo and slow
+      level: Medium
+      goal: Make normal driving 75% of the stick, with L Up for full power and L Down for half speed.
+      where: Replace the slow mode `if` block.
+      code: |
+        if (Controller.ButtonLUp.pressing()) {
+          // turbo: leave the speeds alone
+        } else if (Controller.ButtonLDown.pressing()) {
+          leftSpeed = leftSpeed / 2;
+          rightSpeed = rightSpeed / 2;
+        } else {
+          leftSpeed = leftSpeed * 3 / 4;
+          rightSpeed = rightSpeed * 3 / 4;
+        }
+      hints:
+        - "`* 3 / 4` multiplies by 3 and then divides by 4. That is three quarters, or 75%."
+        - "Only one block runs. With both buttons held, the first test wins."
+    - title: One-stick battle bot
+      level: Challenge
+      goal: Switch your battle bot to arcade drive (AxisA to drive, AxisC to turn) and keep slow mode working.
+      where: Replace the lines that make `leftSpeed` and `rightSpeed`.
+      hints:
+        - "Make two more variables: `int drive = Controller.AxisA.position();` and `int turn = Controller.AxisC.position();`"
+        - "Then `int leftSpeed = drive + turn;` and `int rightSpeed = drive - turn;`"
+        - "The slow mode `if` block stays the same, because it only changes `leftSpeed` and `rightSpeed`."
+  reflect:
+    - What is your robot's biggest strength for the challenge, and what is its biggest weakness?
+    - Which idea mattered most in your design: traction, center of gravity, the wedge, or gearing? Explain.
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (grip test, tip test, rules, sketch, build). Building is the
+  long step; teams that don't finish can keep building at the start of Day 2 while one teammate starts the code.
+  Day 2: Part 2 (three simulator steps, download, push test), then the quiz and Ship it.
+
+  **Before class.** Decide the **size limit** and post it (for example, the robot must fit inside a box or a taped
+  square on the table). Set out textbooks for pushing, extra beams and plates, and one extra Smart Motor per team
+  that wants a lifter arm. Robots should still have the Take the Wheel program on the Brain for the grip test.
+  Tape one practice ring on the floor so teams can see how big it is.
+
+  **The rules.** They are in step 3 so teams design to them: two robots start inside the taped ring; a robot loses
+  the round if it leaves the ring or doesn't move for 10 seconds; best of 3; pushing is allowed, damaging or
+  lifting the other robot off the ground is not; robots must fit your size limit. Decide now what "leaves the
+  ring" means in your room (for example, any wheel fully outside the tape) and whether a lifter arm may tilt an
+  opponent's front edge.
+
+  **Common trouble.** Wedges that drag on the floor or lift the drive wheels (the robot loses its own traction).
+  Mechanisms held by one pin. Too much weight in front of the wheels. In code: a missing brace before `else`,
+  `pressing` without `()`, and `setVelocity` still reading the stick instead of the variable. ArmMotor not added in
+  Devices gives a "not declared" error. The simulator has no visible arm, so the arm is checked by reading the code.
+
+  **Safety.** Push tests happen on the floor. Students let go of the sticks when the motors stall. Fingers, hair
+  and sleeves stay away from wheels, gears and the arm while a program runs. No sharp or loose parts on a robot.
+
+  **Check for understanding.** Ask a team to point to their robot's center of gravity and say where the weight
+  sits compared with the drive wheels.
+standards:
+  - code: 6-8.CS.a.5
+    how: Teams design, build and demonstrate a battle bot with one mechanism that pushes a heavy object.
+  - code: 6-8.CS.a.4
+    how: Students use controller buttons as inputs and a third motor as an actuator, linked by the Brain's program.
+  - code: 6-8.CT.b.1
+    how: Students combine the forever loop with if / else if / else to run a mechanism and a slow mode from buttons.
+  - code: 6-8.CT.d.4
+    how: The program uses a loop, conditionals, expressions and int variables (leftSpeed, rightSpeed).
+  - code: 6-8.CT.d.6
+    how: Teams run a push test, change one thing, and test again, recording both results.
+  - code: 6-8.CT.b.2
+    how: Students predict which if / else block runs and what speed a motor gets for given button and stick inputs.

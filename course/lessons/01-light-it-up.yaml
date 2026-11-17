@@ -1,0 +1,355 @@
+id: light-it-up
+title: Light It Up
+tagline: Build a circuit, then let a button decide when it lights
+minutes: 80          # about two class periods: Part 1 builds and lights the circuit, Part 2 adds the button
+lang: python         # MakeCode Python, typed in MakeCode in a second tab
+
+mission:
+  big_question: "What does every robot need before it can do anything at all?"
+  goal: |
+    Every robot is made of **circuits**. Today you build one: a real LED wired to a micro:bit.
+    First your code turns the LED on. Then a **button** decides when it lights.
+    By the end you'll know the pattern every robot in this course uses: **input → decide → output**.
+  picture:
+    type: flow
+    loop: true
+    steps:
+      - {icon: "🔋", label: "Power pushes", color: "#f2a900"}
+      - {icon: "〰️", label: "A path carries it", color: "#2f6bff"}
+      - {icon: "💡", label: "A part does work", color: "#33c95a"}
+      - {icon: "↩️", label: "Back to the start", color: "#9b51e0"}
+    caption: A circuit is a closed loop. Break the loop anywhere and everything stops.
+  you_need:
+    - A partner
+    - A micro:bit in a breakout board, on a breadboard
+    - 1 LED (any color) and 1 resistor (220 Ω)
+    - 2 jumper wires
+    - A USB cable and a Chromebook
+  learn:
+    - "a **circuit** is a closed loop: power, a path, and a part that does work"
+    - "an LED only works **one way round**, and it needs a **resistor**"
+    - "a **pin** is a switch your code controls"
+    - "**input → decide → output**, the pattern inside every robot"
+  talk: A flashlight has a battery, a bulb and a switch. What do you think the switch really does inside the flashlight to turn the light off?
+
+build:
+  - part: "Part 1: Build the circuit"
+    title: What is a circuit?
+    say: |
+      A **circuit** is a **closed loop** that electricity travels around. It needs three things:
+      **power** to push the electricity, a **path** for it to follow, and a **part that does work**,
+      like a light or a motor. On the micro:bit, the pin marked **3V** or a numbered pin like **P0** gives the push.
+      **GND** (ground) is where the electricity comes back. No way back, no flow.
+    do:
+      - Look at the labels on your breakout board. Find **P0**, **3V** and **GND**.
+      - Look at the loop picture. Point to the power, the path and the part that does work.
+      - Tell your partner what you think happens if the loop has a gap in it.
+    picture:
+      type: compare
+      items:
+        - {icon: "🔋", title: "Power", text: "pushes the electricity (P0 or 3V)"}
+        - {icon: "〰️", title: "Path", text: "wires and metal strips it travels along"}
+        - {icon: "💡", title: "Work", text: "a part that uses it: an LED, a motor"}
+    tip: "**Watch out:** never join **3V** straight to **GND** with a wire. That is a **short circuit**. The path has no part to do work, so far too much electricity flows."
+    test:
+      - I found P0, 3V and GND on the breakout board
+      - I can name the three things every circuit needs
+    ask: A lamp is plugged in but switched off. Which of the three things is missing?
+
+  - part: "Part 1: Build the circuit"
+    title: The LED goes one way
+    say: |
+      An **LED** (light-emitting diode) is the part that does the work today. It only lets electricity through
+      **one way**. The **long leg** is **+**. The **short leg** is **–**. Put it in backwards and it stays dark.
+      It won't break. Having a + and a – side is called **polarity**.
+    picture:
+      type: part
+      part: led
+      color: red
+      caption: The long leg is + (toward the pin). The short leg is – (toward GND).
+    do:
+      - Hold your LED up and compare the two legs.
+      - Find the flat spot on the rim of the LED. It is on the – side too.
+    test:
+      - I found the long (+) leg and the short (–) leg
+    ask: The legs on an old LED have been cut to the same length. How could you still find the – side?
+
+  - part: "Part 1: Build the circuit"
+    title: Why a resistor?
+    say: |
+      An LED is greedy. On its own it lets too much electricity through, gets hot and burns out.
+      A **resistor** makes the path harder to get through, so less electricity flows. Ours is **220 Ω** (ohms).
+      A bigger number means less flow and a dimmer LED. A resistor has no + or –, so it works either way round.
+    picture:
+      type: part
+      part: resistor
+      ohms: 220
+      caption: The colored stripes are a code for the number of ohms.
+    do:
+      - Find your 220 Ω resistor.
+      - Bend both legs down so it can stand in the breadboard.
+    test:
+      - I have a 220 Ω resistor with both legs bent down
+    ask: A friend says "my resistor is in backwards." What would you tell them?
+
+  - part: "Part 1: Build the circuit"
+    title: How a breadboard works
+    say: |
+      A **breadboard** is the path. Inside, each short **row of 5 holes** is joined by a metal strip.
+      Two legs pushed into the **same row** are connected, just as if you had twisted them together.
+      The long side strips, called **rails**, are joined all the way along. The gap down the middle joins nothing.
+    picture:
+      type: compare
+      items:
+        - {icon: "↔️", title: "A row of 5", text: "all 5 holes are joined"}
+        - {icon: "✂️", title: "The middle gap", text: "the two halves are NOT joined"}
+        - {icon: "➖", title: "The blue rail", text: "we use it for GND (–)"}
+    do:
+      - Find a row of 5 holes, the middle gap and the blue (–) rail on your breadboard.
+      - Check the micro:bit is pushed all the way into the breakout board, logo facing up.
+    test:
+      - I can point to one row, the middle gap and the blue rail
+      - The micro:bit is in the breakout board, on the breadboard
+    ask: Two legs are in the same row. Are they connected? What if they are on opposite sides of the middle gap?
+
+  - part: "Part 1: Build the circuit"
+    title: Wire the loop
+    say: |
+      Now build the loop. Electricity will go **out** of pin P0, **through** the resistor and the LED,
+      and **back** to GND. One partner places the parts. The other reads the steps and checks each one.
+    wiring:
+      - "Unplug the micro:bit's USB cable while you wire."
+      - "Run a jumper wire from **GND** on the breakout board to the **blue (–) rail**."
+      - "Run a jumper wire from **P0** on the breakout board to an empty row. Call it **row A**."
+      - "Put one leg of the **resistor** in row A. Put its other leg in a new row a few rows away. Call it **row B**."
+      - "Put the LED's **long (+) leg** in row B, next to the resistor."
+      - "Put the LED's **short (–) leg** in the **blue (–) rail**."
+    picture:
+      type: flow
+      loop: true
+      steps:
+        - {icon: "🔌", label: "P0"}
+        - {icon: "🟫", label: "Resistor"}
+        - {icon: "💡", label: "LED: + leg in, – leg out"}
+        - {icon: "➖", label: "GND"}
+      caption: "The loop: P0, resistor, LED, GND, and back inside the micro:bit."
+    test:
+      - P0 goes to the resistor, and the resistor goes to the LED's long leg
+      - The LED's short leg goes to the blue rail, and the blue rail goes to GND
+      - My partner traced every wire with a finger
+    ask: Trace the loop with your finger, from P0 back to GND. Which parts does the electricity pass through, in order?
+
+  - part: "Part 1: Build the circuit"
+    title: A pin is a switch
+    say: |
+      The loop is built, but the LED is dark. Pin P0 is **off**. A pin is a **switch that code controls**.
+      Writing **1** to the pin turns it on, and it pushes electricity around your loop.
+      Writing **0** turns it off. **Digital** means only two choices: 1 or 0, on or off.
+    do:
+      - "Open **MakeCode** in a new tab (makecode.microbit.org). Make a **New Project** named **Light It Up**."
+      - Switch from **Blocks** to **Python** at the top. Delete the starter code.
+      - Type this one line.
+      - Plug in the USB cable and click **Download**. Look at your LED.
+    code: |
+      pins.digital_write_pin(DigitalPin.P0, 1)
+    what: "`pins.digital_write_pin` sets a pin. The first thing in the parentheses is **which pin**. The second is **1** for on or **0** for off."
+    stuck:
+      - "**LED is dark?** Flip the LED around. The long leg goes in the resistor's row."
+      - "**Still dark?** Check the wire is on **P0**, not P1 or 3V."
+      - "**Check the rows.** The resistor and the LED's long leg must share a row. The short leg must be in the blue rail."
+      - "**Red squiggle in the code?** Check the capital letters: `DigitalPin.P0`."
+    test:
+      - My LED is on and stays on
+    ask: Change the 1 to a 0 and download again. What happens, and why?
+
+  - part: "Part 2: Add an input"
+    title: Open and closed
+    say: |
+      A loop with no gaps is a **closed circuit**: electricity flows. A loop with a gap is an **open circuit**:
+      nothing flows. A **switch** is just a part that opens and closes a gap. Right now **you** are the switch.
+    do:
+      - Make sure your code writes **1** to P0 and the LED is on.
+      - Pull the GND jumper wire out of the blue rail. Watch the LED.
+      - Push it back in. Do it a few times.
+      - Now try a different gap. Lift one leg of the resistor out, then put it back.
+    tip: "It doesn't matter **where** the gap is. A break anywhere in the loop stops the flow everywhere."
+    test:
+      - The LED goes dark when the loop has a gap
+      - The LED comes back on when I close the loop
+    ask: You made a gap in two different places. Did the place change what happened? What does that tell you about a circuit?
+
+  - part: "Part 2: Add an input"
+    title: A button decides
+    say: |
+      So far the LED is an **output**: the micro:bit sends something **out**. A button is an **input**:
+      it sends information **in**. Now the micro:bit checks button A and **decides**.
+      `if` runs its lines when the button is pressed. `else` runs its lines when it is not.
+      `while True:` repeats the check **forever**, many times a second.
+    do:
+      - Delete your code and type this. Watch the indentation. Lines inside `while`, `if` and `else` are pushed in.
+      - "Before you download, **predict**: what will the LED do when nobody touches the button?"
+      - Download it. Hold button **A**, then let go.
+    code: |
+      while True:
+          if input.button_is_pressed(Button.A):
+              pins.digital_write_pin(DigitalPin.P0, 1)
+          else:
+              pins.digital_write_pin(DigitalPin.P0, 0)
+          basic.pause(20)
+    new: "1-6"
+    what: "`input.button_is_pressed(Button.A)` is a question with a yes or no answer. Yes: write 1 to the pin. No: write 0. The short pause gives the micro:bit a moment to rest before it checks again."
+    stuck:
+      - "**Red squiggles?** `while True:`, the `if` line and `else:` each end with a colon `:`."
+      - "**LED never changes?** Check the indentation matches the code exactly. `if` and `else` line up with each other."
+      - "**LED is on only when you let go?** Your 1 and 0 are swapped."
+    test:
+      - The LED is on while I hold button A
+      - The LED goes off when I let go
+    ask: Take away the `while True:` line in your head. The micro:bit would check the button only once. Why would that be a problem?
+
+  - part: "Part 2: Add an input"
+    title: Input, decide, output
+    say: |
+      Your program has three jobs, and every robot does the same three:
+      **input** (get information), **decide** (pick what to do), **output** (do it).
+      On a VEX robot a **sensor** is the input, the **Brain** decides, and a **motor** is the output.
+      You'll use this pattern in every lesson from here on.
+    picture:
+      type: compare
+      items:
+        - {icon: "👆", title: "Input", text: "today: button A. On a robot: a sensor"}
+        - {icon: "🧠", title: "Decide", text: "today: if / else on the micro:bit. On a robot: the Brain"}
+        - {icon: "💡", title: "Output", text: "today: the LED. On a robot: a motor"}
+    do:
+      - "Add the three highlighted **comments** to your code. A line that starts with `#` is a note for people. The micro:bit skips it."
+      - Download it again. It should work exactly as before.
+      - "Click **Share** in MakeCode and copy the link. You'll paste it when you ship."
+    code: |
+      while True:
+          # INPUT + DECIDE: is button A pressed?
+          if input.button_is_pressed(Button.A):
+              # OUTPUT: LED on
+              pins.digital_write_pin(DigitalPin.P0, 1)
+          else:
+              # OUTPUT: LED off
+              pins.digital_write_pin(DigitalPin.P0, 0)
+          basic.pause(20)
+    new: "2, 4, 7"
+    test:
+      - My code has comments that label the input, the decision and the outputs
+      - The button still controls the LED
+      - I copied my MakeCode share link
+    ask: "Pick a machine you know, such as an automatic door or a microwave. What is its input, what does it decide, and what is its output?"
+
+quiz:
+  - question: What does a circuit need so that electricity will flow?
+    choices: ["A closed loop with power, a path and a part that does work", "Only a battery", "A long wire with one end free", "A button"]
+    answer: 0
+    why: Electricity only flows around a complete loop. A gap anywhere stops it.
+  - question: Your LED is wired up but stays dark. What is the best first thing to try?
+    choices: ["Delete all your code", "Flip the LED around", "Take out the resistor", "Get a new micro:bit"]
+    answer: 1
+    why: An LED only works one way round. A backwards LED is the most common mistake and the quickest to fix.
+  - question: Why does the LED need a resistor?
+    choices: ["To change its color", "To make it blink", "To limit the electricity so the LED doesn't burn out", "To store power"]
+    answer: 2
+    why: The resistor makes the path harder to get through, so less electricity flows through the LED.
+  - question: "What does `pins.digital_write_pin(DigitalPin.P0, 0)` do?"
+    choices: ["Turns pin P0 on", "Turns pin P0 off", "Reads button A", "Waits 0 seconds"]
+    answer: 1
+    why: Writing 1 turns the pin on. Writing 0 turns it off, so nothing pushes electricity around the loop.
+  - question: "A robot drives until its bumper hits a wall, then stops. Which is the **input**?"
+    choices: ["The wheels", "The motors", "The bumper", "The battery"]
+    answer: 2
+    why: The bumper sends information in. The Brain decides, and the motors are the output.
+
+ship:
+  turn_in: link
+  note: Paste your MakeCode share link. Keep your circuit built until your teacher has seen it work.
+  extensions:
+    - title: Show it on the screen too
+      level: Easier
+      goal: Add a second output. The screen shows a heart while button A is held and clears when you let go.
+      where: Inside the `if` and inside the `else`, next to the pin lines.
+      code: |
+        while True:
+            if input.button_is_pressed(Button.A):
+                pins.digital_write_pin(DigitalPin.P0, 1)
+                basic.show_icon(IconNames.HEART)
+            else:
+                pins.digital_write_pin(DigitalPin.P0, 0)
+                basic.clear_screen()
+            basic.pause(20)
+      new: "4, 7"
+      hints:
+        - "One decision can drive more than one output."
+        - "The new lines are pushed in the same amount as the pin lines."
+    - title: Blink while you hold
+      level: Medium
+      goal: The LED blinks while you hold button A. Let go and it stays off.
+      where: Replace the lines inside your `if`.
+      code: |
+        while True:
+            if input.button_is_pressed(Button.A):
+                pins.digital_write_pin(DigitalPin.P0, 1)
+                basic.pause(200)
+                pins.digital_write_pin(DigitalPin.P0, 0)
+                basic.pause(200)
+            else:
+                pins.digital_write_pin(DigitalPin.P0, 0)
+                basic.pause(20)
+      new: "4-6"
+      hints:
+        - "A blink is on, wait, off, wait."
+        - "Smaller pause numbers make a faster blink. 1000 is one second."
+    - title: Wire a real push button
+      level: Challenge
+      goal: Use a push button on the breadboard as the input in place of button A.
+      where: "Push the button across the middle gap. Wire one leg to **P1** and the leg diagonally across from it to the **blue (–) rail**. Then change your code."
+      code: |
+        pins.set_pull(DigitalPin.P1, PinPullMode.PULL_UP)
+        while True:
+            if pins.digital_read_pin(DigitalPin.P1) == 0:
+                pins.digital_write_pin(DigitalPin.P0, 1)
+            else:
+                pins.digital_write_pin(DigitalPin.P0, 0)
+            basic.pause(20)
+      new: "1, 3"
+      hints:
+        - "The `set_pull` line makes P1 read **1** when nothing is happening."
+        - "Pressing the button closes a gap between P1 and GND, so P1 reads **0**. Pressed is 0, not 1."
+        - "`==` asks **is it equal?**"
+  reflect:
+    - Explain the path electricity takes in your circuit, starting at P0. What happens if any part of the path is missing?
+    - "In your project, what is the input, what decides, and what is the output? What would each one be on a robot?"
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-6). Every pair should leave with an LED lit by code.
+  Day 2: Part 2 (steps 7-9), the quiz and Ship it. Pairs keep their circuit built between the two days if you can store them.
+
+  **Before class.** One set per pair: a micro:bit in a breakout board on a breadboard, a 5 mm LED, a 220 Ω resistor,
+  two male-to-male jumper wires, a USB cable. Any resistor from 100 Ω to 1 kΩ works; a bigger value just gives a dimmer LED.
+  No breakout boards? Alligator clips from P0 and GND on the micro:bit's edge to the resistor and LED legs work too.
+  Check that MakeCode can download to the micro:bits from the Chromebooks (pair once over WebUSB, or drag the .hex file).
+
+  **Common trouble.** LED in backwards. The resistor and the LED's long leg not in the same row. The GND wire in the
+  red rail. The wire on the wrong pin. Indentation errors under `if` and `else`. Students who have never used MakeCode
+  Python need a minute to find the Blocks / Python switch.
+
+  **Safety.** The only real risk is a wire from 3V straight to GND (a short circuit). The micro:bit protects itself by
+  shutting down, but make the rule clear: every loop must pass through a part that does work.
+
+  **Check for understanding.** Ask a pair to trace the loop aloud ("P0, resistor, LED, GND") and then to point to the
+  input, the decision and the output in their code. Write **input → decide → output** on the board and leave it up:
+  lessons 5, 9, 10, 11 and 12 all come back to it.
+
+  **Simulator.** In MakeCode's simulator, pin P0 lights up when it is on, so a pair without working hardware can still test code.
+standards:
+  - code: 6-8.CS.a.4
+    how: Students build a circuit with an input (a button) and an output (an LED), and name the sensor, controller and actuator in a robot.
+  - code: 6-8.CT.b.1
+    how: Students write a `while True` loop with an `if / else` inside it, so a button decides whether the LED is on.
+  - code: 6-8.CT.b.2
+    how: Students predict what the LED will do when the button is pressed and not pressed, before they download.
+  - code: 6-8.CS.a.7
+    how: Students diagnose a circuit that doesn't light (backwards LED, wrong row, wrong pin, open loop) and fix it.

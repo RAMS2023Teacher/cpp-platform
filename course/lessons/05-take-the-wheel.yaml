@@ -1,0 +1,485 @@
+id: take-the-wheel
+title: Take the Wheel
+tagline: Write the C++ that lets the controller drive your robot
+minutes: 85          # about two class periods: Part 1 in the simulator, Part 2 on the real robot
+
+mission:
+  big_question: "How does pushing a joystick turn into a spinning wheel?"
+  goal: |
+    A controller does nothing by itself. **Your code** has to read it and tell the motors what to do.
+    Today you write that code. A joystick is an **input** that gives a **number**. A **loop** reads that number
+    again and again and sends it to a motor as a speed. You'll test in the simulator, then drive your real
+    robot around a figure-8 course.
+  picture:
+    type: flow
+    loop: true
+    steps:
+      - {icon: "🎮", label: "Read the joystick (a number)", color: "#9b51e0"}
+      - {icon: "🧠", label: "Brain sets the motor speed", color: "#2f6bff"}
+      - {icon: "⚙️", label: "Motor spins the wheel", color: "#33c95a"}
+    caption: "Input → decide → output, about 50 times every second."
+  you_need:
+    - A partner
+    - Your drive base (left motor in Port 1, right motor in Port 6)
+    - A VEX IQ Controller with a charged battery
+    - A USB cable for the Brain
+    - 2 paper cups, tape and a timer
+  learn:
+    - "a joystick is an **input** that gives a number from **-100 to 100**"
+    - "`while (true)` is a **loop** that repeats forever"
+    - "**tank drive**: the left stick runs the left motor, the right stick runs the right motor"
+  talk: A car has one steering wheel. A tank has two levers, one for each track. How do you think a tank turns left? Which would be easier to drive?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: A joystick is a number
+    say: |
+      In Light It Up, a button was an input with two answers: pressed or not. A **joystick** is an input with
+      many answers. It gives a **number**. All the way up is **100**. In the middle is **0**. All the way down is
+      **-100**. `Controller.AxisA.position()` asks for the left stick's number right now.
+    do:
+      - Type the highlighted line under the `// TODO` comment.
+      - Press **Run**. In the simulator the keyboard is the controller. Hold **W** to push the left stick up. Hold **S** to pull it down.
+      - Watch the number on the Brain screen change.
+    code: |
+      int main() {
+        while (true) {
+          Brain.Screen.clearScreen();
+          Brain.Screen.setCursor(1, 1);
+          // TODO: print the left stick's number
+          Brain.Screen.print("Left stick: %d", Controller.AxisA.position());
+          wait(100, msec);
+        }
+      }
+    new: "6"
+    what: "The `%d` is a blank. C++ fills it with the number that comes after the comma. The other lines wipe the screen and print again, so you always see the newest number."
+    stuck:
+      - "**The number stays 0?** Click on the simulator field first, then hold W."
+      - "**An error?** Check the capital letters: `Controller.AxisA.position()`. Count the parentheses too."
+    sim:
+      drive: true
+      pilot: [[0, {}], [0.5, {A: 100}], [1.5, {A: -100}], [2.5, {}], [3, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            Brain.Screen.clearScreen();
+            Brain.Screen.setCursor(1, 1);
+            // TODO: print the left stick's number
+
+            wait(100, msec);
+          }
+        }
+      field: {start: {x: 48, y: 50, heading: 0}}
+      checks:
+        - {type: output, pattern: "Left stick: 100", message: "The screen showed 100 with the stick pushed up"}
+        - {type: output, pattern: "Left stick: -100", message: "The screen showed -100 with the stick pulled down"}
+      solution: |
+        int main() {
+          while (true) {
+            Brain.Screen.clearScreen();
+            Brain.Screen.setCursor(1, 1);
+            Brain.Screen.print("Left stick: %d", Controller.AxisA.position());
+            wait(100, msec);
+          }
+        }
+    ask: What number does the stick give when you are not touching it? What would a real stick give if you pushed it only halfway up?
+
+  - part: "Part 1: In the simulator"
+    title: Loop forever
+    say: |
+      A driver moves the stick all the time, so the Brain must keep checking it. `while (true) { ... }` is a
+      **loop**. It runs the lines inside its curly braces, then goes back to the top and runs them again, **forever**.
+      Inside the loop you use the stick's number as the motor's **speed**.
+    do:
+      - Add the two highlighted lines inside the loop.
+      - Press **Run**. Hold **W**, then **S**. Let go.
+      - "**Predict first:** only the left wheel is spinning. What shape will the robot drive?"
+    code: |
+      int main() {
+        while (true) {
+          LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+          LeftMotor.spin(forward);
+          wait(20, msec);
+        }
+      }
+    new: "3-4"
+    what: "`setVelocity` sets how fast the motor will go. `spin(forward)` turns it on. A speed of 100 is full speed forward, 0 is stopped, and a negative number spins it backward. `wait(20, msec)` is a tiny rest so the Brain isn't overworked."
+    tip: "**Watch out:** the two lines must be **inside** the loop's curly braces. Outside the loop they run once, read 0, and the robot never moves."
+    sim:
+      drive: true
+      pilot: [[0, {A: 100}], [2.5, {}], [3, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            // TODO: set LeftMotor's velocity to the left stick's number
+            // TODO: spin LeftMotor forward
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 44, heading: 0}}
+      checks:
+        - {type: code, pattern: "while\\s*\\(\\s*true\\s*\\)", message: "My program has a while (true) loop"}
+        - {type: drove, inches: 10, message: "The left stick makes the robot move"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            LeftMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    ask: Why did the robot drive in a circle instead of a straight line?
+
+  - part: "Part 1: In the simulator"
+    title: Tank drive
+    say: |
+      One motor makes circles. You need both. In **tank drive** each stick runs the motor on its own side.
+      The left stick is `AxisA`. The right stick is `AxisD`. Both sticks up drives straight. One up and one
+      down spins the robot in place.
+    do:
+      - Add the two highlighted lines for the right motor.
+      - "Press **Run**. Hold **W** and the **up arrow** together to drive straight into the green goal."
+      - "Try a spin: hold **W** and the **down arrow**."
+    code: |
+      int main() {
+        while (true) {
+          LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+          RightMotor.setVelocity(Controller.AxisD.position(), percent);
+          LeftMotor.spin(forward);
+          RightMotor.spin(forward);
+          wait(20, msec);
+        }
+      }
+    new: "4, 6"
+    what: "Each time around the loop, the Brain reads both sticks and sets both motors. That happens about 50 times a second, so the robot feels like it obeys you right away."
+    stuck:
+      - "**The robot only circles?** Check that the right motor uses `AxisD`, and that you wrote both `setVelocity` and `spin` for `RightMotor`."
+      - "**Keys do nothing?** Click on the simulator field, then press the keys."
+    sim:
+      drive: true
+      pilot: [[0, {A: 100, D: 100}], [2.5, {}], [3, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            // TODO: set RightMotor's velocity to the right stick (AxisD)
+            LeftMotor.spin(forward);
+            // TODO: spin RightMotor forward
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 62, heading: 0}, goal: {x: 48, y: 20, r: 8}}
+      checks:
+        - {type: code, pattern: "RightMotor\\s*\\.\\s*setVelocity\\s*\\(\\s*Controller\\s*\\.\\s*AxisD", message: "The right stick (AxisD) sets the right motor's speed"}
+        - {type: reachGoal, message: "I drove the robot into the green goal"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    ask: To turn right while still moving forward, which stick do you push farther? Explain why that works.
+
+  - part: "Part 1: In the simulator"
+    title: Steer around the wall
+    say: |
+      Your program is done. Now practice being the driver. No new code in this step. A wall is in the way,
+      so you can't drive straight to the goal. Use both sticks to steer around it.
+    do:
+      - Press **Run**. Drive up past the end of the wall, turn right, and drive into the green goal.
+      - "Take turns. One partner drives, the other **coaches** out loud: \"left stick up, now both\"."
+      - "Extra challenge: get there without touching the wall."
+    stuck:
+      - "**Turning too far?** Tap the keys instead of holding them."
+      - "**Lost?** Press **Run** again to start over from the start spot."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [2.5, {A: 50, D: -50}], [3.28, {A: 100, D: 100}], [6.8, {}], [7.3, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 18, y: 58, heading: 0}
+        walls: [{x: 30, y: 34, w: 40, h: 4}]
+        goal: {x: 78, y: 16, r: 9}
+      checks:
+        - {type: reachGoal, message: "I steered around the wall to the green goal"}
+        - {type: drove, inches: 60, message: "I drove at least 60 inches"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    ask: What was harder, driving straight or turning the right amount? What did you do to get better at it?
+
+  - part: "Part 1: In the simulator"
+    title: Push the cube home
+    say: |
+      A robot can move things just by driving into them. Line up behind the blue cube and push it into the
+      blue zone. Pushing is how sumo robots win, so this is practice for the Battle Bot Challenge.
+    do:
+      - Press **Run**. Drive straight into the cube and keep pushing until it is inside the blue zone.
+      - Stop before you push it out the other side.
+      - Switch drivers and do it again.
+    tip: "**Watch out:** if you hit the cube off-center, it slides off to the side. Back up and line up again."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [3.2, {}], [3.7, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 18, y: 36, heading: 90}
+        cubes: [{x: 40, y: 36, color: blue}]
+        zones: [{x: 68, y: 26, w: 20, h: 20, color: blue}]
+      checks:
+        - {type: cubesInZones, message: "The blue cube is inside the blue zone"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    ask: Your code never mentions the cube. So why does the cube move?
+
+  - part: "Part 2: On the real robot"
+    title: Tell VEXcode about your robot
+    say: |
+      In Hello, Brain you added a **Drivetrain**. This program uses two **separate motors** and a **Controller**,
+      so the Devices list has to change. The right motor faces the other way on your robot, so it must be
+      **reversed**. Then "forward" means forward for both wheels.
+    do:
+      - Click **Open VEXcode IQ**. Start a new C++ text project, like last time. In **Devices**, choose the **1st gen** Brain.
+      - "Add a **Motor** on **Port 1**. Name it **LeftMotor**."
+      - "Add a **Motor** on **Port 6**. Name it **RightMotor**. Switch on **Reverse** for this motor."
+      - "Add a **Controller**. Do **not** add a Drivetrain. Ports 1 and 6 can only be used once."
+    picture: {type: shot, name: vx-devices, caption: "Devices is where each motor gets its port and its name"}
+    tip: "**Watch out:** names must match your code exactly, capitals too. `LeftMotor` is not `leftMotor` or `Left Motor`."
+    test:
+      - Devices shows LeftMotor on Port 1
+      - Devices shows RightMotor on Port 6 with Reverse switched on
+      - Devices shows a Controller and no Drivetrain
+
+  - part: "Part 2: On the real robot"
+    title: Paste your program
+    say: |
+      Same path as last time. Your tank drive program goes into VEXcode's `main.cpp`, **under** the folded
+      device block. Keep that block. It holds the Devices setup you just made.
+    do:
+      - Your program is in the editor below. Press **Copy for VEXcode**, then **Copy code**.
+      - In VEXcode, select from `int main() {` down to the very bottom of the file.
+      - Paste with **Ctrl + V**.
+      - Name the project with your team name and click **Save**.
+    picture: {type: shot, name: vx-paste, caption: "Keep the folded device block. Paste over int main() and everything below it."}
+    stuck:
+      - "**Lots of errors after pasting?** You probably pasted over the folded device block. Press Ctrl + Z, then paste again over `int main()` and below only."
+      - "**LeftMotor was not declared?** The name in Devices doesn't match the code. Open Devices and fix the name."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [2.5, {}], [3, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 62, heading: 0}, goal: {x: 48, y: 20, r: 8}}
+      checks:
+        - {type: code, pattern: "LeftMotor[\\s\\S]*RightMotor", message: "My program uses LeftMotor and RightMotor"}
+        - {type: reachGoal, message: "It still drives in the simulator"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    test:
+      - My program is pasted into VEXcode under the device block
+      - I saved the project with my team name
+
+  - part: "Part 2: On the real robot"
+    title: Download and drive
+    say: |
+      The controller talks to the Brain by **radio**. Each controller must be **paired** with one Brain, so it
+      drives your robot and nobody else's. Then you download the program, just like last time.
+    wiring:
+      - "Check that the Brain and the Controller each have a **radio** and a charged battery."
+      - "Ask your teacher how to **pair** your Controller with your Brain. You only do this once."
+      - "Turn on the Brain. Plug the USB cable into the **Brain** and the **Chromebook**."
+    do:
+      - Click **Download**. Wait until it finishes, then unplug the cable.
+      - Put the robot on the **floor**, never on a table. Turn on the Controller.
+      - On the Brain, choose your program and press the check button.
+      - Push both sticks up a little. Then try a spin.
+    stuck:
+      - "**One wheel runs backward?** Open Devices and check that **Reverse** is on for RightMotor only. Download again."
+      - "**The left stick moves the right wheel?** The motor cables are swapped. Left motor goes in Port 1, right motor in Port 6."
+      - "**Nothing moves?** Check that the program is running on the Brain and that the Controller is on and paired."
+      - "**The robot creeps when you let go?** Some sticks don't rest exactly at 0. The Challenge extension fixes that."
+    test:
+      - Both sticks up drives the real robot forward
+      - Both sticks down drives it backward
+      - One stick up and one down spins it in place
+    ask: When you let go of both sticks, the robot stops. Which part of your code makes that happen?
+
+  - part: "Part 2: On the real robot"
+    title: Figure-8 time trial
+    say: |
+      Good drivers are smooth, not just fast. Set up a course and time each other. A lap only counts if both
+      cups are still standing.
+    do:
+      - Put 2 cups on the floor about 3 feet apart. Mark a start line with tape.
+      - "One lap is a **figure 8**: go around the first cup one way, around the second cup the other way, and back across the start line."
+      - Each partner drives. The other partner runs the timer. Write down your three best laps.
+      - Robots stay on the floor. Walk behind your robot. Don't run.
+    tip: "**Driver tip:** push the sticks only partway in the turns. Half stick is half speed."
+    test:
+      - We each drove at least one clean lap
+      - We timed the laps and wrote them down
+    fields: ["Lap 1 (seconds)", "Lap 2 (seconds)", "Lap 3 (seconds)", "Cups knocked over"]
+    ask: Did your laps get faster? Name one thing you changed about how you drove.
+
+quiz:
+  - question: What does `Controller.AxisA.position()` give your program?
+    choices: ["The word up or down", "A number from -100 to 100", "true or false", "The speed of the left motor"]
+    answer: 1
+    why: A joystick is an input that gives a number. 100 is all the way up, 0 is the middle, and -100 is all the way down.
+  - question: "Why does the driving code go inside `while (true) { ... }`?"
+    choices: ["So the Brain reads the sticks again and again", "So the program ends sooner", "So the motors spin faster", "Because C++ needs every line in a loop"]
+    answer: 0
+    why: Without the loop the Brain would read the sticks once, at the start, and never notice when you move them.
+  - question: "The driver holds the left stick all the way **up** and the right stick all the way **down**. What does the robot do?\n\n`LeftMotor.setVelocity(Controller.AxisA.position(), percent);`\n\n`RightMotor.setVelocity(Controller.AxisD.position(), percent);`\n\n`LeftMotor.spin(forward);`\n\n`RightMotor.spin(forward);`"
+    choices: ["Drives straight forward", "Drives straight backward", "Spins in place to the right", "Stops"]
+    answer: 2
+    why: The left motor gets 100 and the right motor gets -100. The left wheel goes forward and the right wheel goes backward, so the robot spins to the right.
+  - question: In VEXcode IQ Devices, why is Reverse switched on for RightMotor?
+    choices: ["To make the robot drive backward", "It faces the other way on the robot, so it must spin the opposite way to roll forward", "To make it stronger than the left motor", "Because Port 6 is broken"]
+    answer: 1
+    why: The two motors are mirror images of each other. Reversing one makes "forward" mean the same thing for both wheels.
+  - question: With tank drive, your robot curves left when you push both sticks all the way up. What is the best first thing to check?
+    choices: ["Delete the loop", "Whether one wheel is rubbing or one stick isn't pushed all the way", "Change `forward` to `reverse` on both motors", "Take off a wheel"]
+    answer: 1
+    why: A robot curves when one wheel turns slower than the other. Look for friction or uneven sticks before you change code that works.
+
+ship:
+  turn_in: code
+  note: Your driving program from the last simulator step is turned in with your answers and lap times.
+  extensions:
+    - title: Stick dashboard
+      level: Easier
+      goal: Show both stick numbers on the Brain screen while you drive.
+      where: Inside the loop, before the `wait`.
+      code: |
+        Brain.Screen.clearScreen();
+        Brain.Screen.setCursor(1, 1);
+        Brain.Screen.print("L: %d", Controller.AxisA.position());
+        Brain.Screen.newLine();
+        Brain.Screen.print("R: %d", Controller.AxisD.position());
+      hints:
+        - "Each `%d` is filled in by the number after the comma."
+        - "If the screen flickers, change the wait to `wait(100, msec);`."
+    - title: Arcade drive
+      level: Medium
+      goal: Drive with one stick for forward and back (AxisA) and the other stick for turning (AxisC), like a video game.
+      where: Replace the two `setVelocity` lines inside the loop.
+      code: |
+        int drive = Controller.AxisA.position();
+        int turn = Controller.AxisC.position();
+        LeftMotor.setVelocity(drive + turn, percent);
+        RightMotor.setVelocity(drive - turn, percent);
+      new: "1-4"
+      hints:
+        - "`int drive` makes a **variable**: a named box that holds a whole number."
+        - "Pushing the turn stick right makes `turn` positive. The left wheel speeds up and the right wheel slows down, so the robot turns right."
+        - "In the simulator, AxisC is the **left and right arrow** keys."
+    - title: Dead zone
+      level: Challenge
+      goal: Stop the robot from creeping when a stick doesn't rest exactly at 0. Treat any small number as 0.
+      where: Inside the loop. Read each stick into a variable first, then fix it before you set the motor.
+      code: |
+        int leftSpeed = Controller.AxisA.position();
+        if (abs(leftSpeed) < 10) {
+          leftSpeed = 0;
+        }
+        LeftMotor.setVelocity(leftSpeed, percent);
+      hints:
+        - "`abs(leftSpeed)` is the size of the number without its sign. `abs(-7)` is 7."
+        - "Do the same for the right stick with a variable named `rightSpeed`."
+        - "You'll learn much more about `if` in Battle Bot Design."
+  reflect:
+    - Explain to a 6th grader how pushing a joystick ends up spinning a wheel. Use the words input, number and loop.
+    - What made your real robot harder or easier to drive than the simulator robot?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5) in the simulator. Steps 4 and 5 are driving
+  practice with no new code, so fast finishers can start the Arcade drive extension. Day 2: Part 2 with the real
+  robots, the figure-8 time trial, then the quiz and Ship it.
+
+  **Before class.** Charge the robot and controller batteries. Check that every Brain and Controller has its radio
+  installed. **Pair each Controller with its Brain ahead of time** and label both with the same team number; pairing
+  one set at a time, away from the others, avoids crossed links. Lay out cups and tape for the courses.
+
+  **Devices.** This lesson needs two Motor devices (LeftMotor Port 1, RightMotor Port 6 with Reverse on) and a
+  Controller. A leftover Drivetrain on ports 1 and 6 blocks the motors from being added, so have students start a
+  new project. If a robot drives backward with both sticks up, the wrong motor is reversed (or both are).
+
+  **Common trouble.** `setVelocity` and `spin` typed outside the loop (robot never moves). `AxisA` used for both
+  motors (the right stick does nothing). The right motor not reversed (the robot spins when both sticks go up).
+  Controller not paired, or the program not started on the Brain. A robot that creeps with the sticks released has
+  sticks that rest slightly off 0; the Dead zone extension is the fix.
+
+  **Safety.** Robots drive on the floor only, never on tables. Drivers walk and stay behind their robot. One robot
+  per course at a time. Pick robots up by the frame, not by the wheels, and stop the program before picking one up.
+
+  **Check for understanding.** Ask a pair: "The stick is halfway up. What number is it? What does the motor do?"
+standards:
+  - code: 6-8.CS.a.4
+    how: Students describe the joystick as an input, the Brain as the control system and the motors as outputs, and write the code that links them.
+  - code: 6-8.CT.b.1
+    how: Students use a forever loop to read the joysticks and set the motor speeds again and again.
+  - code: 6-8.CT.d.3
+    how: Students write a tank drive program and use it to reach a goal, steer around a wall and push a cube into a zone.
+  - code: 6-8.CT.d.4
+    how: Students use a loop and expressions (a joystick value as a motor velocity); the extensions add variables and a conditional.
+  - code: 6-8.CT.b.2
+    how: Students predict the robot's motion from joystick values, in the build steps and in the quiz's trace question.
+  - code: 6-8.CS.a.7
+    how: Students diagnose a reversed motor, swapped ports and an unpaired controller on the real robot.
