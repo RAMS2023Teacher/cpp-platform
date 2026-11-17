@@ -8,9 +8,12 @@
 .ide-gap { flex: 1; }
 .ide-speed { font-weight: 800; font-size: .9rem; display: inline-flex; gap: 6px; align-items: center; }
 .ide-speed select { padding: 4px 8px; border: 2.5px solid var(--line); border-radius: 10px; font: inherit; background: #fff; }
-.ide-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+/* The editor gets the full width so whole lines of code fit; the simulator sits under it. */
+.ide-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .ide-code { min-width: 0; border: 3px solid var(--outline); border-radius: 12px; overflow: hidden; background: #fff; }
-.ide .CodeMirror { height: 440px; font: 600 15px/1.5 ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; }
+/* The editor grows with the code (long lines wrap), up to a limit, then scrolls. */
+.ide .CodeMirror { height: auto; font: 600 15px/1.5 ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; }
+.ide .CodeMirror-scroll { min-height: 190px; max-height: 560px; }
 .ide .CodeMirror-gutters { background: var(--panel-2); border-right: 2px solid var(--line); }
 .ide .CodeMirror-linenumber { color: var(--ink-3); }
 .ide .cm-keyword, .ide .cm-type { color: #8e2bd6; font-weight: 800; }
@@ -18,7 +21,8 @@
 .ide .cm-number { color: #0b7f63; }
 .ide .cm-comment { color: #5d6a94; font-style: italic; }
 .ide .ide-err-line { background: #ffd9de; }
-.ide-sim { min-width: 0; display: grid; gap: 8px; }
+.ide-sim { min-width: 0; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+.ide-side { min-width: 0; display: grid; gap: 8px; }
 .ide-field { position: relative; border: 3px solid var(--outline); border-radius: 12px; overflow: hidden; background: #d9dde3; line-height: 0; }
 .ide-field:focus-visible { outline: 4px solid var(--gold); outline-offset: 2px; }
 .ide-field canvas { width: 100%; height: auto; display: block; }
@@ -37,7 +41,7 @@
 .ide-modal-bg { position: fixed; inset: 0; z-index: 500; display: grid; place-items: center; padding: 16px; background: rgba(27, 35, 80, .55); }
 .ide-modal { width: min(680px, 100%); max-height: 90vh; overflow: auto; }
 .ide-copy { width: 100%; font: 600 .9rem/1.45 ui-monospace, Menlo, Consolas, monospace; border: 2.5px solid var(--line); border-radius: 12px; padding: 10px; }
-@media (max-width: 900px) { .ide-grid { grid-template-columns: 1fr; } .ide .CodeMirror { height: 320px; } }
+@media (max-width: 760px) { .ide-sim { grid-template-columns: 1fr; } }
 
 /* ---------- Test it boxes that tick themselves */
 .tests label.auto input { accent-color: var(--go); }

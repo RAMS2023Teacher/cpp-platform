@@ -71,15 +71,16 @@
       '<div class="ide-grid"><div class="ide-code"><textarea aria-label="Your C++ program"></textarea></div>' +
       '<div class="ide-sim"><div class="ide-field" tabindex="0" aria-label="Robot simulator' + (drive ? '. Click here, then drive with the keyboard.' : '') + '"><canvas width="960" height="720"></canvas>' +
       (drive ? '<div class="ide-focus">Click the field, then drive with the keys</div>' : '') + '</div>' +
+      '<div class="ide-side">' +
       (drive ? '<div class="ide-keys"><span><kbd>W</kbd><kbd>S</kbd> left stick</span><span><kbd>↑</kbd><kbd>↓</kbd> right stick</span>' +
         '<span><kbd>A</kbd><kbd>D</kbd> <kbd>←</kbd><kbd>→</kbd> sideways</span><span><kbd>Q</kbd><kbd>Z</kbd> L buttons</span><span><kbd>E</kbd><kbd>C</kbd> R buttons</span>' +
         '<span class="ide-pad" aria-live="off"></span></div>' : '') +
       '<div class="ide-hud" aria-hidden="true"></div>' +
       '<div class="ide-brain"><span class="ide-brain-label">Brain screen</span><pre class="ide-screen" aria-live="polite"></pre></div>' +
-      '<div class="ide-msg" role="status"></div></div></div></div>';
+      '<div class="ide-msg" role="status"></div></div></div></div></div>';
     var q = function (s) { return host.querySelector(s); };
     var cm = window.CodeMirror.fromTextArea(q('textarea'), { mode: 'text/x-c++src', lineNumbers: true, indentUnit: 2, tabSize: 2,
-      matchBrackets: true, autoCloseBrackets: true, lineWrapping: false, readOnly: !!opts.readOnly,
+      matchBrackets: true, autoCloseBrackets: true, lineWrapping: true, viewportMargin: Infinity, readOnly: !!opts.readOnly,
       extraKeys: { 'Ctrl-Enter': function () { run(); }, 'Cmd-Enter': function () { run(); }, Tab: function (c) { c.replaceSelection('  '); } } });
     cm.setValue(opts.code || opts.starter || '');
     var sim = new window.VexSim.Sim(q('canvas'), opts.field || {});
