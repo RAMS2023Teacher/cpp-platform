@@ -27,6 +27,7 @@ function helpApi_(d) {
   var ctx = student_(), email = ctx.rec.email, props = PropertiesService.getScriptProperties();
   if (d.action === 'cancel') { props.deleteProperty('help:' + email); return { ok: true, help: null }; }
   if (d.action === 'ask') {
+    noPreview_(whoIs_(), 'Help requests are');
     var L = DATA.lessons[d.lesson], step = L && d.stage === 'build' ? L.build[Math.max(0, Math.min(L.build.length - 1, Number(d.step) || 0))] : null;
     var where = L ? L.title + (step ? ' · Step ' + ((Number(d.step) || 0) + 1) + ': ' + step.title : d.stage ? ' · ' + stageName_(d.stage) : '') : 'RoboCode Academy';
     var req = { who: helpWho_(email), email: email, name: ctx.rec.name, classes: studentClassIds_(ctx.rec, ctx.cfg), at: now_(),

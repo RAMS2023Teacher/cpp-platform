@@ -101,14 +101,24 @@ var RUN_ = {
   teamJoin: function (a) { return teamJoin(a[0]); },
   teamLeave: function () { return teamLeave(); },
   teamAdmin: function (a) { return teamAdmin(a[0], a[1], a[2]); },
+  studentView: function (a) { return studentView(a[0]); },
+  studentViewExit: function (a) { return studentViewExit(a[0]); },
   helpList: function (a) { return helpList(a[0]); },
   feedbackReport: function (a) { return feedbackReport(a[0]); },
+  dataInfo: function () { return dataInfo(); },
+  backupNow: function () { return backupNow(); },
   helpResolve: function (a) { return helpResolve(a[0], a[1]); },
 };
+// Teacher actions that read, change and save the settings file take turns (two tabs, like the class display and the
+// class page, could otherwise save over each other). Slow ones (Google Classroom, giving everyone play time) don't.
+var RUN_LOCKED_ = { createClass: 1, setClassGrade: 1, deleteClass: 1, assignLessons: 1, updateAssignment: 1, removeStudent: 1,
+                    saveFeedback: 1, giveBonus: 1, saveVideos: 1, screenSave: 1, setTabIcon: 1 };
 function runCall_(d) {
-  var fn = RUN_[d && d.fn];
-  if (!fn) return { status: 404, body: { ok: false, error: 'RoboCode Academy doesn\'t know "' + (d && d.fn) + '". Reload the page; if it keeps happening, the files may be from different versions.' } };
-  return { status: 200, body: { ok: true, value: fn((d.args || []).slice(0, 6)) } };
+  var name = d && d.fn, fn = RUN_[name];
+  if (!fn) return { status: 404, body: { ok: false, error: 'RoboCode Academy doesn\'t know "' + name + '". Reload the page; if it keeps happening, the files may be from different versions.' } };
+  var args = (d.args || []).slice(0, 6);
+  var locked = RUN_LOCKED_[name] || (name === 'arcadeClass' && args[1] !== 'gift');
+  return { status: 200, body: { ok: true, value: locked ? withLock_(function () { return fn(args); }) : fn(args) } };
 }
 
 function badRequest_(msg) { var e = new Error(msg); e.status = 400; return e; }
@@ -173,6 +183,7 @@ var API_ = {
 
   partner: function (ctx, L, p, d) {
     if (d.action === 'pair') {
+      noPreview_(ctx.me, 'Partners are');
       var email = String(d.partner_id || '').toLowerCase();
       if (p.partner) throw badRequest_('You already have a partner for this lesson.');
       if (!classmates_(ctx).some(function (m) { return m.id === email; })) throw badRequest_('You can only partner with someone in your class.');
@@ -283,7 +294,7 @@ function apiAvatar_(d) {
 function joinClass(code, name) {
   var me = whoIs_();
   if (!me.email) throw new Error('Sign in with your school Google account.');
-  if (me.teacher) throw new Error('You are the teacher. Students join with the class code.');
+  if (me.teacher || me.owner) throw new Error('You are the teacher. Students join with the class code.');
   code = String(code || '').trim().toUpperCase();
   name = String(name || '').trim().replace(/\s+/g, ' ').slice(0, 40);
   var cfg = config_();

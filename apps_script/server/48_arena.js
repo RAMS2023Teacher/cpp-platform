@@ -37,11 +37,6 @@ function arenaRank_(scores) {
 // config.json: cfg.teams[class id][team id] = {id, name, mascot, shape, color, motto, members: [emails]}.
 // A team is scored as one entrant ("t" + team id); a student with no team is scored alone (their email).
 
-function withLock_(fn) {
-  var lock = typeof LockService === 'undefined' ? null : LockService.getScriptLock();
-  if (lock) lock.waitLock(15000);
-  try { return fn(); } finally { if (lock) lock.releaseLock(); }
-}
 function teamsOf_(cfg, cid) { return (cfg.teams || {})[cid] || {}; }
 function teamMax_(c) { return Math.max(2, Math.min(6, Number(c && c.team_max) || DATA.teams.max)); }
 function teamOfStudent_(cfg, cid, email) {
@@ -83,8 +78,10 @@ function studentClass_(ctx) {
   return ids[ids.length - 1];
 }
 function teamStudent_(fn) {
+  summary_();                    // the class list, read before the lock so nobody waits on it
   return withLock_(function () {
     var ctx = student_(), cid = studentClass_(ctx), c = ctx.cfg.classes[cid];
+    noPreview_(ctx.me, 'Teams are');
     if (c.teams_locked) throw new Error('Your teacher has locked the teams.');
     ctx.cfg.teams = ctx.cfg.teams || {};
     ctx.cfg.teams[cid] = ctx.cfg.teams[cid] || {};
@@ -127,6 +124,8 @@ function teamLeave() {
 /** Teacher: manage a class's teams. action: settings {max, locked} · rename {team, name} · look {team, mascot, shape, color, motto}
  *  · move {email, team} (team '' = no team) · delete {team} */
 function teamAdmin(cid, action, d) {
+  teacher_();
+  summary_();                    // read before the lock
   return withLock_(function () {
     var cfg = teacher_(), c = cfg.classes[cid];
     if (!c) throw new Error('No such class.');
@@ -211,6 +210,11 @@ function arenaData_(cfg, cid, me, teacher) {
 
 /** Teacher: save one event's scores for a class. scores: {entrant key: points, ...}; a blank removes that score. */
 function arenaSave(cid, eventId, scores) {
+  teacher_();
+  summary_();                    // read before the lock
+  return withLock_(function () { return arenaSaveLocked_(cid, eventId, scores); });
+}
+function arenaSaveLocked_(cid, eventId, scores) {
   var cfg = teacher_(), c = cfg.classes[cid];
   if (!c) throw new Error('No such class.');
   if (!arenaEvents_(gradeOfClass_(c)).some(function (e) { return e.id === eventId; })) throw new Error('No such arena challenge for this class.');

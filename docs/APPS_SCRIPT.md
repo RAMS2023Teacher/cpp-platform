@@ -17,6 +17,11 @@ work stays in the teacher's Google Drive. **To install or update it, follow
   **Feedback** page shows it by lesson, with a report (no names) to copy and paste to Claude to improve the lessons.
 * **Sounds and locked buttons:** a grey button still responds to a click and shows what is missing. The 🔊 button
   in the top bar turns sounds off on that device.
+* **Student view:** on a class page, **👀 Student view** lets you use the site as a student in that class. Your
+  practice work is saved but never shows in the gradebook, leaderboards, arena or reports; partners, teams and
+  help requests are off. A gold strip at the top has **Exit student view**.
+* **Your data and backups:** My classes → 🗄️ Your data shows the Drive folder in use, counts and daily backups.
+  See [RELIABILITY.md](RELIABILITY.md).
 * **Teams:** on their Arena page students start a team (name, mascot, logo shape and color, motto) or join one.
   On the class page you set the team size (default 3), lock teams, move students, rename or delete a team.
 * **Circuit City Arena:** on the class page, pick a challenge, type each team's points and save (a student with

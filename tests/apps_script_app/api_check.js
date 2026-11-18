@@ -282,6 +282,26 @@ tm = team(S, 'teamLeave').arena;                                                
 assert.ok(!tm.my_team && tm.teams.length === 0 && tm.events.find((e) => e.id === 'autonomy-challenge').results.length === 0);
 assert.strictEqual(tm.events.find((e) => e.id === 'battle-bot-challenge').results.length, 2);          // their own scores count again
 
+// student view: the teacher uses the site as a student in one class; nothing reaches real students or the gradebook
+assert.throws(() => w.call(S, 'studentView', [cls.id]), /Only the teacher/);
+w.call(T, 'studentView', [c7.id]);
+const sv = JSON.parse(pageView(T, '/').split('\n').pop().replace(/^window\.ML=/, '').replace(/;[^;]*$/, ''));
+assert.ok(!sv.teacher && sv.preview.class_name === 'Period 1' && sv.page === 'dashboard' && sv.data.total === 10, JSON.stringify(sv.preview));
+assert.ok(api(T, 'mission', { talk: 'A robot design is a trade-off between speed and grip.' }, 'welcome-to-circuit-city').body.stages.mission, 'practice work saves');
+assert.throws(() => w.call(T, 'createClass', ['Nope', 8]), /Only the teacher/);                        // teacher actions wait until they exit
+assert.throws(() => w.call(T, 'teamSave', [{ name: 'Teacher Team' }]), /student view/);
+assert.strictEqual(api(T, 'partner', { action: 'pair', partner_id: S7 }, 'welcome-to-circuit-city').status, 400);
+assert.ok(!w.call(T, 'api', ['/api/help', JSON.stringify({ action: 'ask', lesson: 'welcome-to-circuit-city' })]).body.ok);
+assert.strictEqual(w.call(T, 'studentViewExit', [false]).class_id, c7.id);
+assert.ok(JSON.parse(pageView(T, '/').split('\n').pop().replace(/^window\.ML=/, '').replace(/;[^;]*$/, '')).teacher);
+w.advance(120000);
+assert.ok(!w.call(T, 'gradebook', [c7.id]).students.some((x) => x.email === T), 'the teacher never shows in the gradebook');
+assert.ok(!(T in w.g.summary_(true).students));
+w.call(T, 'studentView', [c7.id]);
+assert.ok(w.g.loadStudent_(T).progress['welcome-to-circuit-city'].mission_done, 'practice work is kept between visits');
+w.call(T, 'studentViewExit', [true]);
+assert.deepStrictEqual(w.g.loadStudent_(T).progress, {}, 'exit and clear starts fresh');
+
 // every page renders for the teacher and a student
 for (const p of ['/', '/lessons', '/map', '/help', '/map/7', '/map/8', '/teacher/standards', '/teacher/videos', `/teacher/classes/${c7.id}`, `/teacher/classes/${cls.id}`,
   `/teacher/classes/${cls.id}/students/${encodeURIComponent(S)}`, `/teacher/classes/${cls.id}/google-classroom`, `/teacher/classes/${cls.id}/screen`, '/lessons/' + LID]) {

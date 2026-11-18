@@ -108,3 +108,9 @@
 .team-admin-card ul, .team-loose, .team-list { padding: 0; margin: 6px 0; }
 .team-admin-card li, .team-loose li { white-space: nowrap; }
 .team-loose li { justify-content: flex-start; }
+
+/* Student view */
+.preview-bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; padding: 8px 18px;
+  background: var(--gold); color: var(--ink); border-bottom: 3px solid var(--outline); font-weight: 600; }
+.preview-bar .row { gap: 8px; }
+.preview-bar .btn.go { background: var(--ink); color: #fff; }

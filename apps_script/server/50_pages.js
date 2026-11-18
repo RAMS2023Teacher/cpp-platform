@@ -14,7 +14,8 @@ function doGet(e) {
     if (!me.email) page = { name: 'error', title: 'Sign in', data: { message: 'Open RoboCode Academy while signed in to your school Google account.' } };
     else page = me.teacher ? teacherPage_(path) : studentPage_(me, path);
   } catch (err) {
-    page = { name: 'error', title: 'Problem', data: { message: (err && err.message) || 'Something went wrong.' } };
+    var busy = /^BUSY/.test((err && err.message) || '');
+    page = { name: 'error', title: busy ? 'Busy' : 'Problem', data: { message: busy ? 'Maker Lab is very busy right now. Your work is safe. This page will try again in a few seconds.' : (err && err.message) || 'Something went wrong.', retry: busy } };
   }
   page.path = path;
   return render_(me, page);
@@ -48,6 +49,7 @@ function studentPage_(me, path) {
 
 function teacherPage_(path) {
   var cfg = config_(), m, base = { teacher: true };
+  if (path === '/' || path === '/teacher') backupStep_(1500);
   if (path === '/' || path === '/teacher') return { name: 'teacher-home', title: 'My classes', data: merge_(base, merge_(teacherHome(), {
     tab_icons: TAB_ICONS_.map(function (t) { return { id: t[0], label: t[2] }; }), tab_icon: cfg.tab_icon || 'logo', tab_icon_url: faviconUrl_(),
     logo_refused: !!PropertiesService.getScriptProperties().getProperty('logo:refused') })) };
@@ -292,7 +294,7 @@ function render_(me, page) {
   var nav = me.teacher
     ? [['/', 'My classes'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/teacher/standards', 'Standards'], ['/teacher/feedback', 'Feedback'], ['/teacher/videos', 'Videos'], ['/arcade', '🎮 Arcade']]
     : [['/', 'Home'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/arena', 'Arena'], ['/me', 'My robot'], ['/arcade', '🎮 Arcade']];
-  var ml = { base: ScriptApp.getService().getUrl(), page: page.name, path: page.path || '/', teacher: me.teacher, nav: nav, data: page.data || {} };
+  var ml = { base: ScriptApp.getService().getUrl(), page: page.name, path: page.path || '/', teacher: me.teacher, preview: previewInfo_(me), nav: nav, data: page.data || {} };
   var globals = page.globals || {}, setup = 'window.ML=' + json_(ml) + ';';
   Object.keys(globals).forEach(function (k) { setup += 'window.' + k + '=' + json_(globals[k]) + ';'; });
   // The code editor and simulator are big, so only lesson pages with a simulator step carry them.

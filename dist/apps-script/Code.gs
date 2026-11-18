@@ -25,44 +25,88 @@ function whoIs_() {
   var email = '';
   try { email = (Session.getActiveUser().getEmail() || '').toLowerCase(); } catch (e) { email = ''; }
   var owner = (Session.getEffectiveUser().getEmail() || '').toLowerCase();
-  return { email: email, teacher: !!email && email === owner };
+  var isOwner = !!email && email === owner, preview = '';
+  if (isOwner) { try { preview = PropertiesService.getScriptProperties().getProperty('preview') || ''; } catch (e) { preview = ''; } }
+  // In student view the teacher is treated as a student in the class `preview` (see 49_student_view.js).
+  return { email: email, teacher: isOwner && !preview, owner: isOwner, preview: preview };
 }
 
 function now_() { return new Date().toISOString(); }
+
+// ---------------------------------------------------------------- reliability (docs/RELIABILITY.md)
+// An error from Google means "try again", never "it's missing". Storage (folders, files) is only ever created when
+// no id has EVER been saved for it, inside a lock, and a failed read is never replaced by a blank record.
+var BUSY_MSG_ = 'BUSY: RoboCode Academy is very busy right now. Your work is safe. Trying again...';
+function busy_() { var e = new Error(BUSY_MSG_); e.status = 503; return e; }
+
+/** Run a Google call, trying again a few times. If it keeps failing, throw BUSY (the browser will retry). */
+function retry_(fn) {
+  for (var i = 0; i < 4; i++) {
+    try { return fn(); } catch (e) {
+      if (i === 3) { console.warn('Google call failed: ' + ((e && e.message) || e)); throw busy_(); }
+      Utilities.sleep(250 * (i + 1));
+    }
+  }
+}
+
+/** Take turns for read-change-write of shared things. Keep it short: nothing slow inside. */
+function withLock_(fn) {
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) { throw busy_(); }
+  try { return fn(); } finally { lock.releaseLock(); }
+}
+
+/** Every storage id ever set, so the right folder or file can always be found again. */
+function rememberStorage_(key, id) {
+  var props = PropertiesService.getScriptProperties(), list = [];
+  try { list = JSON.parse(props.getProperty('storage:history') || '[]'); } catch (e) { list = []; }
+  list.push({ key: key, id: id, at: now_() });
+  props.setProperty('storage:history', JSON.stringify(list.slice(-40)));
+}
 
 // ---------------------------------------------------------------- Drive folders
 function folder_(key, name, parentFn) {
   var props = PropertiesService.getScriptProperties();
   var id = props.getProperty(key);
-  if (id) {
-    try { return DriveApp.getFolderById(id); } catch (e) { /* deleted: make a new one */ }
-  }
-  var f = parentFn ? parentFn().createFolder(name) : DriveApp.createFolder(name);
-  props.setProperty(key, f.getId());
-  return f;
+  if (id) return retry_(function () { return DriveApp.getFolderById(id); });   // can't open it now: BUSY, never a new one
+  var parent = parentFn ? parentFn() : null;                                     // outside the lock (it may need its own)
+  return withLock_(function () {
+    var again = props.getProperty(key);                                          // another first visitor may have made it
+    if (again) return retry_(function () { return DriveApp.getFolderById(again); });
+    var f = parent ? parent.createFolder(name) : DriveApp.createFolder(name);
+    props.setProperty(key, f.getId());
+    rememberStorage_(key, f.getId());
+    return f;
+  });
 }
 function dataFolder_() { return folder_('folder:data', DATA_FOLDER, null); }
 function studentFolder_() { return folder_('folder:students', 'students', dataFolder_); }
+function backupFolder_() { return folder_('folder:backups', 'backups', dataFolder_); }
 
+/** A saved JSON file. Throws BUSY if Drive fails; throws (never returns {}) if the file is damaged. */
 function readJsonFile_(id) {
-  return JSON.parse(DriveApp.getFileById(id).getBlob().getDataAsString());
+  var text = retry_(function () { return DriveApp.getFileById(id).getBlob().getDataAsString(); });
+  try { return JSON.parse(text); } catch (e) { throw new Error('A RoboCode Academy data file is damaged (' + id + '). Nothing was changed. Ask Claude to look at it.'); }
 }
 
-/** A JSON file in the data folder, found by a script property, made on first write. */
+/** A JSON file in the data folder, found by a script property. `fallback` only when it has never been made. */
 function readNamed_(key, fallback) {
   var id = PropertiesService.getScriptProperties().getProperty('file:' + key);
   if (!id) return fallback;
-  try { return readJsonFile_(id); } catch (e) { return fallback; }
+  return readJsonFile_(id);
 }
 function writeNamed_(key, value) {
   var props = PropertiesService.getScriptProperties();
-  var id = props.getProperty('file:' + key);
-  var text = JSON.stringify(value);
-  if (id) {
-    try { DriveApp.getFileById(id).setContent(text); return; } catch (e) { /* deleted: make a new one */ }
-  }
-  var f = dataFolder_().createFile(key + '.json', text, 'application/json');
-  props.setProperty('file:' + key, f.getId());
+  var id = props.getProperty('file:' + key), text = JSON.stringify(value);
+  if (id) { retry_(function () { DriveApp.getFileById(id).setContent(text); }); return; }
+  var folder = dataFolder_();
+  withLock_(function () {
+    var again = props.getProperty('file:' + key);
+    if (again) { retry_(function () { DriveApp.getFileById(again).setContent(text); }); return; }
+    var f = folder.createFile(key + '.json', text, 'application/json');
+    props.setProperty('file:' + key, f.getId());
+    rememberStorage_('file:' + key, f.getId());
+  });
 }
 
 // ---------------------------------------------------------------- teacher settings
@@ -106,25 +150,28 @@ function newStudent_(email) {
 function studentFileId_(email) {
   return PropertiesService.getScriptProperties().getProperty('student:' + email);
 }
+/** A student's record. null ONLY when they have never had one (not joined). A read error throws BUSY. */
 function loadStudent_(email) {
   var cached = CacheService.getScriptCache().get('s:' + email);
   if (cached) return JSON.parse(cached);
   var id = studentFileId_(email);
   if (!id) return null;
-  try { return readJsonFile_(id); } catch (e) { return null; }
+  return readJsonFile_(id);
 }
 function saveStudent_(rec) {
   rec.updated_at = now_();
   var text = JSON.stringify(rec);
   var props = PropertiesService.getScriptProperties();
   var id = props.getProperty('student:' + rec.email);
-  var saved = false;
-  if (id) {
-    try { DriveApp.getFileById(id).setContent(text); saved = true; } catch (e) { /* deleted: make a new one */ }
-  }
-  if (!saved) {
-    var name = 'student-' + rec.email.replace(/[^a-z0-9._-]/g, '_') + '.json';
-    props.setProperty('student:' + rec.email, studentFolder_().createFile(name, text, 'application/json').getId());
+  if (id) retry_(function () { DriveApp.getFileById(id).setContent(text); });       // fails: BUSY, never a second file
+  else {
+    var folder = studentFolder_();
+    withLock_(function () {                                                         // first save of a new student
+      var again = props.getProperty('student:' + rec.email);
+      if (again) { retry_(function () { DriveApp.getFileById(again).setContent(text); }); return; }
+      var name = 'student-' + rec.email.replace(/[^a-z0-9._-]/g, '_') + '.json';
+      props.setProperty('student:' + rec.email, folder.createFile(name, text, 'application/json').getId());
+    });
   }
   if (text.length < 90000) CacheService.getScriptCache().put('s:' + rec.email, text, 600);
   else CacheService.getScriptCache().remove('s:' + rec.email);
@@ -132,25 +179,38 @@ function saveStudent_(rec) {
 
 // ---------------------------------------------------------------- gradebook summary
 // One small record per student, rebuilt from files that changed since the last look.
+// The whole class opens the same views at once, so the summary is shared through the cache for a few seconds,
+// and only one request at a time rebuilds it (the others use the copy they have).
 function summary_(fresh) {
+  var cache = CacheService.getScriptCache(), hit = !fresh && cache.get('summary');
+  if (hit) return JSON.parse(hit);
   var s = readNamed_('summary', null) || { built_ms: 0, students: {} };
-  if (!fresh && Date.now() - (s.built_ms || 0) < SUMMARY_MAX_AGE_MS) return s;
+  if (!fresh && Date.now() - (s.built_ms || 0) < SUMMARY_MAX_AGE_MS) { cacheSummary_(s); return s; }
+  if (!fresh && s.built_ms && cache.get('summary:building')) return s;         // someone else is rebuilding it
+  cache.put('summary:building', '1', 30);
   var since = (s.built_ms || 0) - 120000;       // overlap a little, Drive times are rounded
   var started = Date.now();
   var props = PropertiesService.getScriptProperties().getProperties();
   var byId = {};
   Object.keys(props).forEach(function (k) { if (k.indexOf('student:') === 0) byId[props[k]] = k.slice(8); });
   // Walk the folder instead of using a Drive search query (real Drive rejected the query: "Invalid argument: q").
+  var ownerEmail = (Session.getEffectiveUser().getEmail() || '').toLowerCase();
+  delete s.students[ownerEmail];
   var it = studentFolder_().getFiles();
   while (it.hasNext()) {
     var f = it.next();
     var email = byId[f.getId()];
-    if (!email || f.getLastUpdated().getTime() <= since) continue;
+    if (!email || email === ownerEmail || f.getLastUpdated().getTime() <= since) continue;   // the teacher's student-view record never counts
     try { s.students[email] = studentSummary_(JSON.parse(f.getBlob().getDataAsString())); } catch (e) { /* skip a bad file */ }
   }
   s.built_ms = started;
   writeNamed_('summary', s);
+  cacheSummary_(s);
+  cache.remove('summary:building');
   return s;
+}
+function cacheSummary_(s) {
+  try { var t = JSON.stringify(s); if (t.length < 95000) CacheService.getScriptCache().put('summary', t, 20); } catch (e) { /* too big to share: fine */ }
 }
 
 function studentSummary_(rec) {
@@ -702,6 +762,7 @@ function helpApi_(d) {
   var ctx = student_(), email = ctx.rec.email, props = PropertiesService.getScriptProperties();
   if (d.action === 'cancel') { props.deleteProperty('help:' + email); return { ok: true, help: null }; }
   if (d.action === 'ask') {
+    noPreview_(whoIs_(), 'Help requests are');
     var L = DATA.lessons[d.lesson], step = L && d.stage === 'build' ? L.build[Math.max(0, Math.min(L.build.length - 1, Number(d.step) || 0))] : null;
     var where = L ? L.title + (step ? ' · Step ' + ((Number(d.step) || 0) + 1) + ': ' + step.title : d.stage ? ' · ' + stageName_(d.stage) : '') : 'RoboCode Academy';
     var req = { who: helpWho_(email), email: email, name: ctx.rec.name, classes: studentClassIds_(ctx.rec, ctx.cfg), at: now_(),
@@ -851,14 +912,24 @@ var RUN_ = {
   teamJoin: function (a) { return teamJoin(a[0]); },
   teamLeave: function () { return teamLeave(); },
   teamAdmin: function (a) { return teamAdmin(a[0], a[1], a[2]); },
+  studentView: function (a) { return studentView(a[0]); },
+  studentViewExit: function (a) { return studentViewExit(a[0]); },
   helpList: function (a) { return helpList(a[0]); },
   feedbackReport: function (a) { return feedbackReport(a[0]); },
+  dataInfo: function () { return dataInfo(); },
+  backupNow: function () { return backupNow(); },
   helpResolve: function (a) { return helpResolve(a[0], a[1]); },
 };
+// Teacher actions that read, change and save the settings file take turns (two tabs, like the class display and the
+// class page, could otherwise save over each other). Slow ones (Google Classroom, giving everyone play time) don't.
+var RUN_LOCKED_ = { createClass: 1, setClassGrade: 1, deleteClass: 1, assignLessons: 1, updateAssignment: 1, removeStudent: 1,
+                    saveFeedback: 1, giveBonus: 1, saveVideos: 1, screenSave: 1, setTabIcon: 1 };
 function runCall_(d) {
-  var fn = RUN_[d && d.fn];
-  if (!fn) return { status: 404, body: { ok: false, error: 'RoboCode Academy doesn\'t know "' + (d && d.fn) + '". Reload the page; if it keeps happening, the files may be from different versions.' } };
-  return { status: 200, body: { ok: true, value: fn((d.args || []).slice(0, 6)) } };
+  var name = d && d.fn, fn = RUN_[name];
+  if (!fn) return { status: 404, body: { ok: false, error: 'RoboCode Academy doesn\'t know "' + name + '". Reload the page; if it keeps happening, the files may be from different versions.' } };
+  var args = (d.args || []).slice(0, 6);
+  var locked = RUN_LOCKED_[name] || (name === 'arcadeClass' && args[1] !== 'gift');
+  return { status: 200, body: { ok: true, value: locked ? withLock_(function () { return fn(args); }) : fn(args) } };
 }
 
 function badRequest_(msg) { var e = new Error(msg); e.status = 400; return e; }
@@ -923,6 +994,7 @@ var API_ = {
 
   partner: function (ctx, L, p, d) {
     if (d.action === 'pair') {
+      noPreview_(ctx.me, 'Partners are');
       var email = String(d.partner_id || '').toLowerCase();
       if (p.partner) throw badRequest_('You already have a partner for this lesson.');
       if (!classmates_(ctx).some(function (m) { return m.id === email; })) throw badRequest_('You can only partner with someone in your class.');
@@ -1033,7 +1105,7 @@ function apiAvatar_(d) {
 function joinClass(code, name) {
   var me = whoIs_();
   if (!me.email) throw new Error('Sign in with your school Google account.');
-  if (me.teacher) throw new Error('You are the teacher. Students join with the class code.');
+  if (me.teacher || me.owner) throw new Error('You are the teacher. Students join with the class code.');
   code = String(code || '').trim().toUpperCase();
   name = String(name || '').trim().replace(/\s+/g, ' ').slice(0, 40);
   var cfg = config_();
@@ -1379,7 +1451,9 @@ function screenPayload_(cfg, cid) {
 function screenData(cid) {
   var cfg = teacher_();
   if (!cfg.classes[cid]) throw new Error('No such class.');
-  return screenPayload_(cfg, cid);
+  var out = screenPayload_(cfg, cid);
+  backupStep_(2000);                 // the class display refreshes often: build today's backup a little at a time
+  return out;
 }
 
 function screenSave(cid, d) {
@@ -1636,11 +1710,6 @@ function arenaRank_(scores) {
 // config.json: cfg.teams[class id][team id] = {id, name, mascot, shape, color, motto, members: [emails]}.
 // A team is scored as one entrant ("t" + team id); a student with no team is scored alone (their email).
 
-function withLock_(fn) {
-  var lock = typeof LockService === 'undefined' ? null : LockService.getScriptLock();
-  if (lock) lock.waitLock(15000);
-  try { return fn(); } finally { if (lock) lock.releaseLock(); }
-}
 function teamsOf_(cfg, cid) { return (cfg.teams || {})[cid] || {}; }
 function teamMax_(c) { return Math.max(2, Math.min(6, Number(c && c.team_max) || DATA.teams.max)); }
 function teamOfStudent_(cfg, cid, email) {
@@ -1682,8 +1751,10 @@ function studentClass_(ctx) {
   return ids[ids.length - 1];
 }
 function teamStudent_(fn) {
+  summary_();                    // the class list, read before the lock so nobody waits on it
   return withLock_(function () {
     var ctx = student_(), cid = studentClass_(ctx), c = ctx.cfg.classes[cid];
+    noPreview_(ctx.me, 'Teams are');
     if (c.teams_locked) throw new Error('Your teacher has locked the teams.');
     ctx.cfg.teams = ctx.cfg.teams || {};
     ctx.cfg.teams[cid] = ctx.cfg.teams[cid] || {};
@@ -1726,6 +1797,8 @@ function teamLeave() {
 /** Teacher: manage a class's teams. action: settings {max, locked} · rename {team, name} · look {team, mascot, shape, color, motto}
  *  · move {email, team} (team '' = no team) · delete {team} */
 function teamAdmin(cid, action, d) {
+  teacher_();
+  summary_();                    // read before the lock
   return withLock_(function () {
     var cfg = teacher_(), c = cfg.classes[cid];
     if (!c) throw new Error('No such class.');
@@ -1810,6 +1883,11 @@ function arenaData_(cfg, cid, me, teacher) {
 
 /** Teacher: save one event's scores for a class. scores: {entrant key: points, ...}; a blank removes that score. */
 function arenaSave(cid, eventId, scores) {
+  teacher_();
+  summary_();                    // read before the lock
+  return withLock_(function () { return arenaSaveLocked_(cid, eventId, scores); });
+}
+function arenaSaveLocked_(cid, eventId, scores) {
   var cfg = teacher_(), c = cfg.classes[cid];
   if (!c) throw new Error('No such class.');
   if (!arenaEvents_(gradeOfClass_(c)).some(function (e) { return e.id === eventId; })) throw new Error('No such arena challenge for this class.');
@@ -1864,6 +1942,52 @@ function arenaScreen_(cfg, cid) {
            event: { icon: last.icon, name: last.name, top: last.results.slice(0, 3).map(function (r) { return { name: r.name, score: r.score, place: r.place }; }) } };
 }
 
+// ---------------------------------------------------------------- student view (teacher only)
+// The teacher can use the site exactly as a student in one class would: the student pages, that grade's lessons,
+// XP, the quiz, the editor. Their practice work is saved in a student record of their own, which never shows in
+// the gradebook, leaderboards, arena or reports. Things that would reach real students are off: partners, teams
+// and help requests.
+
+function owner_() {
+  var me = whoIs_();
+  if (!me.owner) { var e = new Error('Only the teacher can do that.'); e.status = 403; throw e; }
+  return me;
+}
+
+/** Start student view for a class. */
+function studentView(cid) {
+  var me = owner_(), cfg = config_();
+  if (!cfg.classes[cid]) throw new Error('No such class.');
+  var rec = loadStudent_(me.email) || newStudent_(me.email);
+  rec.name = 'Student view';
+  rec.classes = [String(cid)];
+  saveStudent_(rec);
+  PropertiesService.getScriptProperties().setProperty('preview', String(cid));
+  return { ok: true };
+}
+
+/** Leave student view. reset: also clear the practice work, so the next visit starts fresh. */
+function studentViewExit(reset) {
+  var me = owner_(), props = PropertiesService.getScriptProperties(), cid = props.getProperty('preview') || '';
+  if (reset) {
+    var old = loadStudent_(me.email);
+    if (old) { var fresh = newStudent_(me.email); fresh.name = 'Student view'; fresh.classes = old.classes || []; fresh.created_at = old.created_at; saveStudent_(fresh); }
+  }
+  props.deleteProperty('preview');
+  return { ok: true, class_id: cid };
+}
+
+/** What the banner at the top of every page needs, or null. */
+function previewInfo_(me) {
+  if (!me.preview) return null;
+  var c = config_().classes[me.preview];
+  return { class_id: me.preview, class_name: c ? c.name : 'a class', grade_name: c ? DATA.grades[String(gradeOfClass_(c))] : '' };
+}
+
+function noPreview_(me, what) {
+  if (me && me.preview) { var e = new Error(what + ' off in student view, so nothing reaches your real students.'); e.status = 400; throw e; }
+}
+
 // ---------------------------------------------------------------- pages
 // Every page is one doGet: ?p=/lessons/dodge-the-drop. The server sends data; client/pages.js and
 // client/lesson.js draw the page in the browser.
@@ -1880,7 +2004,8 @@ function doGet(e) {
     if (!me.email) page = { name: 'error', title: 'Sign in', data: { message: 'Open RoboCode Academy while signed in to your school Google account.' } };
     else page = me.teacher ? teacherPage_(path) : studentPage_(me, path);
   } catch (err) {
-    page = { name: 'error', title: 'Problem', data: { message: (err && err.message) || 'Something went wrong.' } };
+    var busy = /^BUSY/.test((err && err.message) || '');
+    page = { name: 'error', title: busy ? 'Busy' : 'Problem', data: { message: busy ? 'Maker Lab is very busy right now. Your work is safe. This page will try again in a few seconds.' : (err && err.message) || 'Something went wrong.', retry: busy } };
   }
   page.path = path;
   return render_(me, page);
@@ -1914,6 +2039,7 @@ function studentPage_(me, path) {
 
 function teacherPage_(path) {
   var cfg = config_(), m, base = { teacher: true };
+  if (path === '/' || path === '/teacher') backupStep_(1500);
   if (path === '/' || path === '/teacher') return { name: 'teacher-home', title: 'My classes', data: merge_(base, merge_(teacherHome(), {
     tab_icons: TAB_ICONS_.map(function (t) { return { id: t[0], label: t[2] }; }), tab_icon: cfg.tab_icon || 'logo', tab_icon_url: faviconUrl_(),
     logo_refused: !!PropertiesService.getScriptProperties().getProperty('logo:refused') })) };
@@ -2158,7 +2284,7 @@ function render_(me, page) {
   var nav = me.teacher
     ? [['/', 'My classes'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/teacher/standards', 'Standards'], ['/teacher/feedback', 'Feedback'], ['/teacher/videos', 'Videos'], ['/arcade', '🎮 Arcade']]
     : [['/', 'Home'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/arena', 'Arena'], ['/me', 'My robot'], ['/arcade', '🎮 Arcade']];
-  var ml = { base: ScriptApp.getService().getUrl(), page: page.name, path: page.path || '/', teacher: me.teacher, nav: nav, data: page.data || {} };
+  var ml = { base: ScriptApp.getService().getUrl(), page: page.name, path: page.path || '/', teacher: me.teacher, preview: previewInfo_(me), nav: nav, data: page.data || {} };
   var globals = page.globals || {}, setup = 'window.ML=' + json_(ml) + ';';
   Object.keys(globals).forEach(function (k) { setup += 'window.' + k + '=' + json_(globals[k]) + ';'; });
   // The code editor and simulator are big, so only lesson pages with a simulator step carry them.
@@ -2270,6 +2396,103 @@ function feedbackReport(grade) {
            students: Object.keys(sum.students).length, reasons: FB_REASONS_, lessons: lessons,
            generated: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') };
 }
-var BUILD_ID = "5eaab6c820";
-var BUILD_EXPECT = {"Assets": "a38440b243", "Data": "7fdf762291"};
+
+// ---------------------------------------------------------------- daily backups and the owner's "Your data" card
+// Once a day, every student record and the settings go into one dated JSON file in "RoboCode Academy data/backups"
+// ("RoboCode Academy Backup 2026-11-18.json"). Reading every student takes a while, so the backup is built a few students
+// at a time while the teacher uses RoboCode Academy (teacher pages and the class display), never inside the lock and never
+// while a student waits. "Back up now" finishes it in one go. The last 8 backups are kept.
+
+var BACKUPS_KEPT_ = 8;
+
+function backupDay_() { return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'); }
+function backupList_() {
+  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('backup:list') || '[]'); } catch (e) { return []; }
+}
+
+/** Add up to `budgetMs` of students to today's backup. Safe to call often; a backup problem never breaks a page. */
+function backupStep_(budgetMs) {
+  var props = PropertiesService.getScriptProperties(), cache = CacheService.getScriptCache();
+  try {
+    var day = backupDay_(), st = JSON.parse(props.getProperty('backup:state') || '{}');
+    if (st.day === day && st.done && !st.redo) return st;
+    if (cache.get('backup:running')) return st;                       // another request is working on it
+    cache.put('backup:running', '1', 60);
+    if (st.day !== day) st = { day: day, i: 0, done: false, file: null };
+    if (st.redo) st = { day: day, i: 0, done: false, file: st.file };          // "Back up now": start today's over, same file
+    var emails = Object.keys(props.getProperties()).filter(function (k) { return k.indexOf('student:') === 0; })
+      .map(function (k) { return k.slice(8); }).sort();
+    var data = st.file && st.i > 0 ? readJsonFile_(st.file) : { app: 'RoboCode Academy', day: day, made_at: now_(), config: readNamed_('config', null), students: {} };
+    var t0 = Date.now();
+    while (st.i < emails.length && Date.now() - t0 < budgetMs) {
+      var id = props.getProperty('student:' + emails[st.i]);
+      if (id) data.students[emails[st.i]] = readJsonFile_(id);
+      st.i++;
+    }
+    st.done = st.i >= emails.length;
+    data.complete = st.done;
+    data.count = Object.keys(data.students).length;
+    var text = JSON.stringify(data);
+    if (st.file) retry_(function () { DriveApp.getFileById(st.file).setContent(text); });
+    else st.file = backupFolder_().createFile('RoboCode Academy Backup ' + day + '.json', text, 'application/json').getId();
+    if (st.done) {
+      var list = backupList_().filter(function (b) { return b.id !== st.file; });
+      list.push({ id: st.file, day: day, students: data.count });
+      while (list.length > BACKUPS_KEPT_) {
+        var old = list.shift();
+        try { DriveApp.getFileById(old.id).setTrashed(true); } catch (e) { /* already gone */ }
+      }
+      props.setProperty('backup:list', JSON.stringify(list));
+    }
+    props.setProperty('backup:state', JSON.stringify(st));
+    cache.remove('backup:running');
+    return st;
+  } catch (e) {
+    cache.remove('backup:running');
+    console.warn('Backup step failed (nothing lost): ' + ((e && e.message) || e));
+    return null;
+  }
+}
+
+/** Owner: make today's backup again from scratch, now (it replaces today's file, so there's still one per day). */
+function backupNow() {
+  teacher_();
+  var props = PropertiesService.getScriptProperties(), st = {};
+  try { st = JSON.parse(props.getProperty('backup:state') || '{}'); } catch (e) { st = {}; }
+  if (st.day === backupDay_()) { st.redo = true; props.setProperty('backup:state', JSON.stringify(st)); }
+  CacheService.getScriptCache().remove('backup:running');
+  var st = null;
+  for (var k = 0; k < 6; k++) { st = backupStep_(4000); if (!st || st.done) break; }
+  return dataInfo();
+}
+
+/** Owner: where the data lives, how much there is, the backups, and any other "RoboCode Academy data" folders in Drive. */
+function dataInfo() {
+  teacher_();
+  var props = PropertiesService.getScriptProperties(), all = props.getProperties(), cfg = config_();
+  var folderId = all['folder:data'] || '', folder = null, others = [];
+  if (folderId) { try { folder = DriveApp.getFolderById(folderId); } catch (e) { folder = null; } }
+  try {
+    var it = DriveApp.getFoldersByName(DATA_FOLDER);
+    while (it.hasNext() && others.length < 10) { var f = it.next(); if (f.getId() !== folderId) others.push({ id: f.getId(), url: f.getUrl() }); }
+  } catch (e) { /* Drive search unavailable: skip */ }
+  var history = [];
+  try { history = JSON.parse(all['storage:history'] || '[]'); } catch (e) { history = []; }
+  var st = {};
+  try { st = JSON.parse(all['backup:state'] || '{}'); } catch (e) { st = {}; }
+  return {
+    folder: folder ? { id: folderId, url: folder.getUrl(), name: folder.getName() } : { id: folderId, missing: !!folderId },
+    students: Object.keys(all).filter(function (k) { return k.indexOf('student:') === 0; }).length,
+    classes: Object.keys(cfg.classes).length,
+    backups: backupList_().map(function (b) {
+      var url = '';
+      try { url = DriveApp.getFileById(b.id).getUrl(); } catch (e) { url = ''; }
+      return { day: b.day, students: b.students, url: url };
+    }).reverse(),
+    today: st.day === backupDay_() ? { done: !!st.done, students: st.i || 0 } : null,
+    others: others, history: history.slice(-10).reverse(),
+  };
+}
+var BUILD_ID = "d78f6f87de";
+var BUILD_EXPECT = {"Assets": "ce9fb6e4c3", "Data": "7fdf762291"};
 var BUILD_FILES = ["Assets.gs", "Code.gs", "Data.gs"];
