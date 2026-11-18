@@ -997,9 +997,11 @@ var API_ = {
   partner: function (ctx, L, p, d) {
     if (d.action === 'pair') {
       noPreview_(ctx.me, 'Partners are');
-      var email = String(d.partner_id || '').toLowerCase();
+      // the browser only ever gets a short id for each classmate, never an email
+      var pick = classmatesFull_(ctx).filter(function (m) { return m.id === String(d.partner_id || ''); })[0];
       if (p.partner) throw badRequest_('You already have a partner for this lesson.');
-      if (!classmates_(ctx).some(function (m) { return m.id === email; })) throw badRequest_('You can only partner with someone in your class.');
+      if (!pick) throw badRequest_('You can only partner with someone in your class.');
+      var email = pick.email;
       var mate = partnerRecord_(ctx.cfg, email), theirs = mate.progress[L.id];
       if (theirs && theirs.partner && theirs.partner !== ctx.rec.email) throw badRequest_('That classmate already has a partner for this lesson.');
       mergeProgress_(p, theirs);
@@ -1021,13 +1023,15 @@ var API_ = {
 // ---------------------------------------------------------------- partners (two classmates, one Chromebook)
 // The signed-in student picks a classmate. There's no accept step: the partner is sitting right there.
 // Both students' progress for the lesson is combined, then every save is copied to the partner's file.
-function classmates_(ctx) {
+/** Classmates for the partner picker: a short id and a name. Emails stay on the server. */
+function classmates_(ctx) { return classmatesFull_(ctx).map(function (m) { return { id: m.id, name: m.name }; }); }
+function classmatesFull_(ctx) {
   var sum = summary_(), seen = {}, out = [];
   studentClassIds_(ctx.rec, ctx.cfg).forEach(function (cid) {
     classStudents_(ctx.cfg, sum, cid).forEach(function (s) {
       if (s.email === ctx.rec.email || seen[s.email]) return;
       seen[s.email] = 1;
-      out.push({ id: s.email, name: s.name });
+      out.push({ id: helpWho_(s.email), email: s.email, name: s.name });
     });
   });
   return out.sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
@@ -2612,6 +2616,6 @@ function dataInfo() {
     others: others, history: history.slice(-10).reverse(),
   };
 }
-var BUILD_ID = "056c651dec";
-var BUILD_EXPECT = {"Assets": "f9fe1fb7ec", "Data": "b6019d105c"};
+var BUILD_ID = "72ee768d60";
+var BUILD_EXPECT = {"Assets": "f9fe1fb7ec", "Data": "12232be672"};
 var BUILD_FILES = ["Assets.gs", "Code.gs", "Data.gs"];

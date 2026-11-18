@@ -50,11 +50,13 @@ Google account.
 Only what the class needs:
 
 - their school email address and the name on the class list (or the name they typed when joining)
-- which class they are in, and their arena team
+- which class they are in
 - their lesson progress: boxes ticked, answers to lesson questions, quiz answers and scores, the
   programs they wrote, and their reflections
 - game items: points (XP), badges, their robot avatar, arcade scores
-- feedback they chose to give: "this was confusing" flags and lesson ratings
+- their arena team's name, mascot and motto
+- feedback they chose to give: "this was confusing" flags, lesson ratings and any comment they typed
+- a help request ("I'm stuck") and its note, kept for up to an hour
 
 It does **not** save grades from other classes, addresses, birthdays, photos, voice, location or
 anything from the student's computer.

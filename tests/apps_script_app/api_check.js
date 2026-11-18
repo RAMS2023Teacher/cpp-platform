@@ -148,8 +148,10 @@ assert.ok(w.call(T, 'api', ['/api/arcade/start', '{}']).body.practice);
 
 // partners: Ava picks Sam's classmate list; work is combined, then saves go to both
 w.advance(120000);
-assert.ok(api(S2, 'partner').body.classmates.some((m) => m.id === S));
-r = api(S2, 'partner', { action: 'pair', partner_id: S });
+const mates = api(S2, 'partner').body.classmates, samId = mates.find((m) => m.name === 'Sam K.').id;
+assert.ok(samId && !JSON.stringify(mates).includes('@'), 'classmates are listed without emails');
+assert.strictEqual(api(S2, 'partner', { action: 'pair', partner_id: S }).status, 400);                 // an email is not accepted as an id
+r = api(S2, 'partner', { action: 'pair', partner_id: samId });
 assert.deepStrictEqual(r.body, { status: 'paired', name: 'Sam K.' });
 const ava = w.g.loadStudent_(S2);
 assert.ok(ava.progress[LID].shipped_at && w.g.percent_(ava.progress[LID], L) === 100);
@@ -340,6 +342,11 @@ for (const p of ['/', '/lessons', '/map', '/help', '/map/7', '/map/8', '/teacher
 }
 assert.ok(/"page":"about"/.test(pageView(S, '/about')) && /"page":"about"/.test(pageView(T, '/about')) && /"page":"about"/.test(pageView('nobody@students.school.org', '/about')), 'About opens for everyone');
 assert.ok(pageData(S, '/about').faq.sections.length >= 3 && /href=\\?"[^"]*about/.test(pageView(S, '/')), 'the footer links to About');
+// no page a student opens carries a classmate's email
+for (const p of ['/', '/lessons', '/map', '/arena', '/me', '/arcade', '/help', '/about', '/lessons/' + LID, '/lessons/' + CODE]) {
+  const setup = pageView(S, p).split('\n').pop();                  // the page's data, where anything about classmates would be
+  for (const other of [S2, S7, T]) assert.ok(!setup.toLowerCase().includes(other), other + ' is on the student page ' + p);
+}
 for (const p of ['/', '/lessons', '/map', '/arena', '/me', '/help', '/lessons/' + LID]) assert.ok(!/"page":"error"/.test(pageView(S, p)), 'student page failed: ' + p);
 
 // ✋ help: a student asks, the display lists it (no emails), the teacher marks it helped
