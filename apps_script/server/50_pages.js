@@ -29,6 +29,7 @@ function studentPage_(me, path) {
     rec.name = listed;
     saveStudent_(rec);
   }
+  if (path === '/about' && (!rec || !rec.name || !studentClassIds_(rec, cfg).length)) return { name: 'about', title: 'About', data: { faq: DATA.faq } };   // readable before joining a class
   if (!rec || !rec.name || !studentClassIds_(rec, cfg).length) return { name: 'join', title: 'Join your class', data: { name: rec ? rec.name : '' } };
   var rewards = syncRewards_(rec, cfg);
   if (rewards.xp_gained) saveStudent_(rec);
@@ -43,6 +44,7 @@ function studentPage_(me, path) {
   if (path === '/me') return { name: 'profile', title: 'My robot', data: merge_(base, profileData_(rec)) };
   if (path === '/arcade') return { name: 'arcade', title: 'Robot Rush', data: merge_(base, arcadeData_(rec, cfg, false)) };
   if (path === '/help') return { name: 'help', title: 'Help', data: merge_(base, { apps: apps_() }) };
+  if (path === '/about') return { name: 'about', title: 'About', data: merge_(base, { faq: DATA.faq }) };
   if ((m = /^\/lessons\/([\w-]+)$/.exec(path))) return lessonPage_(m[1], rec, cfg, base, false);
   return { name: 'error', title: 'Not found', data: { message: "We couldn't find that page." } };
 }
@@ -73,6 +75,7 @@ function teacherPage_(path) {
   if (path === '/teacher/videos') return { name: 'videos', title: 'Videos', data: merge_(base, { course: courseCards_(null, 0), urls: cfg.videos, grades: gradeList_() }) };
   if (path === '/lessons') return { name: 'catalog', title: 'Lessons', data: merge_(base, catalogData_(null, 0)) };
   if (path === '/help') return { name: 'help', title: 'Help', data: merge_(base, { apps: apps_() }) };
+  if (path === '/about') return { name: 'about', title: 'About', data: merge_(base, { faq: DATA.faq }) };
   if ((m = /^\/map(?:\/(\d))?$/.exec(path))) {
     var g = cleanGrade_(m[1]), map = mapData_(null, {}, g);
     map.nodes.forEach(function (n) { if (!n.soon) n.state = 'open'; });
@@ -312,7 +315,7 @@ function render_(me, page) {
     '<header class="topbar" id="topbar"></header>',
     '<main class="', page.mainClass || 'container', '" id="main">',
     page.html || '<p class="muted" style="padding:24px">Loading RoboCode Academy…</p><noscript>RoboCode Academy needs JavaScript turned on.</noscript>', '</main>',
-    '<footer class="footer">RoboCode Academy · circuits, mechanics and C++ with VEX IQ</footer>',
+    '<footer class="footer">RoboCode Academy · mechanics and C++ with VEX IQ · <a href="/about">About this site and student privacy</a></footer>',
     '<div id="ml-code" hidden>', code.join('.'), '</div>', LOADER_SCRIPT_, '</body></html>'];
   return withIcon_(HtmlService.createHtmlOutput(out.join(''))
     .setTitle((page.title ? page.title + ' · ' : '') + APP_NAME)

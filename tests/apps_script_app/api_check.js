@@ -338,6 +338,8 @@ for (const p of ['/', '/lessons', '/map', '/help', '/map/7', '/map/8', '/teacher
   `/teacher/classes/${cls.id}/students/${encodeURIComponent(S)}`, `/teacher/classes/${cls.id}/google-classroom`, `/teacher/classes/${cls.id}/screen`, '/lessons/' + LID]) {
   assert.ok(!/"page":"error"/.test(pageView(T, p)), 'teacher page failed: ' + p);
 }
+assert.ok(/"page":"about"/.test(pageView(S, '/about')) && /"page":"about"/.test(pageView(T, '/about')) && /"page":"about"/.test(pageView('nobody@students.school.org', '/about')), 'About opens for everyone');
+assert.ok(pageData(S, '/about').faq.sections.length >= 3 && /href=\\?"[^"]*about/.test(pageView(S, '/')), 'the footer links to About');
 for (const p of ['/', '/lessons', '/map', '/arena', '/me', '/help', '/lessons/' + LID]) assert.ok(!/"page":"error"/.test(pageView(S, p)), 'student page failed: ' + p);
 
 // ✋ help: a student asks, the display lists it (no emails), the teacher marks it helped

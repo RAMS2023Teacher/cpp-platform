@@ -237,6 +237,22 @@
     window.__lessonPage();
   };
 
+  // About: who made the site and how, and what it saves about students (course/faq.yaml)
+  pages.about = function () {
+    var f = d.faq, h = ['<div class="about"><h1>' + E(f.title) + '</h1><div class="about-intro">' + f.intro + '</div>' +
+      '<p class="about-jump">' + f.sections.map(function (s, i) { return '<a class="btn small ghost" href="#about-' + i + '">' + E(s.title) + '</a>'; }).join(' ') + '</p>'];
+    f.sections.forEach(function (s, i) {
+      h.push('<section class="card about-sec" id="about-' + i + '"><h2>' + E(s.title) + '</h2>' + s.questions.map(function (q, k) {
+        return '<details' + (k === 0 ? ' open' : '') + '><summary>' + E(q.q) + '</summary><div class="about-a">' + q.a + '</div></details>';
+      }).join('') + '</section>');
+    });
+    h.push('<p class="row about-tools"><button type="button" class="btn small ghost" id="about-open">Open every answer</button> <button type="button" class="btn small ghost" id="about-print">Print this page</button></p></div>');
+    main.innerHTML = h.join('');
+    var openAll = function () { document.querySelectorAll('.about details').forEach(function (x) { x.open = true; }); };
+    document.getElementById('about-open').addEventListener('click', openAll);
+    document.getElementById('about-print').addEventListener('click', function () { openAll(); window.print(); });
+  };
+
   pages.help = function () {
     var apps = d.apps || {};
     main.innerHTML = '<div class="card" style="padding:22px;max-width:820px;margin:0 auto"><h1>❓ Help</h1>' +
