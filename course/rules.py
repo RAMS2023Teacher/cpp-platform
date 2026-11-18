@@ -84,6 +84,16 @@ ARENA_EVENTS = [
      [("Left the start box on its own", 5), ("Followed the line to the end", 10), ("Stopped before the wall", 10),
       ("Collected the block", 15), ("Parked in the zone", 10)]),
 ]
+# Teams: students start one on the Arena page and classmates join it. A team is scored as one entrant.
+# The logo is a shape in a color with the mascot on it.
+TEAM_MAX = 3          # students per team; the teacher can change it for a class (2-6)
+TEAM_MASCOTS = [("bot", "🤖", "Robot"), ("shark", "🦈", "Shark"), ("dragon", "🐉", "Dragon"), ("eagle", "🦅", "Eagle"),
+                ("wolf", "🐺", "Wolf"), ("lion", "🦁", "Lion"), ("rex", "🦖", "T. rex"), ("viper", "🐍", "Viper"),
+                ("hornet", "🐝", "Hornet"), ("scorpion", "🦂", "Scorpion"), ("kraken", "🐙", "Kraken"), ("owl", "🦉", "Owl"),
+                ("bolt", "⚡", "Lightning"), ("blaze", "🔥", "Blaze"), ("rocket", "🚀", "Rocket"), ("gear", "⚙️", "Gear")]
+TEAM_SHAPES = [("shield", "Shield"), ("circle", "Circle"), ("hex", "Hexagon"), ("diamond", "Diamond")]
+TEAM_COLORS = [("red", "#d92d20"), ("orange", "#f2711c"), ("gold", "#ffc400"), ("green", "#1a9b53"), ("teal", "#0e9aa7"),
+               ("blue", "#2f6fde"), ("purple", "#7a3fd1"), ("pink", "#e0458b"), ("charcoal", "#2a2e37")]
 # season points for an event by place; everyone else who competed gets the last number
 ARENA_PLACE_POINTS = [100, 80, 65, 50, 40]
 
@@ -137,6 +147,7 @@ BADGES = [
     ("castle-crasher", "🏰", "Castle Crasher", "Complete Castle Crasher.", ["lesson", "castle-crasher"]),
     ("sumo", "🥋", "Sumo Star", "Complete Sumo Showdown.", ["lesson", "sumo-showdown"]),
     ("maze-runner", "🏁", "Maze Runner", "Complete Maze Runner.", ["lesson", "maze-runner"]),
+    ("team-player", "🚩", "Team Player", "Start or join a Circuit City Arena team.", ["team"]),
     ("arena-rookie", "🎟️", "Arena Rookie", "Score in your first Circuit City Arena challenge.", ["arena_events", 1]),
     ("arena-podium", "🥉", "On the Podium", "Finish in the top 3 of an arena challenge.", ["arena_place", 3]),
     ("arena-champion", "🥇", "Arena Champion", "Win an arena challenge.", ["arena_place", 1]),

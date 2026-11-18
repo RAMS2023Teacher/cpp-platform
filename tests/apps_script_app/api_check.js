@@ -227,7 +227,7 @@ assert.throws(() => w.call(S, 'arenaSave', [cls.id, 'battle-bot-challenge', {}])
 assert.strictEqual(w.call(T, 'screenData', [cls.id]).arena, null);
 let ar = w.call(T, 'arenaSave', [cls.id, 'battle-bot-challenge', { [S]: 30, [S2]: '45', 'stranger@x.org': 99 }]);
 let ev = ar.events.find((e) => e.id === 'battle-bot-challenge');
-assert.deepStrictEqual(ev.results.map((x) => [x.email, x.place, x.points]), [[S2, 1, 100], [S, 2, 80]]);
+assert.deepStrictEqual(ev.results.map((x) => [x.key, x.place, x.points]), [[S2, 1, 100], [S, 2, 80]]);
 ar = w.call(T, 'arenaSave', [cls.id, 'wall-maze', { [S]: 40, [S2]: 40 }]);                             // a tie shares first place
 assert.deepStrictEqual(ar.events.find((e) => e.id === 'wall-maze').results.map((x) => x.place), [1, 1]);
 assert.deepStrictEqual(ar.standings.map((x) => [x.name, x.points, x.place]), [['Ava R.', 200, 1], ['Sam K.', 180, 2]]);
@@ -241,6 +241,41 @@ assert.ok(scrAr.standings.length === 2 && scrAr.event.name === 'Maze Runner Pro'
 pageView(S, '/');                                                                                      // loading a page awards new badges
 assert.ok(['arena-rookie', 'arena-podium', 'arena-champion'].every((b) => w.g.loadStudent_(S).badges[b]), Object.keys(w.g.loadStudent_(S).badges).join());
 assert.strictEqual(pageData(S7, '/arena').arena.events.length, 5);
+
+// teams: a student starts one with a name, mascot and logo; a classmate joins; the team is scored as one entrant
+const team = (who, fn, args) => w.call(who, fn, args || []);
+assert.throws(() => team(S, 'teamSave', [{ name: 'X' }]), /name/);
+let tm = team(S, 'teamSave', [{ name: '  The Gear   Grinders ', mascot: 'shark', shape: 'hex', color: 'blue', motto: 'Built to push', evil: '<script>' }]).arena;
+assert.ok(tm.my_team && tm.my_team.name === 'The Gear Grinders' && tm.my_team.emoji === '🦈' && tm.my_team.hex === '#2f6fde' && tm.my_team.members.length === 1, JSON.stringify(tm.my_team));
+assert.ok(w.g.loadStudent_(S).badges['team-player']);
+assert.throws(() => team(S2, 'teamSave', [{ name: 'the gear grinders' }]), /already has that name/);
+assert.throws(() => team(S7, 'teamJoin', [tm.my_team.id]), /gone/);                                    // another class's team
+tm = team(S2, 'teamJoin', [tm.my_team.id]).arena;
+assert.deepStrictEqual(tm.my_team.members.map((m) => [m.name, m.me]), [['Sam', false], ['Ava', true]]);
+assert.ok(!JSON.stringify(tm).includes('@'), 'an email reached a student');
+assert.throws(() => team(S2, 'teamJoin', [tm.my_team.id]), /Leave your team first/);
+team(S2, 'teamSave', [{ name: 'Gear Grinders', mascot: 'no-such-mascot' }]);                           // a teammate can restyle it; bad choices fall back
+const tid = tm.my_team.id, tkey = 't' + tid;
+let ta = w.call(T, 'arenaSave', [cls.id, 'autonomy-challenge', { [tkey]: 35, [S]: 50 }]);              // Sam is on the team, so his own key is ignored
+ev = ta.events.find((e) => e.id === 'autonomy-challenge');
+assert.deepStrictEqual(ev.results.map((x) => [x.key, x.name, x.score]), [[tkey, 'Gear Grinders', 35]]);
+assert.ok(ta.events.find((e) => e.id === 'battle-bot-challenge').results.length === 0, 'solo scores of students now on a team are hidden');
+assert.ok(ta.standings.length === 1 && ta.standings[0].team.members.length === 2 && ta.entrants.length === 1);
+assert.strictEqual(w.call(T, 'screenData', [cls.id]).arena.standings[0].team.name, 'Gear Grinders');
+assert.strictEqual(pageData(S, '/').team.name, 'Gear Grinders');
+// the teacher: team size, lock, move, rename, delete
+ta = w.call(T, 'teamAdmin', [cls.id, 'settings', { max: 2, locked: true }]);
+assert.ok(ta.team_max === 2 && ta.teams_locked);
+assert.throws(() => team(S, 'teamLeave'), /locked/);
+ta = w.call(T, 'teamAdmin', [cls.id, 'settings', { max: 2, locked: false }]);
+ta = w.call(T, 'teamAdmin', [cls.id, 'rename', { team: tid, name: 'Bolt Squad' }]);
+ta = w.call(T, 'teamAdmin', [cls.id, 'move', { email: S2, team: '' }]);
+assert.deepStrictEqual(ta.entrants.map((e) => e.name), ['Bolt Squad', 'Ava R.']);
+assert.throws(() => w.call(T, 'teamAdmin', [cls.id, 'move', { email: 'stranger@x.org', team: tid }]), /not in this class/);
+assert.throws(() => w.call(S, 'teamAdmin', [cls.id, 'delete', { team: tid }]), /Only the teacher/);
+tm = team(S, 'teamLeave').arena;                                                                       // the last one out removes the team and its scores
+assert.ok(!tm.my_team && tm.teams.length === 0 && tm.events.find((e) => e.id === 'autonomy-challenge').results.length === 0);
+assert.strictEqual(tm.events.find((e) => e.id === 'battle-bot-challenge').results.length, 2);          // their own scores count again
 
 // every page renders for the teacher and a student
 for (const p of ['/', '/lessons', '/map', '/help', '/map/7', '/map/8', '/teacher/standards', '/teacher/videos', `/teacher/classes/${c7.id}`, `/teacher/classes/${cls.id}`,

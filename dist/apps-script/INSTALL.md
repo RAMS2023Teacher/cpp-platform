@@ -17,9 +17,9 @@ so the two can't share a project. The old project and its spreadsheet can stay a
 
 | File | Add it as | Size |
 |---|---|---|
-| `Assets.gs` | Script (+ → Script), name it `Assets` | 225 KB |
-| `Code.gs` | Script (+ → Script), name it `Code` | 103 KB |
-| `Data.gs` | Script (+ → Script), name it `Data` | 716 KB |
+| `Assets.gs` | Script (+ → Script), name it `Assets` | 231 KB |
+| `Code.gs` | Script (+ → Script), name it `Code` | 112 KB |
+| `Data.gs` | Script (+ → Script), name it `Data` | 717 KB |
 
 4. Press **Ctrl+S**. There are no HTML files in this project.
 

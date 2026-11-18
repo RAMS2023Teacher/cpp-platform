@@ -116,7 +116,8 @@ function dashboardData_(rec, cfg) {
                overdue: !!(a.due && a.due < today && c.pct < 100), feedback: !!((cfg.feedback[rec.email] || {})[a.lesson_id]) };
     });
   var done = cards.filter(function (c) { return !c.soon && c.pct === 100; }).length;
-  return { rows: rows, next_up: nextUp_(rec, rows, cards, byId), badges: badgeList_(rec), done: done, grade_name: DATA.grades[String(grade)],
+  var myCid = classes[classes.length - 1], myTeam = myCid ? teamOfStudent_(cfg, myCid, rec.email) : null;
+  return { team: myTeam ? teamArt_({ name: myTeam.name, mascot: myTeam.mascot, shape: myTeam.shape, color: myTeam.color, motto: myTeam.motto || '' }) : null, rows: rows, next_up: nextUp_(rec, rows, cards, byId), badges: badgeList_(rec), done: done, grade_name: DATA.grades[String(grade)],
            total: cards.length, classes: classes.map(function (c) { return cfg.classes[c].name; }) };
 }
 

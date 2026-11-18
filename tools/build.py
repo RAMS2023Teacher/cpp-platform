@@ -150,6 +150,8 @@ def build_data() -> dict:
         "vexcode_url": rules.VEXCODE_URL, "cad_url": rules.CAD_STUDIO_URL,
         "grades": {str(g): name for g, name in rules.GRADES.items()}, "default_grade": rules.DEFAULT_GRADE,
         "chassis": [{"id": c[0], "name": c[1], "blurb": c[2]} for c in rules.CHASSIS],
+        "teams": {"max": rules.TEAM_MAX, "mascots": [list(m) for m in rules.TEAM_MASCOTS], "shapes": [list(x) for x in rules.TEAM_SHAPES],
+                  "colors": [list(x) for x in rules.TEAM_COLORS]},
         "arena": {"place_points": rules.ARENA_PLACE_POINTS,
                   "events": [{"id": e[0], "grade": e[1], "lesson_id": e[2], "icon": e[3], "name": e[4], "kind": e[5], "blurb": e[6],
                               "guide": [list(g) for g in e[7]]} for e in rules.ARENA_EVENTS]},
@@ -166,7 +168,7 @@ def build_assets() -> dict:
     # Apps Script strips comment marks out of <style> blocks anyway.
     styles = re.sub(r"/\*.*?\*/", "", read("vendor/codemirror.css"), flags=re.S) + "\n" + read("css/base.css") + "\n" + read("css/theme.css") + "\n" + read("css/robocode.css") + "\n" + read("css/arena.css")
     app = "\n".join([
-        read("shim.js"), read("lib/avatar.js"), read("lib/rewards.js"), read("lib/visuals.js"), read("lib/screen.js"), read("lib/game.js"),
+        read("shim.js"), read("lib/avatar.js"), read("lib/crest.js"), read("lib/rewards.js"), read("lib/visuals.js"), read("lib/screen.js"), read("lib/game.js"),
         "window.__runMap = function () {\n" + read("lib/map.js") + "\n};",
         "window.__runProfile = function () {\n" + read("lib/profile.js") + "\n};",
         read("pages.js"), read("lesson.js"),

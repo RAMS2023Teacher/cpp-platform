@@ -204,7 +204,7 @@
         ar.standings.forEach((r) => {
           const li = wins.appendChild(el('li', 'arcade-row'));
           li.appendChild(el('span', 'win-icon', ['🥇', '🥈', '🥉'][r.place - 1] || String(r.place)));
-          li.appendChild(el('span', 'else-bot')).innerHTML = window.RobotAvatar.svg(r.avatar, 34);
+          li.appendChild(el('span', 'else-bot')).innerHTML = r.team ? window.TeamCrest.svg(r.team, 34) : window.RobotAvatar.svg(r.avatar, 34);
           li.appendChild(el('span', 'win-text', r.name));
           li.appendChild(el('b', 'arcade-score', r.points + ' pts'));
         });

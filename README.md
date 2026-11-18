@@ -48,7 +48,8 @@ Each class is set to grade 7 or grade 8, and its students see only that course.
 Each lesson is about two class periods and is split into two Parts.
 
 **Circuit City Arena.** The chassis (2WD Standard, 2WD Lite, 3WD Side Crawler, 4WD), the arena challenges and their
-scoring guides are in `course/rules.py`. On a class page the teacher types each student's points for a challenge;
+scoring guides are in `course/rules.py`. Students form teams on their Arena page, each with a name, a mascot, a logo and a motto. On a class page the
+teacher types each team's points for a challenge;
 the site ranks them and keeps season standings, shown on the students' **Arena** page and the Class display.
 
 ## How a lesson works

@@ -87,6 +87,7 @@ function makeWorld(dist, opts) {
       deleteProperty: (k) => { delete state.props[k]; },
       getProperties: () => Object.assign({}, state.props),
     }) },
+    LockService: { getScriptLock: () => ({ waitLock: () => {}, releaseLock: () => {} }) },
     CacheService: { getScriptCache: () => ({
       get: (k) => (k in state.cache ? state.cache[k] : null),
       put: (k, v) => { if (String(v).length > 100000) throw new Error('Argument too large: value'); state.cache[k] = String(v); },

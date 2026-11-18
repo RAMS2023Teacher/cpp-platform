@@ -44,11 +44,53 @@
     return out.join('');
   };
   var place = function (n) { return n === 1 ? '🥇' : n === 2 ? '🥈' : n === 3 ? '🥉' : n + '.'; };
+  var crest = function (t, size) { return window.TeamCrest.svg(t, size); };
+  var face = function (r, size) { return r.team ? crest(r.team, size) : '<span data-avatar="' + A(r.avatar || {}) + '" data-size="' + size + '"></span>'; };
+  var who = function (r) {
+    return '<span class="grow">' + E(r.name) + (r.team ? '<small class="muted team-names">' + r.team.members.map(function (m) { return E(m.name); }).join(', ') + '</small>' : '') + '</span>';
+  };
+  // The logo maker: name, mascot, shape, color and motto, with a live preview. teamForm returns the HTML; wireTeamForm runs it.
+  var teamForm = function (o, t, verb) {
+    t = t || { name: '', mascot: o.mascots[0][0], shape: o.shapes[0][0], color: o.colors[0][0], motto: '' };
+    var pick = function (kind, list, label) {
+      return '<div class="team-pick" data-kind="' + kind + '" role="radiogroup" aria-label="' + kind + '">' + list.map(function (x) {
+        return '<button type="button" role="radio" aria-checked="' + (x[0] === t[kind]) + '" class="' + (x[0] === t[kind] ? 'on' : '') + '" data-v="' + E(x[0]) + '" title="' + E(label(x)) + '"' +
+          (kind === 'color' ? ' style="background:' + E(x[1]) + '"' : '') + '>' + (kind === 'mascot' ? E(x[1]) : kind === 'shape' ? crest({ shape: x[0], hex: '#69707d', emoji: ' ' }, 30) : '') + '</button>';
+      }).join('') + '</div>';
+    };
+    return '<div class="team-form"><div class="team-preview" id="tf-preview"></div><div class="grow">' +
+      '<label class="field"><span>Team name</span><input id="tf-name" maxlength="24" value="' + E(t.name) + '" placeholder="e.g. The Gear Grinders"></label>' +
+      '<div class="field"><span>Mascot</span>' + pick('mascot', o.mascots, function (x) { return x[2]; }) + '</div>' +
+      '<div class="row"><div class="field"><span>Logo shape</span>' + pick('shape', o.shapes, function (x) { return x[1]; }) + '</div>' +
+      '<div class="field"><span>Color</span>' + pick('color', o.colors, function (x) { return x[0]; }) + '</div></div>' +
+      '<label class="field"><span>Motto (optional)</span><input id="tf-motto" maxlength="60" value="' + E(t.motto || '') + '" placeholder="e.g. Built to push"></label>' +
+      '<button type="button" class="btn go" id="tf-go">' + verb + '</button> <span class="bad small" id="tf-msg" role="status"></span></div></div>';
+  };
+  var wireTeamForm = function (o, save) {
+    var $ = function (id) { return document.getElementById(id); };
+    var val = function (kind) { var b = document.querySelector('.team-pick[data-kind=' + kind + '] .on'); return b ? b.dataset.v : ''; };
+    var read = function () { return { name: $('tf-name').value, mascot: val('mascot'), shape: val('shape'), color: val('color'), motto: $('tf-motto').value }; };
+    var preview = function () {
+      var t = read();
+      t.emoji = (o.mascots.filter(function (m) { return m[0] === t.mascot; })[0] || o.mascots[0])[1];
+      t.hex = (o.colors.filter(function (m) { return m[0] === t.color; })[0] || o.colors[0])[1];
+      $('tf-preview').innerHTML = crest(t, 120) + '<b></b>';
+      $('tf-preview').lastChild.textContent = t.name || 'Your team';
+    };
+    document.querySelectorAll('.team-pick button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        b.parentNode.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); x.setAttribute('aria-checked', 'false'); });
+        b.classList.add('on'); b.setAttribute('aria-checked', 'true'); preview();
+      });
+    });
+    $('tf-name').addEventListener('input', preview);
+    $('tf-go').addEventListener('click', function () { save(read(), this, $('tf-msg')); });
+    preview();
+  };
   var standingsTable = function (rows, empty) {
     if (!rows.length) return '<p class="muted">' + empty + '</p>';
     return '<ol class="arena-board plain">' + rows.map(function (r) {
-      return '<li' + (r.me ? ' class="me"' : '') + '><span class="place">' + place(r.place) + '</span><span data-avatar="' + A(r.avatar || {}) + '" data-size="30"></span>' +
-        '<span class="grow">' + E(r.name) + '</span><small class="muted">' + r.events + ' challenge' + (r.events === 1 ? '' : 's') + '</small><b>' + r.points + ' pts</b></li>';
+      return '<li' + (r.me ? ' class="me"' : '') + '><span class="place">' + place(r.place) + '</span>' + face(r, 34) + who(r) + '<small class="muted">' + r.events + ' challenge' + (r.events === 1 ? '' : 's') + '</small><b>' + r.points + ' pts</b></li>';
     }).join('') + '</ol>';
   };
   var guideTable = function (ev) {
@@ -58,24 +100,65 @@
   var pages = {};
 
   pages.arena = function () {
-    var a = d.arena, h = ['<div class="banner red arena-banner"><div class="banner-icon">🏟️</div><div class="grow"><small>' + E(a.grade_name) + '</small><h1>Circuit City Arena</h1>' +
-      '<p>Pick a chassis, tune it, and score points for your team in every challenge.</p></div></div>'];
-    h.push('<div class="grid-2"><section class="card"><h2>🏆 Season standings</h2>' + standingsTable(a.standings, 'No scores yet. The first challenge is coming up!') +
-      '<p class="muted small">Season points for each challenge: ' + a.place_points.map(function (p, i) { return (i === a.place_points.length - 1 ? 'everyone else ' : place(i + 1) + ' ') + p; }).join(' · ') + '</p></section>' +
-      '<section class="card"><h2>🤖 The chassis</h2><ul class="plain chassis-list">' + a.chassis.map(function (c) { return '<li><b>' + E(c.name) + '</b><br><span class="muted">' + E(c.blurb) + '</span></li>'; }).join('') +
-      '</ul><p class="muted small">You can swap the wheels, move the Brain and add parts from the bins.</p></section></div>');
-    h.push('<h2 class="grade-head">The challenges</h2><div class="arena-events">');
-    a.events.forEach(function (ev) {
-      var mine = ev.results.filter(function (r) { return r.me; })[0];
-      h.push('<section class="card arena-event"><h3>' + E(ev.icon) + ' ' + E(ev.name) + ' <span class="tag">' + (ev.kind === 'code' ? 'coded' : 'driver') + '</span></h3><p>' + E(ev.blurb) +
-        (ev.lesson ? ' <a class="small" href="/lessons/' + E(ev.lesson_id) + '">Lesson ' + E(ev.lesson) + ' →</a>' : '') + '</p>' +
-        '<details><summary>How to score</summary>' + guideTable(ev) + '</details>' +
-        (ev.results.length ? '<ol class="arena-board plain">' + ev.results.slice(0, 5).map(function (r) {
-          return '<li' + (r.me ? ' class="me"' : '') + '><span class="place">' + place(r.place) + '</span><span class="grow">' + E(r.name) + '</span><b>' + r.score + '</b></li>';
-        }).join('') + '</ol>' + (mine && mine.place > 5 ? '<p class="small">You: place ' + mine.place + ' with <b>' + mine.score + '</b></p>' : '')
-          : '<p class="muted small">Not scored yet.</p>') + '</section>');
-    });
-    main.innerHTML = h.join('') + '</div>';
+    var a = d.arena, editing = false;
+    var after = function (btn, msg) {
+      return function (p) {
+        btn.disabled = true;
+        p.then(function (r) { a = r.arena; editing = false; draw(); if (window.showRewards && r.rewards) window.showRewards(r.rewards); })
+          .catch(function (e) { btn.disabled = false; (msg || document.getElementById('team-msg')).textContent = (e && e.message) || 'Something went wrong.'; });
+      };
+    };
+    var teamCard = function () {
+      var t = a.my_team, h = ['<section class="card team-card"><h2>🚩 My team</h2>'];
+      if (a.teams_locked && !t) return h.join('') + '<p class="muted">Teams are locked. Ask your teacher to put you on a team.</p></section>';
+      if (t && !editing) {
+        h.push('<div class="team-show">' + crest(t, 120) + '<div class="grow"><h3 class="team-name">' + E(t.name) + '</h3>' + (t.motto ? '<p class="team-motto">“' + E(t.motto) + '”</p>' : '') +
+          '<p><b>Teammates:</b> ' + t.members.map(function (m) { return E(m.name) + (m.me ? ' (you)' : ''); }).join(', ') + '</p>' +
+          (a.teams_locked ? '<p class="muted small">Teams are locked by your teacher.</p>'
+            : '<p class="row"><button type="button" class="btn small" id="team-edit">Change name or logo</button> <button type="button" class="btn small ghost" id="team-leave">Leave team</button></p>') +
+          '<p class="muted small">Your team scores together in every arena challenge. Up to ' + a.team_max + ' on a team.</p><span class="bad small" id="team-msg" role="status"></span></div></div>');
+      } else if (t) {
+        h.push(teamForm(a.options, t, 'Save') + '<p><button type="button" class="linklike small" id="team-cancel">Cancel</button></p>');
+      } else {
+        h.push('<p>Make a team for the arena, or join one. A team has a name, a mascot and a logo, and scores together. Up to ' + a.team_max + ' on a team.</p>');
+        if (a.teams.length) h.push('<h3>Join a team</h3><ul class="plain team-list">' + a.teams.map(function (x) {
+          var full = x.members.length >= a.team_max;
+          return '<li>' + crest(x, 44) + '<span class="grow"><b>' + E(x.name) + '</b><small class="muted team-names">' + x.members.map(function (m) { return E(m.name); }).join(', ') + '</small></span>' +
+            (full ? '<small class="muted">full</small>' : '<button type="button" class="btn small team-join" data-id="' + E(x.id) + '">Join</button>') + '</li>';
+        }).join('') + '</ul>');
+        h.push('<h3>' + (a.teams.length ? 'Or start a new team' : 'Start a team') + '</h3>' + teamForm(a.options, null, 'Start my team') + '<span class="bad small" id="team-msg" role="status"></span>');
+      }
+      return h.join('') + '</section>';
+    };
+    var draw = function () {
+      var h = ['<div class="banner red arena-banner"><div class="banner-icon">🏟️</div><div class="grow"><small>' + E(a.grade_name) + '</small><h1>Circuit City Arena</h1>' +
+        '<p>Pick a chassis, tune it, and score points for your team in every challenge.</p></div></div>'];
+      h.push(teamCard());
+      h.push('<div class="grid-2"><section class="card"><h2>🏆 Season standings</h2>' + standingsTable(a.standings, 'No scores yet. The first challenge is coming up!') +
+        '<p class="muted small">Season points for each challenge: ' + a.place_points.map(function (p, i) { return (i === a.place_points.length - 1 ? 'everyone else ' : place(i + 1) + ' ') + p; }).join(' · ') + '</p></section>' +
+        '<section class="card"><h2>🤖 The chassis</h2><ul class="plain chassis-list">' + a.chassis.map(function (c) { return '<li><b>' + E(c.name) + '</b><br><span class="muted">' + E(c.blurb) + '</span></li>'; }).join('') +
+        '</ul><p class="muted small">You can swap the wheels, move the Brain and add parts from the bins.</p></section></div>');
+      h.push('<h2 class="grade-head">The challenges</h2><div class="arena-events">');
+      a.events.forEach(function (ev) {
+        var mine = ev.results.filter(function (r) { return r.me; })[0];
+        h.push('<section class="card arena-event"><h3>' + E(ev.icon) + ' ' + E(ev.name) + ' <span class="tag">' + (ev.kind === 'code' ? 'coded' : 'driver') + '</span></h3><p>' + E(ev.blurb) +
+          (ev.lesson ? ' <a class="small" href="/lessons/' + E(ev.lesson_id) + '">Lesson ' + E(ev.lesson) + ' →</a>' : '') + '</p>' +
+          '<details><summary>How to score</summary>' + guideTable(ev) + '</details>' +
+          (ev.results.length ? '<ol class="arena-board plain">' + ev.results.slice(0, 5).map(function (r) {
+            return '<li' + (r.me ? ' class="me"' : '') + '><span class="place">' + place(r.place) + '</span>' + (r.team ? crest(r.team, 26) : '') + '<span class="grow">' + E(r.name) + '</span><b>' + r.score + '</b></li>';
+          }).join('') + '</ol>' + (mine && mine.place > 5 ? '<p class="small">You: place ' + mine.place + ' with <b>' + mine.score + '</b></p>' : '')
+            : '<p class="muted small">Not scored yet.</p>') + '</section>');
+      });
+      main.innerHTML = h.join('') + '</div>';
+      window.RobotAvatar.renderAll(main);
+      var $ = function (id) { return document.getElementById(id); };
+      if ($('tf-go')) wireTeamForm(a.options, function (t, btn, msg) { after(btn, msg)(ML.run('teamSave', t)); });
+      if ($('team-edit')) $('team-edit').addEventListener('click', function () { editing = true; draw(); });
+      if ($('team-cancel')) $('team-cancel').addEventListener('click', function () { editing = false; draw(); });
+      if ($('team-leave')) $('team-leave').addEventListener('click', function () { if (confirm('Leave ' + a.my_team.name + '?')) after(this)(ML.run('teamLeave')); });
+      document.querySelectorAll('.team-join').forEach(function (b) { b.addEventListener('click', function () { after(b)(ML.run('teamJoin', b.dataset.id)); }); });
+    };
+    draw();
   };
 
   pages.error = function () {
@@ -108,6 +191,9 @@
       '<div class="grow"><small>' + (nu.verb === 'Keep going' ? 'Keep going' : 'Next mission') + '</small><h1>' + E(nu.lesson.title) + '</h1>' +
       '<p>' + (nu.verb === 'Keep going' ? 'Next up: ' + E(nu.stage) : E(nu.lesson.tagline)) + '</p></div><span class="btn go big">GO ▶</span></a>');
     else h.push('<div class="card" style="padding:18px;margin:18px 0"><h2>🎉 You\'ve finished every lesson so far!</h2><p>Check the skill tree for what\'s coming next.</p></div>');
+    h.push('<a class="card team-chip" href="/arena">' + (d.team ? crest(d.team, 56) + '<span class="grow"><small class="muted">My arena team</small><b>' + E(d.team.name) + '</b>' +
+      (d.team.motto ? '<small class="muted">“' + E(d.team.motto) + '”</small>' : '') + '</span>' : '<span class="team-chip-icon">🚩</span><span class="grow"><b>Make your arena team</b><small class="muted">Pick a name, a mascot and a logo for Circuit City Arena.</small></span>') +
+      '<span class="btn small ghost">Arena ▶</span></a>');
     h.push('<div class="stat-tiles"><div class="card stat"><span>🗺️</span><span class="big">' + d.done + '/' + d.total + '</span><small>Lessons done</small></div>' +
       '<div class="card stat"><span>🏅</span><span class="big">' + earned + '</span><small>Badges</small></div>' +
       '<div class="card stat"><span>⭐</span><span class="big">' + lv.xp + '</span><small>XP</small></div>' +
@@ -510,29 +596,61 @@
       var ev = arena.events.filter(function (e) { return e.id === arenaPick; })[0], h2 = ['<h2>🏟️ Circuit City Arena</h2>'];
       if (!ev) { $('arena-card').innerHTML = h2.join('') + '<p class="muted">No arena challenges for this course.</p>'; return; }
       var scores = {};
-      ev.results.forEach(function (r) { scores[r.email] = r; });
-      h2.push('<p class="muted small">Type each student\'s points for a challenge (teammates get the same number) and save. The site ranks them, and the season standings show on the 📺 Class display and the students\' Arena page.</p>' +
+      ev.results.forEach(function (r) { scores[r.key] = r; });
+      h2.push('<p class="muted small">Type each team\'s points for a challenge and save. A student who is not on a team is scored alone. The site ranks them, and the season standings show on the 📺 Class display and the students\' Arena page.</p>' +
         '<div class="grid-2"><div><label class="field"><span>Challenge</span><select id="arena-ev">' + arena.events.map(function (e) {
           return '<option value="' + E(e.id) + '"' + (e.id === arenaPick ? ' selected' : '') + '>' + E(e.icon + ' ' + e.name) + (e.results.length ? ' ✓' : '') + '</option>'; }).join('') + '</select></label>' +
         '<p class="small">' + E(ev.blurb) + ' <a href="/lessons/' + E(ev.lesson_id) + '">Lesson ' + E(ev.lesson) + '</a></p>' + guideTable(ev) + '</div><div>');
-      if (!arena.students.length) h2.push('<p class="muted">No students yet.</p>');
+      if (!arena.entrants.length) h2.push('<p class="muted">No students yet.</p>');
       else {
-        h2.push('<table class="arena-scores"><thead><tr><th>Student</th><th>Points</th><th>Place</th></tr></thead><tbody>');
-        arena.students.forEach(function (s) {
-          var r = scores[s.email];
-          h2.push('<tr><td>' + E(s.name) + '</td><td><input type="number" step="1" class="arena-in" data-email="' + E(s.email) + '" value="' + (r ? r.score : '') + '" aria-label="Points for ' + E(s.name) + '"></td><td>' + (r ? place(r.place) : '') + '</td></tr>');
+        h2.push('<table class="arena-scores"><thead><tr><th>Team or student</th><th>Points</th><th>Place</th></tr></thead><tbody>');
+        arena.entrants.forEach(function (s) {
+          var r = scores[s.key];
+          h2.push('<tr><td>' + (s.team ? '<span class="team-cell">' + crest(s.team, 28) + '<span><b>' + E(s.name) + '</b><small class="muted team-names">' + s.team.members.map(function (m) { return E(m.name); }).join(', ') + '</small></span></span>' : E(s.name)) +
+            '</td><td><input type="number" step="1" class="arena-in" data-key="' + E(s.key) + '" value="' + (r ? r.score : '') + '" aria-label="Points for ' + E(s.name) + '"></td><td>' + (r ? place(r.place) : '') + '</td></tr>');
         });
         h2.push('</tbody></table><button class="btn" id="arena-save" type="button">Save scores</button> <span class="saved small" id="arena-msg" role="status"></span>');
       }
       h2.push('</div></div><h3>Season standings</h3>' + standingsTable(arena.standings, 'No scores yet.'));
+      // teams: who is on which, and the class's team rules
+      var onTeam = {};
+      arena.teams.forEach(function (t) { t.members.forEach(function (m) { onTeam[m.email] = t.id; }); });
+      var teamSelect = function (email) {
+        return '<select class="team-move" data-email="' + E(email) + '" aria-label="Team"><option value="">No team</option>' + arena.teams.map(function (t) {
+          return '<option value="' + E(t.id) + '"' + (onTeam[email] === t.id ? ' selected' : '') + '>' + E(t.name) + '</option>'; }).join('') + '</select>';
+      };
+      h2.push('<h3>Teams (' + arena.teams.length + ')</h3><p class="muted small">Students start and join teams on their Arena page. You can move anyone here, rename a team or delete it. ' +
+        'Deleting a team also removes its arena scores.</p>' +
+        '<p class="row"><label class="small">Students per team <select id="team-max">' + [2, 3, 4, 5, 6].map(function (n) { return '<option' + (n === arena.team_max ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label> ' +
+        '<label class="check small"><input type="checkbox" id="team-lock"' + (arena.teams_locked ? ' checked' : '') + '> Lock teams (students can\'t change them)</label></p>');
+      if (arena.teams.length) h2.push('<div class="team-admin">' + arena.teams.map(function (t) {
+        return '<div class="team-admin-card">' + crest(t, 56) + '<div class="grow"><b>' + E(t.name) + '</b>' + (t.motto ? ' <small class="muted">“' + E(t.motto) + '”</small>' : '') +
+          '<ul class="plain">' + t.members.map(function (m) { return '<li>' + E(m.name) + ' ' + teamSelect(m.email) + '</li>'; }).join('') + '</ul>' +
+          '<button type="button" class="linklike small team-rename" data-id="' + E(t.id) + '" data-name="' + E(t.name) + '">rename</button> · <button type="button" class="linklike small team-del" data-id="' + E(t.id) + '" data-name="' + E(t.name) + '">delete team</button></div></div>';
+      }).join('') + '</div>');
+      var loose = arena.students.filter(function (st) { return !onTeam[st.email]; });
+      if (loose.length && arena.teams.length) h2.push('<p class="small"><b>Not on a team:</b></p><ul class="plain team-loose">' + loose.map(function (st) { return '<li>' + E(st.name) + ' ' + teamSelect(st.email) + '</li>'; }).join('') + '</ul>');
+      else if (loose.length) h2.push('<p class="small muted">No teams yet. ' + loose.length + ' student(s) can start one on their Arena page.</p>');
       $('arena-card').innerHTML = h2.join('');
       window.RobotAvatar.renderAll($('arena-card'));
+      var admin = function (el, action, payload) { act(el, 'teamAdmin', [c.id, action, payload], function (r) { arena = r; drawArena(); }); };
       $('arena-ev').addEventListener('change', function () { arenaPick = this.value; drawArena(); });
       if ($('arena-save')) $('arena-save').addEventListener('click', function () {
         var map = {}, b = this;
-        document.querySelectorAll('.arena-in').forEach(function (i) { map[i.dataset.email] = i.value.trim(); });
+        document.querySelectorAll('.arena-in').forEach(function (i) { map[i.dataset.key] = i.value.trim(); });
         act(b, 'arenaSave', [c.id, arenaPick, map], function (r) { arena = r; drawArena(); $('arena-msg').textContent = 'Saved ✓'; });
       });
+      var settings = function () { admin(null, 'settings', { max: $('team-max').value, locked: $('team-lock').checked }); };
+      $('team-max').addEventListener('change', settings);
+      $('team-lock').addEventListener('change', settings);
+      document.querySelectorAll('.team-move').forEach(function (sel) { sel.addEventListener('change', function () { admin(sel, 'move', { email: sel.dataset.email, team: sel.value }); }); });
+      document.querySelectorAll('.team-rename').forEach(function (b) { b.addEventListener('click', function () {
+        var name = prompt('New name for ' + b.dataset.name + ':', b.dataset.name);
+        if (name) admin(b, 'rename', { team: b.dataset.id, name: name });
+      }); });
+      document.querySelectorAll('.team-del').forEach(function (b) { b.addEventListener('click', function () {
+        if (confirm('Delete the team ' + b.dataset.name + '? Its arena scores are removed too. The students stay in the class.')) admin(b, 'delete', { team: b.dataset.id });
+      }); });
     };
     drawArena();
     $('as-go').addEventListener('click', function () {

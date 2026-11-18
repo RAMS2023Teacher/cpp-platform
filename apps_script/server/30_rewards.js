@@ -48,6 +48,7 @@ function badgeChecks_(rec, cfg) {
     if (rule[0] === 'lesson') ok = !!c.done[rule[1]];
     else if (rule[0] === 'lesson_any') ok = rule[1].some(function (l) { return c.done[l]; });
     else if (rule[0] === 'course') { var mine = courseFor_(gradeOf_(rec, cfg)).filter(function (x) { return DATA.lessons[x.id]; }); ok = mine.length > 0 && mine.every(function (x) { return c.done[x.id]; }); }
+    else if (rule[0] === 'team') ok = arenaRecord_(rec, cfg).team > 0;
     else if (rule[0] === 'arena_events') ok = arenaRecord_(rec, cfg).events >= rule[1];
     else if (rule[0] === 'arena_place') { var ar = arenaRecord_(rec, cfg); ok = ar.best > 0 && ar.best <= rule[1]; }
     else if (rule[0] === 'avatar') ok = !!rec.avatar;

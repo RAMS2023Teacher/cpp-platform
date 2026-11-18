@@ -11,7 +11,10 @@ work stays in the teacher's Google Drive. **To install or update it, follow
 * **Turning in:** at the end of each lesson students ship their program from the last simulator step, or tick that they showed the teacher the real robot (lessons with no code). It shows in the gradebook.
 * **Grades:** each class is grade 7 or grade 8 (set when you create it, or on the class page). Students see that
   grade's lessons. A class imported from Google Classroom is grade 7 if its name has a 7 in it, else grade 8.
-* **Circuit City Arena:** on the class page, pick a challenge, type each student's points and save. Standings show
+* **Teams:** on their Arena page students start a team (name, mascot, logo shape and color, motto) or join one.
+  On the class page you set the team size (default 3), lock teams, move students, rename or delete a team.
+* **Circuit City Arena:** on the class page, pick a challenge, type each team's points and save (a student with
+  no team is scored alone). Standings show
   on the students' Arena page and the Class display.
 * **Saving:** each student's work is one file in **My Drive → RoboCode Academy data → students**.
 * **Gradebook and Class display:** catch up with new work within about a minute.
