@@ -62,6 +62,7 @@ function teacherPage_(path) {
   }
   if ((m = /^\/teacher\/classes\/(\w+)\/google-classroom$/.exec(path))) return { name: 'google', title: 'Google Classroom', data: merge_(base, gradebook(m[1])) };
   if (path === '/arcade') return { name: 'arcade', title: 'Robot Rush', data: merge_(base, merge_(arcadeData_(null, cfg, true), { avatar: DATA.default_avatar })) };
+  if ((m = /^\/teacher\/feedback(?:\/(\w+))?$/.exec(path))) return { name: 'feedback', title: 'Lesson feedback', data: merge_(base, feedbackReport(m[1])) };
   if (path === '/teacher/standards') return { name: 'standards', title: 'Standards', data: merge_(base, standardsData_()) };
   if (path === '/teacher/videos') return { name: 'videos', title: 'Videos', data: merge_(base, { course: courseCards_(null, 0), urls: cfg.videos, grades: gradeList_() }) };
   if (path === '/lessons') return { name: 'catalog', title: 'Lessons', data: merge_(base, catalogData_(null, 0)) };
@@ -154,6 +155,9 @@ function lessonPage_(lid, rec, cfg, base, teacher) {
   var L = DATA.lessons[lid];
   var c = DATA.course_by_id[lid];
   if (!L) return { name: 'error', title: 'Coming soon', data: merge_(base, { message: c ? '"' + c.title + '" is coming soon.' : "We couldn't find that lesson." }) };
+  if (rec && !teacher && L.grade !== gradeOf_(rec, cfg) && !rec.progress[lid]) {
+    return { name: 'error', title: 'Another grade', data: merge_(base, { message: '"' + L.title + '" is a lesson for another grade. Pick one from your Lessons page.' }) };
+  }
   var p = rec ? rec.progress[lid] || null : null;
   var state = p ? JSON.parse(JSON.stringify(p)) : newProgress_();
   if (p && p.quiz_answers) state.quiz_results = gradeQuiz_(L, p.quiz_answers);
@@ -162,7 +166,7 @@ function lessonPage_(lid, rec, cfg, base, teacher) {
            data: merge_(base, { lesson: publicLesson_(L, teacher), state: state, stage: currentStage_(L, p), stages: stagesDone_(L, p),
                                 lesson_xp: rec ? lessonXp_(rec, lid) : 0, xp_possible: possibleXp_(L), stars: lessonStars_(L, p),
                                 pct: percent_(p, L), feedback: rec ? ((cfg.feedback[rec.email] || {})[lid] || '') : '',
-                                video: embedInfo_(cfg.videos[lid]), apps: apps_(),
+                                video: embedInfo_(cfg.videos[lid]), apps: apps_(), help: rec ? !!helpGet_(rec.email) : false, my_fb: myFeedback_(rec, lid),
                                 key: teacher ? { quiz: L.quiz.map(function (q) { return q.choices[q.answer]; }), notes: L.teacher_notes || '',
                                                  standards: L.standards_full || [] } : null }) };
 }
@@ -286,7 +290,7 @@ var FONTS_HTML_ = '<link rel="preconnect" href="https://fonts.googleapis.com"><l
 
 function render_(me, page) {
   var nav = me.teacher
-    ? [['/', 'My classes'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/teacher/standards', 'Standards'], ['/teacher/videos', 'Videos'], ['/arcade', '🎮 Arcade']]
+    ? [['/', 'My classes'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/teacher/standards', 'Standards'], ['/teacher/feedback', 'Feedback'], ['/teacher/videos', 'Videos'], ['/arcade', '🎮 Arcade']]
     : [['/', 'Home'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/arena', 'Arena'], ['/me', 'My robot'], ['/arcade', '🎮 Arcade']];
   var ml = { base: ScriptApp.getService().getUrl(), page: page.name, path: page.path || '/', teacher: me.teacher, nav: nav, data: page.data || {} };
   var globals = page.globals || {}, setup = 'window.ML=' + json_(ml) + ';';

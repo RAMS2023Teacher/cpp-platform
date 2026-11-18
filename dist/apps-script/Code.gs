@@ -167,7 +167,7 @@ function studentSummary_(rec) {
   });
   return { name: rec.name, classes: rec.classes || [], xp: rec.xp || 0, avatar: rec.avatar || null,
            badges: Object.keys(rec.badges || {}), lessons: lessons, updated_at: rec.updated_at, wins: recentWins_(rec),
-           xp_recent: recentXp_(rec),
+           xp_recent: recentXp_(rec), fb: fbSummary_(rec),
            arcade: rec.arcade ? { best: rec.arcade.best || 0, day: rec.arcade.day || '', day_best: rec.arcade.day_best || 0 } : null };
 }
 
@@ -369,6 +369,10 @@ function syncRewards_(rec, cfg) {
       award_(rec, 'complete:' + lid, X.complete, T.complete + t, gained);
     }
   });
+  Object.keys(rec.lesson_fb || {}).forEach(function (lid) {     // rating a lesson (60_feedback.js)
+    var L = DATA.lessons[lid];
+    if (L && rec.lesson_fb[lid].rating) award_(rec, 'rate:' + lid, X.rating, T.rating + ' · ' + L.title, gained);
+  });
   ((cfg.bonuses || {})[rec.email] || []).forEach(function (b) { award_(rec, b.key, b.amount, b.reason, gained); });
   var newBadges = [], earned = badgeChecks_(rec, cfg);
   Object.keys(earned).sort().forEach(function (bid) {
@@ -400,7 +404,13 @@ function possibleXp_(L) {
 }
 
 function badgeList_(rec) {
-  return DATA.badges.map(function (b) {
+  // a badge for one lesson only shows to the grade that has that lesson (or to anyone who already earned it)
+  var grade = 0;
+  try { grade = gradeOf_(rec, config_()); } catch (e) { grade = 0; }
+  return DATA.badges.filter(function (b) {
+    var rule = b[4] || [], c = rule[0] === 'lesson' ? DATA.course_by_id[rule[1]] : null;
+    return !c || !grade || c.grade === grade || (rec.badges || {})[b[0]];
+  }).map(function (b) {
     var at = (rec.badges || {})[b[0]];
     return { id: b[0], icon: b[1], name: b[2], desc: b[3], earned: !!at, earned_at: at || null };
   });
@@ -663,6 +673,81 @@ function arcadeClass(cid, action, minutes) {
   return arcadeTeacher_(cfg, cid);
 }
 
+// ---------------------------------------------------------------- "I'm stuck": help requests
+// A student presses ✋ on a lesson; the class display rings and shows who needs help and where.
+// Requests live in script properties (fast to read every few seconds), one per student, and expire after an hour.
+// The display never gets emails: each request has a short "who" id instead.
+
+var HELP_MAX_MS_ = 60 * 60 * 1000;
+
+function helpWho_(email) {
+  var h = 5381;
+  for (var i = 0; i < email.length; i++) h = ((h * 33) ^ email.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+
+function helpGet_(email) {
+  var raw = PropertiesService.getScriptProperties().getProperty('help:' + email);
+  if (!raw) return null;
+  try {
+    var r = JSON.parse(raw);
+    if (Date.now() - new Date(r.at).getTime() > HELP_MAX_MS_) { PropertiesService.getScriptProperties().deleteProperty('help:' + email); return null; }
+    return r;
+  } catch (e) { return null; }
+}
+
+/** Student API: /api/help {action: 'ask' | 'cancel' | 'status', lesson, stage, step, note}. */
+function helpApi_(d) {
+  if (whoIs_().teacher) return { ok: true, teacher: true, help: null };
+  var ctx = student_(), email = ctx.rec.email, props = PropertiesService.getScriptProperties();
+  if (d.action === 'cancel') { props.deleteProperty('help:' + email); return { ok: true, help: null }; }
+  if (d.action === 'ask') {
+    var L = DATA.lessons[d.lesson], step = L && d.stage === 'build' ? L.build[Math.max(0, Math.min(L.build.length - 1, Number(d.step) || 0))] : null;
+    var where = L ? L.title + (step ? ' · Step ' + ((Number(d.step) || 0) + 1) + ': ' + step.title : d.stage ? ' · ' + stageName_(d.stage) : '') : 'RoboCode Academy';
+    var req = { who: helpWho_(email), email: email, name: ctx.rec.name, classes: studentClassIds_(ctx.rec, ctx.cfg), at: now_(),
+                where: where, note: text_(d.note, 140).replace(/\s+/g, ' ').trim(), avatar: avatarOf_(ctx.rec) };
+    props.setProperty('help:' + email, JSON.stringify(req));
+    if (L && d.stage === 'build') {                           // the feedback report counts help requests per step
+      var fb = fbOf_(ctx.rec, L.id), k = String(Math.max(0, Number(d.step) || 0));
+      fb.help[k] = (fb.help[k] || 0) + 1;
+      saveStudent_(ctx.rec);
+    }
+    return { ok: true, help: { at: req.at } };
+  }
+  var mine = helpGet_(email);
+  return { ok: true, help: mine ? { at: mine.at } : null };
+}
+
+/** Open help requests for a class, oldest first. Names follow the display's "show students as" setting. */
+function helpList_(cfg, cid) {
+  var props = PropertiesService.getScriptProperties().getProperties(), out = [];
+  Object.keys(props).forEach(function (k) {
+    if (k.indexOf('help:') !== 0) return;
+    var r = helpGet_(k.slice(5));
+    if (r && (r.classes || []).indexOf(cid) >= 0) out.push(r);
+  });
+  var mode = ((cfg.classes[cid] || {}).screen || {}).names || 'first';
+  var names = shownNames_(out.map(function (r) { return { email: r.email, name: r.name, avatar: r.avatar }; }), mode);
+  return out.sort(function (a, b) { return String(a.at).localeCompare(String(b.at)); })
+    .map(function (r) { return { who: r.who, name: names[r.email] || r.name, where: r.where, note: r.note, at: r.at, avatar: r.avatar }; });
+}
+
+/** Teacher: the class display asks for these every few seconds. */
+function helpList(cid) {
+  var cfg = teacher_();
+  if (!cfg.classes[cid]) throw new Error('No such class.');
+  return helpList_(cfg, cid);
+}
+
+/** Teacher: "✓ Helped" clears a request. */
+function helpResolve(cid, who) {
+  var cfg = teacher_(), props = PropertiesService.getScriptProperties().getProperties();
+  Object.keys(props).forEach(function (k) {
+    if (k.indexOf('help:') === 0 && helpWho_(k.slice(5)) === who) PropertiesService.getScriptProperties().deleteProperty(k);
+  });
+  return helpList_(cfg, cid);
+}
+
 // ---------------------------------------------------------------- student API
 // The lesson page calls api(path, body) through google.script.run (client/shim.js):
 //   /api/lessons/<id>/mission  {talk}                         finish the Mission stage
@@ -670,6 +755,7 @@ function arcadeClass(cid, action, minutes) {
 //   /api/lessons/<id>/quiz     {answers}                      graded here, so answers never reach the browser
 //   /api/lessons/<id>/ship     {share, ext, reflect, submit}  save Ship it (submit: true turns it in)
 //   /api/lessons/<id>/partner  {action: pair|leave, partner_id}
+//   /api/lessons/<id>/feedback {kind: step|quiz|rating, ...}   (60_feedback.js)
 //   /api/avatar                {body, color, ...}
 //   /api/shop/buy              {item: 'part:eyes:star' | 'power:turbo'}      (35_arcade.js)
 //   /api/arcade/start, /api/arcade/finish {run_id, score}                    Robot Rush
@@ -712,12 +798,15 @@ function finish_(ctx, L, p, extra) {
 function api(path, bodyJson) {
   try {
     var body = bodyJson ? JSON.parse(bodyJson) : {};
+    if (path === '/api/run') return runCall_(body);
+    if (path === '/api/help') return { status: 200, body: helpApi_(body) };
     if (path === '/api/avatar') return apiAvatar_(body);
     if (/^\/api\/(shop\/buy|arcade\/start|arcade\/finish)$/.test(path)) return { status: 200, body: shopApi_(path, body) };
-    var m = /^\/api\/lessons\/([\w-]+)\/(mission|step|quiz|ship|partner)$/.exec(path);
+    var m = /^\/api\/lessons\/([\w-]+)\/(mission|step|quiz|ship|partner|feedback)$/.exec(path);
     if (!m) return { status: 404, body: { error: 'Not found' } };
     var L = DATA.lessons[m[1]];
     if (!L) return { status: 404, body: { error: 'No such lesson' } };
+    if (whoIs_().teacher && m[2] === 'feedback') return { status: 200, body: { ok: true, teacher: true } };
     if (whoIs_().teacher && m[2] !== 'quiz') return { status: 200, body: { ok: true, teacher: true } };   // previews don't save
     if (whoIs_().teacher) return { status: 200, body: { ok: true, quiz: gradeQuiz_(L, (body.answers || []).slice(0, L.quiz.length)) } };
     var ctx = student_();
@@ -727,6 +816,49 @@ function api(path, bodyJson) {
     if (e && e.status) return { status: e.status, body: { ok: false, error: e.message } };
     return { status: 400, body: { ok: false, error: (e && e.message) || 'Something went wrong.' } };
   }
+}
+
+// ---------------------------------------------------------------- every page action goes through api('/api/run')
+// The browser calls only api(); this picks the function. (A browser holding an older copy of the page can't
+// call a function google.script.run doesn't know about, so the pages never call the others directly.)
+// Each function checks for itself who may use it (teacher_() or the signed-in student).
+var RUN_ = {
+  joinClass: function (a) { return joinClass(a[0], a[1]); },
+  createClass: function (a) { return createClass(a[0], a[1]); },
+  setClassGrade: function (a) { return setClassGrade(a[0], a[1]); },
+  deleteClass: function (a) { return deleteClass(a[0], a[1]); },
+  assignLessons: function (a) { return assignLessons(a[0], a[1], a[2], a[3]); },
+  updateAssignment: function (a) { return updateAssignment(a[0], a[1], a[2], a[3]); },
+  removeStudent: function (a) { return removeStudent(a[0], a[1]); },
+  saveFeedback: function (a) { return saveFeedback(a[0], a[1], a[2]); },
+  giveBonus: function (a) { return giveBonus(a[0], a[1], a[2], a[3]); },
+  saveVideos: function (a) { return saveVideos(a[0]); },
+  teacherHome: function () { return teacherHome(); },
+  gradebook: function (a) { return gradebook(a[0]); },
+  studentDetail: function (a) { return studentDetail(a[0], a[1]); },
+  classroomPackage: function (a) { return classroomPackage(a[0], a[1], a[2]); },
+  screenData: function (a) { return screenData(a[0]); },
+  screenSave: function (a) { return screenSave(a[0], a[1]); },
+  setTabIcon: function (a) { return setTabIcon(a[0], a[1]); },
+  classroomCourses: function () { return classroomCourses(); },
+  importClassroom: function (a) { return importClassroom(a[0]); },
+  syncClassroom: function (a) { return syncClassroom(a[0]); },
+  syncAllClassroom: function () { return syncAllClassroom(); },
+  unlinkClassroom: function (a) { return unlinkClassroom(a[0]); },
+  arcadeClass: function (a) { return arcadeClass(a[0], a[1], a[2]); },
+  arenaSave: function (a) { return arenaSave(a[0], a[1], a[2]); },
+  teamSave: function (a) { return teamSave(a[0]); },
+  teamJoin: function (a) { return teamJoin(a[0]); },
+  teamLeave: function () { return teamLeave(); },
+  teamAdmin: function (a) { return teamAdmin(a[0], a[1], a[2]); },
+  helpList: function (a) { return helpList(a[0]); },
+  feedbackReport: function (a) { return feedbackReport(a[0]); },
+  helpResolve: function (a) { return helpResolve(a[0], a[1]); },
+};
+function runCall_(d) {
+  var fn = RUN_[d && d.fn];
+  if (!fn) return { status: 404, body: { ok: false, error: 'RoboCode Academy doesn\'t know "' + (d && d.fn) + '". Reload the page; if it keeps happening, the files may be from different versions.' } };
+  return { status: 200, body: { ok: true, value: fn((d.args || []).slice(0, 6)) } };
 }
 
 function badRequest_(msg) { var e = new Error(msg); e.status = 400; return e; }
@@ -760,12 +892,15 @@ var API_ = {
     if (!Array.isArray(answers) || answers.length !== L.quiz.length) throw badRequest_('Answer every question first.');
     var g = gradeQuiz_(L, answers);
     p.quiz_answers = answers;
+    if (!p.quiz_first) p.quiz_first = answers.slice();       // first try: the feedback report shows which questions trip students up
     p.quiz_score = g.score;
     p.quiz_total = g.total;
     p.quiz_best = Math.max(p.quiz_best || 0, g.score);
     p.quiz_attempts = (p.quiz_attempts || 0) + 1;
     return finish_(ctx, L, p, { quiz: g });
   },
+
+  feedback: function (ctx, L, p, d) { return lessonFeedback_(ctx, L, d); },
 
   ship: function (ctx, L, p, d) {
     if (d.share !== undefined) p.share = text_(d.share, 300).trim();
@@ -850,6 +985,7 @@ function mergeProgress_(a, b) {
     a.quiz_best = b.quiz_best; a.quiz_total = b.quiz_total; a.quiz_answers = b.quiz_answers; a.quiz_score = b.quiz_score;
   }
   a.quiz_attempts = Math.max(a.quiz_attempts || 0, b.quiz_attempts || 0);
+  if (!a.quiz_first && b.quiz_first) a.quiz_first = b.quiz_first;
   a.ext = a.ext || {};
   Object.keys(b.ext || {}).forEach(function (k) { if (b.ext[k]) a.ext[k] = true; });
   if (!a.share && b.share) a.share = b.share;
@@ -869,6 +1005,7 @@ function mirrorToPartner_(ctx, L, p) {
   if (theirs && theirs.partner && theirs.partner !== ctx.rec.email) { delete p.partner; return null; }   // they paired with someone else
   var copy = JSON.parse(JSON.stringify(p));
   copy.partner = ctx.rec.email;
+  if (theirs && theirs.quiz_first) copy.quiz_first = theirs.quiz_first;      // each keeps their own first try (feedback report)
   mate.progress[L.id] = copy;
   syncRewards_(mate, ctx.cfg);
   saveStudent_(mate);
@@ -949,6 +1086,7 @@ function createClass(name, grade) {
   var cfg = teacher_();
   name = String(name || '').trim().slice(0, 80);
   if (!name) throw new Error('Give the class a name.');
+  if (!DATA.grades[String(grade)]) throw new Error('Pick grade 7 or grade 8 for the class.');
   var id = String(nextId_(cfg));
   cfg.classes[id] = { id: id, name: name, code: joinCode_(cfg), grade: cleanGrade_(grade), created_at: now_() };
   saveConfig_(cfg);
@@ -1210,7 +1348,7 @@ function screenPayload_(cfg, cid) {
   }
   var rows = students.map(function (s) {
     var w = wheres[s.email], here = (s.lessons || {})[L.id], sd = here && here.stages;
-    var row = { name: names[s.email], avatar: s.avatar || null, level: s.level, where: w.where, pct: w.pct, status: w.status,
+    var row = { who: helpWho_(s.email), name: names[s.email], avatar: s.avatar || null, level: s.level, where: w.where, pct: w.pct, status: w.status,
                 // race track: stages done in today's lesson (null = busy with a different lesson, or not started)
                 done: here ? (sd ? STAGES_.filter(function (st) { return sd[st[0]]; }).length : 0) : null };
     if (!here && w.status === 'working') row.elsewhere = w.where;
@@ -1235,7 +1373,7 @@ function screenPayload_(cfg, cid) {
            goal: settings.xp === 'hide' || !goal ? null : { target: goal, today: todayXp, auto: settings.goal === '' },
            lesson: { id: L.id, number: L.number, title: L.title }, auto_lesson: !DATA.lessons[settings.lesson_id],
            track: trackStops_(), question: settings.question || L.mission.big_question || '', big_idea: 'Big idea: ' + L.python,
-           standards: standardsInPlay_(working, L.id), arcade: arcadeTeacher_(cfg, cid), arena: arenaScreen_(cfg, cid) };
+           standards: standardsInPlay_(working, L.id), arcade: arcadeTeacher_(cfg, cid), arena: arenaScreen_(cfg, cid), help: helpList_(cfg, cid) };
 }
 
 function screenData(cid) {
@@ -1381,10 +1519,11 @@ function classroomCourses() {
   var courses = classroomCoursesRaw_().map(function (c) {
     return { id: c.id, name: c.name || 'Untitled class', section: c.section || '', link: c.alternateLink || '', linked: linked[c.id] || null };
   });
-  return { courses: courses, classes: Object.keys(cfg.classes).map(function (cid) { return { id: cid, name: cfg.classes[cid].name }; }) };
+  return { courses: courses, grades: gradeList_().map(function (g) { return { id: String(g.grade), name: g.name }; }),
+           classes: Object.keys(cfg.classes).map(function (cid) { return { id: cid, name: cfg.classes[cid].name, grade: String(gradeOfClass_(cfg.classes[cid])) }; }) };
 }
 
-/** choices: [{ course_id, target: 'new' | a class id }]. Makes or links each class, then copies its roster. */
+/** choices: [{ course_id, target: 'new' | a class id, grade: 7 | 8 }]. Makes or links each class, then copies its roster. */
 function importClassroom(choices) {
   var cfg = teacher_(), byId = {}, results = [];
   classroomCoursesRaw_().forEach(function (c) { byId[c.id] = c; });
@@ -1402,6 +1541,7 @@ function importClassroom(choices) {
       var name = (c.name + (c.section ? ' (' + c.section + ')' : '')).slice(0, 80);
       cfg.classes[cid] = { id: cid, name: name, code: joinCode_(cfg), grade: /(^|[^0-9])7(th)?([^0-9]|$)/i.test(name) ? 7 : DATA.default_grade, created_at: now_() };
     }
+    if (DATA.grades[String(ch.grade)]) cfg.classes[cid].grade = Number(ch.grade);      // grade 7 or 8, picked on the import page
     cfg.classes[cid].classroom = { id: c.id, name: c.name || '', section: c.section || '', link: c.alternateLink || '' };
     results.push(syncInto_(cfg, cid));
   });
@@ -1788,6 +1928,7 @@ function teacherPage_(path) {
   }
   if ((m = /^\/teacher\/classes\/(\w+)\/google-classroom$/.exec(path))) return { name: 'google', title: 'Google Classroom', data: merge_(base, gradebook(m[1])) };
   if (path === '/arcade') return { name: 'arcade', title: 'Robot Rush', data: merge_(base, merge_(arcadeData_(null, cfg, true), { avatar: DATA.default_avatar })) };
+  if ((m = /^\/teacher\/feedback(?:\/(\w+))?$/.exec(path))) return { name: 'feedback', title: 'Lesson feedback', data: merge_(base, feedbackReport(m[1])) };
   if (path === '/teacher/standards') return { name: 'standards', title: 'Standards', data: merge_(base, standardsData_()) };
   if (path === '/teacher/videos') return { name: 'videos', title: 'Videos', data: merge_(base, { course: courseCards_(null, 0), urls: cfg.videos, grades: gradeList_() }) };
   if (path === '/lessons') return { name: 'catalog', title: 'Lessons', data: merge_(base, catalogData_(null, 0)) };
@@ -1880,6 +2021,9 @@ function lessonPage_(lid, rec, cfg, base, teacher) {
   var L = DATA.lessons[lid];
   var c = DATA.course_by_id[lid];
   if (!L) return { name: 'error', title: 'Coming soon', data: merge_(base, { message: c ? '"' + c.title + '" is coming soon.' : "We couldn't find that lesson." }) };
+  if (rec && !teacher && L.grade !== gradeOf_(rec, cfg) && !rec.progress[lid]) {
+    return { name: 'error', title: 'Another grade', data: merge_(base, { message: '"' + L.title + '" is a lesson for another grade. Pick one from your Lessons page.' }) };
+  }
   var p = rec ? rec.progress[lid] || null : null;
   var state = p ? JSON.parse(JSON.stringify(p)) : newProgress_();
   if (p && p.quiz_answers) state.quiz_results = gradeQuiz_(L, p.quiz_answers);
@@ -1888,7 +2032,7 @@ function lessonPage_(lid, rec, cfg, base, teacher) {
            data: merge_(base, { lesson: publicLesson_(L, teacher), state: state, stage: currentStage_(L, p), stages: stagesDone_(L, p),
                                 lesson_xp: rec ? lessonXp_(rec, lid) : 0, xp_possible: possibleXp_(L), stars: lessonStars_(L, p),
                                 pct: percent_(p, L), feedback: rec ? ((cfg.feedback[rec.email] || {})[lid] || '') : '',
-                                video: embedInfo_(cfg.videos[lid]), apps: apps_(),
+                                video: embedInfo_(cfg.videos[lid]), apps: apps_(), help: rec ? !!helpGet_(rec.email) : false, my_fb: myFeedback_(rec, lid),
                                 key: teacher ? { quiz: L.quiz.map(function (q) { return q.choices[q.answer]; }), notes: L.teacher_notes || '',
                                                  standards: L.standards_full || [] } : null }) };
 }
@@ -2012,7 +2156,7 @@ var FONTS_HTML_ = '<link rel="preconnect" href="https://fonts.googleapis.com"><l
 
 function render_(me, page) {
   var nav = me.teacher
-    ? [['/', 'My classes'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/teacher/standards', 'Standards'], ['/teacher/videos', 'Videos'], ['/arcade', '🎮 Arcade']]
+    ? [['/', 'My classes'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/teacher/standards', 'Standards'], ['/teacher/feedback', 'Feedback'], ['/teacher/videos', 'Videos'], ['/arcade', '🎮 Arcade']]
     : [['/', 'Home'], ['/lessons', 'Lessons'], ['/map', 'Skill tree'], ['/arena', 'Arena'], ['/me', 'My robot'], ['/arcade', '🎮 Arcade']];
   var ml = { base: ScriptApp.getService().getUrl(), page: page.name, path: page.path || '/', teacher: me.teacher, nav: nav, data: page.data || {} };
   var globals = page.globals || {}, setup = 'window.ML=' + json_(ml) + ';';
@@ -2031,6 +2175,101 @@ function render_(me, page) {
     .setTitle((page.title ? page.title + ' · ' : '') + APP_NAME)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1'));
 }
-var BUILD_ID = "6a8d68f21b";
-var BUILD_EXPECT = {"Assets": "726a33235d", "Data": "a563f482c4"};
+
+// ---------------------------------------------------------------- lesson feedback and the report for improving lessons
+// Students flag a build step or quiz question as confusing, and rate the lesson at the end. Kept in the student's
+// record (rec.lesson_fb), not in lesson progress, so a partner's save never overwrites it. Help requests (37_help.js)
+// count up per step too. The teacher's Feedback page adds it all up, with first-try quiz misses, without names.
+
+var FB_REASONS_ = { unclear: 'The instructions were unclear', broken: "The code didn't work", hard: 'Too hard', easy: 'Too easy or boring', other: 'Something else' };
+
+function fbOf_(rec, lid) {
+  rec.lesson_fb = rec.lesson_fb || {};
+  return rec.lesson_fb[lid] || (rec.lesson_fb[lid] = { flags: {}, help: {} });
+}
+
+/** /api/lessons/<id>/feedback  {kind: 'step' | 'quiz', i, reason, note}  or  {kind: 'rating', rating 1-5, hardest, change} */
+function lessonFeedback_(ctx, L, d) {
+  var fb = fbOf_(ctx.rec, L.id), i = Math.floor(Number(d.i));
+  if (d.kind === 'step' || d.kind === 'quiz') {
+    var list = d.kind === 'step' ? L.build : L.quiz;
+    if (!(i >= 0 && i < list.length)) throw badRequest_('No such ' + d.kind + '.');
+    if (!FB_REASONS_[d.reason]) throw badRequest_('Pick a reason.');
+    fb.flags[d.kind + ':' + i] = { reason: d.reason, note: text_(d.note, 200).trim(), at: now_() };
+    saveStudent_(ctx.rec);
+    return { ok: true, flagged: d.kind + ':' + i };
+  }
+  if (d.kind === 'rating') {
+    var r = Math.round(Number(d.rating));
+    if (!(r >= 1 && r <= 5)) throw badRequest_('Pick how much you liked it.');
+    fb.rating = r;
+    fb.hardest = text_(d.hardest, 400).trim();
+    fb.change = text_(d.change, 400).trim();
+    fb.rated_at = now_();
+    var rewards = syncRewards_(ctx.rec, ctx.cfg);
+    saveStudent_(ctx.rec);
+    return { ok: true, rating: r, rewards: rewards, level: levelInfo_(ctx.rec.xp || 0) };
+  }
+  throw badRequest_('Unknown feedback.');
+}
+
+/** What the lesson page needs to show what this student already said. */
+function myFeedback_(rec, lid) {
+  var fb = (rec && rec.lesson_fb && rec.lesson_fb[lid]) || {};
+  return { flags: Object.keys(fb.flags || {}), rating: fb.rating || 0, hardest: fb.hardest || '', change: fb.change || '' };
+}
+
+/** Small copy for the summary file: the report reads every student from there. */
+function fbSummary_(rec) {
+  var out = {};
+  Object.keys(rec.lesson_fb || {}).forEach(function (lid) {
+    var f = rec.lesson_fb[lid];
+    out[lid] = { flags: f.flags || {}, help: f.help || {}, rating: f.rating || 0, hardest: f.hardest || '', change: f.change || '' };
+  });
+  Object.keys(rec.progress || {}).forEach(function (lid) {
+    var p = rec.progress[lid], first = p.quiz_first || p.quiz_answers;
+    if (first) (out[lid] = out[lid] || { flags: {}, help: {} }).quiz = first;
+  });
+  return out;
+}
+
+/** Teacher: everything students said about each lesson in a course. No names. */
+function feedbackReport(grade) {
+  var cfg = teacher_(), sum = summary_(true), cid = cleanGrade_(grade);
+  var lessons = lessonList_().filter(function (L) { return L.grade === cid; }).map(function (L) {
+    var x = { id: L.id, number: L.number, title: L.title, file: L.file, ratings: [0, 0, 0, 0, 0], hardest: [], change: [],
+              started: 0, finished: 0, steps: L.build.map(function (st, i) { return { n: i + 1, title: st.title, flags: 0, reasons: {}, notes: [], help: 0 }; }),
+              quiz: L.quiz.map(function (q, i) { return { n: i + 1, question: q.question.replace(/<[^>]+>/g, ''), answered: 0, missed: 0, flags: 0, reasons: {}, notes: [] }; }) };
+    Object.keys(sum.students).forEach(function (email) {
+      var s = sum.students[email], f = (s.fb || {})[L.id], prog = (s.lessons || {})[L.id];
+      if (prog) { x.started++; if (prog.pct === 100) x.finished++; }
+      if (!f) return;
+      if (f.rating) x.ratings[f.rating - 1]++;
+      if (f.hardest) x.hardest.push(f.hardest);
+      if (f.change) x.change.push(f.change);
+      Object.keys(f.flags || {}).forEach(function (k) {
+        var parts = k.split(':'), item = (parts[0] === 'step' ? x.steps : x.quiz)[+parts[1]], fl = f.flags[k];
+        if (!item) return;
+        item.flags++;
+        item.reasons[fl.reason] = (item.reasons[fl.reason] || 0) + 1;
+        if (fl.note) item.notes.push(fl.note);
+      });
+      Object.keys(f.help || {}).forEach(function (k) { if (x.steps[+k]) x.steps[+k].help += f.help[k]; });
+      (f.quiz || []).forEach(function (a, qi) {
+        if (!L.quiz[qi]) return;
+        x.quiz[qi].answered++;
+        if (a !== L.quiz[qi].answer) x.quiz[qi].missed++;
+      });
+    });
+    var n = x.ratings.reduce(function (t, c) { return t + c; }, 0);
+    x.rated = n;
+    x.avg = n ? Math.round(10 * x.ratings.reduce(function (t, c, i) { return t + c * (i + 1); }, 0) / n) / 10 : null;
+    return x;
+  });
+  return { grade: cid, grade_name: DATA.grades[String(cid)], grades: gradeList_().map(function (g) { return { id: g.grade, name: 'Grade ' + g.grade }; }),
+           students: Object.keys(sum.students).length, reasons: FB_REASONS_, lessons: lessons,
+           generated: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') };
+}
+var BUILD_ID = "5eaab6c820";
+var BUILD_EXPECT = {"Assets": "a38440b243", "Data": "7fdf762291"};
 var BUILD_FILES = ["Assets.gs", "Code.gs", "Data.gs"];

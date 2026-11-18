@@ -27,7 +27,7 @@ const L = w.g.DATA.lessons[LID];
 
 // setup and a class
 assert.match(w.call(T, 'setup'), /Set up/);
-const cls = w.call(T, 'createClass', ['Period 3']);
+const cls = w.call(T, 'createClass', ['Period 3', 8]);
 assert.strictEqual(w.call(T, 'assignLessons', [cls.id, [LID, 'no-such-lesson'], '2030-01-01', 'Bring a partner']).added, 1);
 assert.match(pageView(S), /"page":"join"/);
 w.call(S, 'joinClass', [cls.code, 'Sam K.']);
@@ -47,7 +47,12 @@ assert.strictEqual(page.stage, 'mission');
 assert.ok(page.lesson.quiz.every((q) => !('answer' in q) && !('why' in q)));
 assert.ok(!lp.includes(L.quiz[0].why.slice(0, 30)), 'quiz explanation leaked');
 assert.strictEqual(page.key, null);
-for (const id of w.g.DATA.order) assert.ok(!/"page":"error"/.test(pageView(S, '/lessons/' + id)), 'lesson page failed: ' + id);
+for (const id of w.g.DATA.order) {      // their own grade's lessons open; another grade's say so
+  const other = w.g.DATA.lessons[id].grade !== 8, view = pageView(S, '/lessons/' + id);
+  assert.strictEqual(/"page":"error"/.test(view), other, 'lesson page: ' + id);
+  if (other) assert.match(view, /another grade/);
+}
+assert.ok(!home.badges.some((b) => b.id === 'composer') && home.badges.some((b) => b.id === 'gear-head'), 'badges for one lesson show only to its grade');
 
 // Mission
 let r = api(S, 'mission', { talk: 'ok' });
@@ -110,7 +115,7 @@ assert.ok(!b.ok && /more XP/.test(b.error), JSON.stringify(b));                 
 const arcade = (action, body, who) => w.call(who || S, 'api', ['/api/arcade/' + action, JSON.stringify(body || {})]).body;
 assert.ok(arcade('start').closed);                                                                 // closed until the teacher opens it
 // another class's arcade doesn't count
-const other = w.call(T, 'createClass', ['Period 5']);
+const other = w.call(T, 'createClass', ['Period 5', 8]);
 w.call(T, 'arcadeClass', [other.id, 'open', 45]);
 assert.ok(arcade('start').closed);
 w.call(T, 'arcadeClass', [other.id, 'close']);
@@ -283,6 +288,55 @@ for (const p of ['/', '/lessons', '/map', '/help', '/map/7', '/map/8', '/teacher
   assert.ok(!/"page":"error"/.test(pageView(T, p)), 'teacher page failed: ' + p);
 }
 for (const p of ['/', '/lessons', '/map', '/arena', '/me', '/help', '/lessons/' + LID]) assert.ok(!/"page":"error"/.test(pageView(S, p)), 'student page failed: ' + p);
+
+// ✋ help: a student asks, the display lists it (no emails), the teacher marks it helped
+const help = (who, body) => w.call(who, 'api', ['/api/help', JSON.stringify(body)]).body;
+assert.ok(help(S, { action: 'ask', lesson: LID, stage: 'build', step: 3, note: 'my drop never falls' }).help);
+let hl = w.call(T, 'helpList', [cls.id]);
+assert.ok(hl.length === 1 && hl[0].name === 'Sam' && /Motors and Gears · Step 4/.test(hl[0].where) && hl[0].note === 'my drop never falls', JSON.stringify(hl));
+assert.ok(!JSON.stringify(hl).includes('@'));
+assert.strictEqual(w.call(T, 'helpList', [other.id]).length, 0);                                  // only this class
+assert.ok(w.call(T, 'screenData', [cls.id]).help.length === 1);
+assert.ok(pageData(S, '/lessons/' + LID).help);
+assert.strictEqual(w.call(T, 'helpResolve', [cls.id, hl[0].who]).length, 0);
+assert.strictEqual(help(S, { action: 'status' }).help, null);
+help(S, { action: 'ask', lesson: LID, stage: 'quiz' });
+assert.strictEqual(help(S, { action: 'cancel' }).help, null);
+assert.throws(() => w.call(S, 'helpList', [cls.id]), /Only the teacher/);
+
+// 🤔 feedback: flags, a rating (+XP), first-try quiz misses and help counts in the teacher's report, without names
+assert.ok(api(S, 'feedback', { kind: 'step', i: 3, reason: 'unclear', note: 'where does the line go' }).body.ok);
+assert.ok(api(S2, 'feedback', { kind: 'step', i: 3, reason: 'broken' }).body.ok);
+assert.ok(api(S, 'feedback', { kind: 'quiz', i: 1, reason: 'hard' }).body.ok);
+assert.strictEqual(api(S, 'feedback', { kind: 'step', i: 99, reason: 'unclear' }).status, 400);
+assert.strictEqual(api(S, 'feedback', { kind: 'step', i: 1, reason: 'nope' }).status, 400);
+const rate = api(S, 'feedback', { kind: 'rating', rating: 4, hardest: 'the game over part', change: 'more time' }).body;
+assert.ok(rate.ok && rate.rewards.items.some((x) => /rating/.test(x.reason)), JSON.stringify(rate));
+assert.ok(pageData(S, '/lessons/' + LID).my_fb.flags.includes('step:3') && pageData(S, '/lessons/' + LID).my_fb.rating === 4);
+const rep = w.call(T, 'feedbackReport', [8]);
+const fl = rep.lessons.find((l) => l.id === LID);
+assert.ok(fl.file === 'course/lessons/grade8/01-motors-and-gears.yaml' && fl.avg === 4 && fl.rated === 1, JSON.stringify(fl.ratings));
+assert.ok(fl.steps[3].flags === 2 && fl.steps[3].reasons.unclear === 1 && fl.steps[3].notes[0] === 'where does the line go');
+assert.ok(fl.steps[3].help >= 1, 'help requests are counted per step');
+assert.ok(fl.quiz[0].answered >= 1 && fl.quiz[0].missed >= 1, JSON.stringify(fl.quiz[0]));         // Sam's first try was all wrong
+assert.ok(fl.hardest.includes('the game over part') && fl.change.includes('more time'));
+assert.ok(!JSON.stringify(rep).includes('@') && !JSON.stringify(rep).includes('Sam K'));
+assert.ok(/"page":"feedback"/.test(pageView(T, '/teacher/feedback')) && w.call(T, 'feedbackReport', [7]).lessons.length === 10);
+assert.throws(() => w.call(S, 'feedbackReport', [8]), /Only the teacher/);
+
+// creating or importing a class has to say which grade
+assert.throws(() => w.call(T, 'createClass', ['No grade']), /grade 7 or grade 8/);
+w.state.classroom.courses = [{ id: 'gc1', name: '7th Grade Robotics', section: 'Period 2' }];
+w.state.classroom.students = { gc1: [{ userId: 'u1', profile: { emailAddress: 'zed@students.school.org', name: { fullName: 'Zed Q' } } }] };
+const imp = w.call(T, 'importClassroom', [[{ course_id: 'gc1', target: 'new', grade: 7 }]]);
+assert.strictEqual(w.call(T, 'teacherHome').classes.find((c) => c.id === imp.classes[0].id).grade, 7);
+assert.ok(pageData(T, '/teacher/google-import').grades.length === 2);
+// every page action goes through api('/api/run'); unknown names get a plain message
+const viaApi = w.call(T, 'api', ['/api/run', JSON.stringify({ fn: 'setClassGrade', args: [c7.id, 8] })]);
+assert.ok(viaApi.body.ok && viaApi.body.value.grade === 8);
+w.call(T, 'setClassGrade', [c7.id, 7]);
+assert.match(w.call(T, 'api', ['/api/run', JSON.stringify({ fn: 'nope', args: [] })]).body.error, /Reload the page/);
+assert.ok(!w.call(S, 'api', ['/api/run', JSON.stringify({ fn: 'setClassGrade', args: [c7.id, 8] })]).body.ok);   // students can't
 
 // the install check, and broken installs get a plain message
 const report = w.call(T, 'checkInstall');

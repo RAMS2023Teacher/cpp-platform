@@ -1,4 +1,4 @@
-/* Class display for the projector: time left in class, an activity timer, the question of the day (the lesson's
+/* Class display for the projector: time left in class, the question of the day (the lesson's
  * essential question), a race track of where everyone is (with their robot), the standards in play, and recent wins. Shared by the Flask site and the Apps Script version:
  *   ClassScreen.start({ classId, className, backHref, units, load: () => Promise<data>, save: (settings) => Promise<data> })
  * Everything a student typed is put on the page with textContent, never as HTML. */
@@ -16,13 +16,17 @@
       '<div class="screen-goal" id="screen-goal" hidden><div class="goal-top"><b>🎯 Class goal today</b><span id="goal-num"></span></div>' +
       '<div class="goal-bar"><i id="goal-fill"></i></div><div class="goal-note" id="goal-note"></div></div>' +
       '<b id="screen-total" class="screen-total"></b><div class="screen-tools">' +
+      '<button type="button" class="help-pill" id="help-pill" hidden></button>' +
+      '<button type="button" class="btn small ghost" id="bell-test" title="Help sound: click once so this computer can play it">🔔</button>' +
       '<button type="button" class="btn small arcade-btn" id="arcade-toggle">🎮 Open arcade</button>' +
       '<button type="button" class="btn small ghost" id="set-open">⚙ Set up</button>' +
       '<button type="button" class="btn small ghost" id="set-full">⛶ Full screen</button>' +
       '<a class="btn small ghost" id="screen-exit">Exit</a></div></header>' +
+      '<section class="help-dock" id="help-dock" hidden><h2>✋ Needs help</h2><ul id="help-list"></ul></section>' +
       '<p class="screen-offline" id="screen-offline" hidden>Can\'t reach RoboCode Academy. Retrying…</p>' +
       '<p class="screen-offline" id="screen-fullhint" hidden>Press your keyboard\'s full-screen key (or F11) to fill the screen.</p>' +
-      '<section class="card screen-setup" id="screen-setup" hidden>' +
+      '<section class="card screen-setup" id="screen-setup" hidden><div class="setup-head"><h2>⚙ Set up</h2>' +
+      '<button type="button" class="setup-x" id="set-close" aria-label="Close set up">✕</button></div>' +
       '<label class="field"><span>Today\'s lesson</span><select id="set-lesson"></select></label>' +
       '<label class="field"><span>Question of the day</span><textarea id="set-question" rows="2" maxlength="300" ' +
       'placeholder="Leave blank to use the lesson\'s essential question."></textarea></label>' +
@@ -36,7 +40,8 @@
       'placeholder="Auto: 60 per student"><small class="muted">0 turns the goal off</small></label>' +
       '<label class="field"><span>Show progress as</span><select id="set-view"><option value="track">Race track</option>' +
       '<option value="cards">Cards</option></select></label></div>' +
-      '<div class="row"><button type="button" class="btn" id="set-save">Save</button><span class="muted small" id="set-status"></span></div></section>' +
+      '<div class="row"><button type="button" class="btn" id="set-save">Save</button><button type="button" class="btn ghost" id="set-done">Done</button>' +
+      '<span class="muted small" id="set-status"></span></div></section>' +
       '<div class="screen-grid"><div class="screen-left"><section class="card screen-roster" aria-label="Where everyone is">' +
       '<div class="screen-roster-head"><h2 id="roster-title">Where everyone is</h2><span class="muted" id="screen-counts"></span></div>' +
       '<div class="screen-students" id="screen-students"></div><div class="track-wrap" id="screen-track"></div>' +
@@ -48,9 +53,7 @@
       '<div class="screen-now" id="clock-note"></div>' +
       '<div class="screen-bell-quick" id="bell-quick" hidden><label>Class ends at <input type="time" id="bell-quick-in"></label>' +
       '<button type="button" class="btn small" id="bell-quick-go">Count down</button></div>' +
-      '<div class="screen-activity"><b>⏱️ Timer</b> <span id="act-clock" class="act-clock">5:00</span>' +
-      '<button type="button" class="btn small" id="act-go">Start</button><button type="button" class="btn small ghost" id="act-reset">Reset</button>' +
-      '<label class="small">min <input type="number" id="act-mins" min="1" max="120" value="5"></label></div></section>' +
+      '</section>' +
       '<section class="card"><h2>❓ Question of the day</h2><p class="screen-big" id="screen-question"></p>' +
       '<p class="screen-bigidea" id="screen-bigidea"></p></section>' +
       '<section class="card"><h2 id="wins-title">🏆 Recent wins</h2><ul class="screen-wins" id="screen-wins"></ul></section>' +
@@ -67,7 +70,8 @@
 
     // ----- where everyone is -----
     function tile(s, showXp) {
-      const t = el('div', `screen-tile ${s.status}`);
+      const t = el('div', `screen-tile ${s.status}${helpWho.has(s.who) ? ' needs-help' : ''}`);
+      t.dataset.who = s.who || '';
       const av = t.appendChild(el('div', 'screen-avatar'));
       av.innerHTML = window.RobotAvatar.svg(s.avatar, 76);   // drawn from known parts, not typed text
       const info = t.appendChild(el('div', 'screen-who'));
@@ -85,7 +89,8 @@
     // ----- race track: one stop per section of today's lesson; each robot sits where its student is -----
     const lastPos = {};
     function racer(st, moved) {
-      const r = el('div', 'racer' + (moved ? ' moved' : '') + (st.status === 'waiting' ? ' idle' : ''));
+      const r = el('div', 'racer' + (moved ? ' moved' : '') + (st.status === 'waiting' ? ' idle' : '') + (helpWho.has(st.who) ? ' needs-help' : ''));
+      r.dataset.who = st.who || '';
       const av = r.appendChild(el('div', 'racer-bot'));
       av.innerHTML = window.RobotAvatar.svg(st.avatar, 96);
       r.appendChild(el('b', '', st.name));
@@ -231,19 +236,6 @@
       const btn = $('arcade-toggle');
       btn.classList.toggle('on', !!arcadeOpen());
       btn.textContent = arcadeOpen() ? '🎮 Arcade open · Close' : '🎮 Open arcade';
-      if (!arcadeOpen() || !a) { $('wins-title').textContent = '🏆 Recent wins'; return; }
-      $('wins-title').textContent = '🎮 Robot Rush · today';
-      const wins = $('screen-wins');
-      wins.textContent = '';
-      const rows = (a.board && a.board.today) || [];
-      if (!rows.length) wins.appendChild(el('li', 'muted', `The arcade is open! Finish a lesson to earn ${a.minutes} minutes of play time.`));
-      rows.slice(0, 5).forEach((r, i) => {
-        const li = wins.appendChild(el('li', 'arcade-row'));
-        li.appendChild(el('span', 'win-icon', ['🥇', '🥈', '🥉'][i] || String(i + 1)));
-        li.appendChild(el('span', 'else-bot')).innerHTML = window.RobotAvatar.svg(r.avatar, 34);
-        li.appendChild(el('span', 'win-text', r.name));
-        li.appendChild(el('b', 'arcade-score', String(r.score)));
-      });
     }
     $('arcade-toggle').addEventListener('click', async () => {
       const btn = $('arcade-toggle');
@@ -262,12 +254,48 @@
       } finally { btn.disabled = false; }
     });
 
+    // ----- ✋ help requests: checked every few seconds, a doorbell for each new one -----
+    let helpWho = new Set(), seenHelp = null;
+    const minsAgo = (iso) => { const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000)); return m < 1 ? 'just now' : m + ' min'; };
+    function drawHelp(list) {
+      list = list || [];
+      const keys = list.map((r) => r.who + '|' + r.at);
+      if (seenHelp && keys.some((k) => !seenHelp.has(k)) && window.SFX) window.SFX.play('help');
+      seenHelp = new Set(keys);
+      helpWho = new Set(list.map((r) => r.who));
+      document.querySelectorAll('[data-who]').forEach((n) => n.classList.toggle('needs-help', helpWho.has(n.dataset.who)));
+      const pill = $('help-pill'), dock = $('help-dock'), ul = $('help-list');
+      pill.hidden = dock.hidden = !list.length;
+      pill.textContent = `✋ ${list.length} need${list.length === 1 ? 's' : ''} help`;
+      ul.textContent = '';
+      list.forEach((r) => {
+        const li = ul.appendChild(el('li'));
+        li.appendChild(el('span', 'else-bot')).innerHTML = window.RobotAvatar.svg(r.avatar, 40);
+        const info = li.appendChild(el('div', 'help-info'));
+        info.appendChild(el('b', '', r.name));
+        info.appendChild(el('span', '', r.where));
+        if (r.note) info.appendChild(el('q', '', r.note));
+        li.appendChild(el('small', 'muted', minsAgo(r.at)));
+        const ok = li.appendChild(el('button', 'btn small go', '✓ Helped'));
+        ok.type = 'button';
+        ok.addEventListener('click', async () => { ok.disabled = true; try { drawHelp(await C.helped(r.who)); } catch (e) { ok.disabled = false; } });
+      });
+    }
+    async function pollHelp() {
+      if (!C.help) return;
+      try { drawHelp(await C.help()); } catch (e) { /* try again next time */ }
+    }
+    $('help-pill').addEventListener('click', () => $('help-dock').scrollIntoView({ block: 'nearest' }));
+    $('bell-test').addEventListener('click', () => { if (window.SFX) { if (window.SFX.muted()) window.SFX.toggle(); window.SFX.play('help'); } });
+    setInterval(pollHelp, 5000);
+
     async function refresh() {
       if (document.hidden) return;
       try {
         data = await C.load();
         $('screen-offline').hidden = true;
         render();
+        drawHelp(data.help);
       } catch (e) {
         $('screen-offline').hidden = false;
       }
@@ -299,8 +327,15 @@
         $('set-status').textContent = 'Could not save: ' + ((e && e.message) || 'try again');
       }
     }
-    $('set-open').addEventListener('click', () => { $('screen-setup').hidden = !$('screen-setup').hidden; });
-    $('set-save').addEventListener('click', () => save());
+    const closeSetup = () => { $('screen-setup').hidden = true; };
+    $('set-open').addEventListener('click', (e) => { e.stopPropagation(); $('screen-setup').hidden = !$('screen-setup').hidden; });
+    $('set-close').addEventListener('click', closeSetup);
+    $('set-done').addEventListener('click', closeSetup);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSetup(); });
+    document.addEventListener('click', (e) => {            // a click anywhere else on the display closes it
+      if (!$('screen-setup').hidden && !$('screen-setup').contains(e.target) && e.target !== $('set-open')) closeSetup();
+    });
+    $('set-save').addEventListener('click', async () => { await save(); setTimeout(closeSetup, 700); });
     $('set-lesson').addEventListener('change', () => save());
     $('set-view').addEventListener('change', () => save());
     $('set-full').addEventListener('click', () => {
@@ -313,7 +348,7 @@
       });
     });
 
-    // ----- clocks: time left until the bell, and an activity timer kept in this browser -----
+    // ----- the clock: time left until the bell (or the time now) -----
     const fmt = (s) => `${Math.floor(s / 3600) ? Math.floor(s / 3600) + ':' + String(Math.floor(s / 60) % 60).padStart(2, '0') : Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     function bellSeconds() {
       const b = data && data.settings.bell;
@@ -322,14 +357,9 @@
       end.setHours(h, m, 0, 0);
       return Math.max(0, Math.ceil((end - Date.now()) / 1000));
     }
-    const KEY = 'screen-activity-' + C.classId;
-    let act = { seconds: 300, left: 300, endAt: null };
-    try { act = Object.assign(act, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { /* no storage */ }
-    const keep = () => { try { localStorage.setItem(KEY, JSON.stringify(act)); } catch (e) { /* no storage */ } };
-    const actLeft = () => (act.endAt ? Math.max(0, Math.ceil((act.endAt - Date.now()) / 1000)) : act.left);
     const clockText = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     function drawClock() {
-      const bell = bellSeconds(), a = actLeft(), now = clockText(new Date());
+      const bell = bellSeconds(), now = clockText(new Date());
       const big = $('timer-big');
       if (bell !== null) {
         const end = new Date(new Date().setHours(...data.settings.bell.split(':').map(Number), 0, 0));
@@ -348,29 +378,12 @@
         $('clock-note').textContent = '';
         $('bell-quick').hidden = !data;
       }
-      $('act-clock').textContent = fmt(a);
-      $('act-clock').classList.toggle('over', a === 0 && !!act.ran);
-      $('act-go').textContent = act.endAt ? 'Pause' : 'Start';
-      if (act.endAt && a === 0) { act.endAt = null; act.left = 0; act.ran = true; keep(); }
     }
     $('bell-quick-go').addEventListener('click', () => {
       const v = $('bell-quick-in').value;
       if (!/^\d{1,2}:\d{2}$/.test(v)) return;
       $('set-bell').value = v;
       save({ bell: v });
-    });
-    $('act-go').addEventListener('click', () => {
-      if (act.endAt) { act.left = actLeft(); act.endAt = null; }
-      else { if (act.left === 0) act.left = act.seconds; act.endAt = Date.now() + act.left * 1000; act.ran = false; }
-      keep(); drawClock();
-    });
-    $('act-reset').addEventListener('click', () => { act.endAt = null; act.left = act.seconds; act.ran = false; keep(); drawClock(); });
-    $('act-mins').value = Math.round(act.seconds / 60);
-    $('act-mins').addEventListener('change', () => {
-      const m = Math.max(1, Math.min(120, parseInt($('act-mins').value, 10) || 5));
-      $('act-mins').value = m;
-      act = { seconds: m * 60, left: m * 60, endAt: null };
-      keep(); drawClock();
     });
     setInterval(drawClock, 250);
     drawClock();

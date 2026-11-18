@@ -28,6 +28,86 @@
       return r;
     }
     const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+    // A button that isn't ready yet is grey (class "locked"), not disabled, so a click can explain what's missing.
+    const C = window.Celebrate || { nope() {}, sound() {}, confetti() {} };
+    function setLocked(btn, locked) {
+      const was = btn.classList.contains('locked');
+      btn.classList.toggle('locked', !!locked);
+      btn.setAttribute('aria-disabled', locked ? 'true' : 'false');
+      if (was && !locked) { C.sound('ready'); btn.classList.remove('unlocked-now'); void btn.offsetWidth; btn.classList.add('unlocked-now'); }
+    }
+    // ------------------------------------------------------------ 🤔 feedback: "this was confusing" and the lesson rating
+    const myFb = d.my_fb || { flags: [], rating: 0 }, flagged = new Set(myFb.flags || []);
+    const REASONS = [['unclear', '😵 Instructions unclear'], ['broken', "🐞 Code didn't work"], ['hard', '🧗 Too hard'], ['easy', '😴 Too easy'], ['other', '💬 Other']];
+    function flagWidget(kind, i) {
+      const key = kind + ':' + i, wrap = el('div', 'flag-wrap');
+      const draw = () => {
+        wrap.innerHTML = '';
+        if (flagged.has(key)) { wrap.appendChild(el('span', 'flag-done', '🤔 Thanks! Your teacher will see this.')); return; }
+        const b = wrap.appendChild(el('button', 'flag-btn', kind === 'step' ? '🤔 Confusing?' : '🤔 This question was confusing'));
+        b.type = 'button';
+        b.addEventListener('click', () => {
+          wrap.innerHTML = '';
+          const pop = wrap.appendChild(el('div', 'flag-pop'));
+          pop.appendChild(el('b', '', 'What was confusing?'));
+          const row = pop.appendChild(el('div', 'flag-reasons'));
+          let reason = '';
+          REASONS.forEach(([id, label]) => {
+            const r = row.appendChild(el('button', 'flag-reason', label));
+            r.type = 'button';
+            r.addEventListener('click', () => { reason = id; row.querySelectorAll('.flag-reason').forEach((x) => x.classList.toggle('on', x === r)); });
+          });
+          const note = pop.appendChild(document.createElement('input'));
+          note.placeholder = 'Tell us more (optional)'; note.maxLength = 200;
+          const btns = pop.appendChild(el('div', 'row'));
+          const go = btns.appendChild(el('button', 'btn small go', 'Send'));
+          go.type = 'button';
+          const no = btns.appendChild(el('button', 'btn small ghost', 'Cancel'));
+          no.type = 'button';
+          no.addEventListener('click', draw);
+          go.addEventListener('click', async () => {
+            if (!reason) { C.nope(go, row); return; }
+            go.disabled = true;
+            const r = await ML.api(base + '/feedback', { kind, i, reason, note: note.value });
+            if (r && (r.ok || r.teacher)) { flagged.add(key); C.sound('tick'); }
+            draw();
+          });
+        });
+      };
+      draw();
+      return wrap;
+    }
+    function ratingCard() {
+      const card = el('div', 'panel-soft rate-card');
+      const FACES = ['😣', '😕', '😐', '🙂', '🤩'];
+      let pick = myFb.rating || 0;
+      card.innerHTML = `<h3>⭐ Rate this lesson ${myFb.rating ? '<small class="muted">(you can change it)</small>' : '<small class="muted">+10 XP</small>'}</h3>` +
+        `<div class="rate-faces">${FACES.map((f, k) => `<button type="button" class="rate-face${pick === k + 1 ? ' on' : ''}" data-r="${k + 1}" aria-label="${k + 1} out of 5">${f}</button>`).join('')}</div>` +
+        `<label class="ask-box"><b>What was the hardest part?</b> <span class="muted small">(optional)</span><textarea id="rate-hard" rows="2" maxlength="400"></textarea></label>` +
+        `<label class="ask-box"><b>What would make this lesson better?</b> <span class="muted small">(optional)</span><textarea id="rate-change" rows="2" maxlength="400"></textarea></label>` +
+        `<div class="row"><button type="button" class="btn go" id="rate-go">Send my rating</button><span class="saved" id="rate-msg"></span></div>`;
+      card.querySelector('#rate-hard').value = myFb.hardest || '';
+      card.querySelector('#rate-change').value = myFb.change || '';
+      card.querySelectorAll('.rate-face').forEach((b) => b.addEventListener('click', () => {
+        pick = +b.dataset.r; C.sound('tick');
+        card.querySelectorAll('.rate-face').forEach((x) => x.classList.toggle('on', x === b));
+      }));
+      card.querySelector('#rate-go').addEventListener('click', async () => {
+        const msg = card.querySelector('#rate-msg');
+        if (!pick) { msg.textContent = 'Tap a face first.'; C.nope(card.querySelector('#rate-go'), card.querySelector('.rate-faces')); return; }
+        const r = await ML.api(base + '/feedback', { kind: 'rating', rating: pick, hardest: card.querySelector('#rate-hard').value, change: card.querySelector('#rate-change').value });
+        if (r.rewards && window.showRewards) window.showRewards(r.rewards);
+        if (r.level) ML.updateLevel(r.level);
+        if (r.ok || r.teacher) { myFb.rating = pick; myFb.hardest = card.querySelector('#rate-hard').value; myFb.change = card.querySelector('#rate-change').value; }
+        msg.textContent = r.ok ? 'Thanks! Saved ✓' : r.teacher ? '(Teacher preview: not saved)' : (r.error || 'Could not save');
+      });
+      return card;
+    }
+
+    function flagTodo(els) {
+      els.forEach((x) => { x.classList.remove('todo'); void x.offsetWidth; x.classList.add('todo'); setTimeout(() => x.classList.remove('todo'), 2200); });
+      if (els[0] && els[0].scrollIntoView) els[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
 
     // ------------------------------------------------------------ code with line numbers and new lines highlighted (C++, or Python in lesson 1)
     const KW = {
@@ -99,6 +179,7 @@
         ? `<a class="btn go makecode-btn" href="${E(d.apps.makecode)}" target="makecode" rel="noopener">🧰 Open MakeCode ↗</a>`
         : `<a class="btn go makecode-btn" href="${E(d.apps.vexcode)}" target="vexcode" rel="noopener">🤖 Open VEXcode IQ ↗</a>`) +
       (d.apps.cad ? `<a class="btn ghost makecode-btn" href="${E(d.apps.cad)}" target="cadstudio" rel="noopener">🧊 Open CAD Studio ↗</a>` : '') +
+      (ML.teacher ? '' : `<div class="side-panel help-panel" id="help-box"></div>`) +
       (d.feedback ? `<div class="side-panel"><h3>💬 From your teacher</h3><div id="fb"></div></div>` : '') +
       `<div class="side-panel" id="partner-panel" ${ML.teacher ? 'hidden' : ''}><h3>👥 Partner</h3><div id="partner-box"></div></div>` +
       `<div class="side-panel"><h3>🎁 Rewards</h3><div class="side-row">⭐ This lesson <b id="xp-side">${d.lesson_xp} XP</b></div>` +
@@ -156,8 +237,14 @@
       afterDraw(box);
       const save = debounce(async () => { const r = await api('mission', { talk: S.talk }); note('talk-saved', r.ok ? 'Saved ✓' : (r.error || '')); }, 700);
       $('talk').addEventListener('input', () => { S.talk = $('talk').value; $('talk-saved').textContent = 'Saving…'; save(); });
+      const talkReady = () => setLocked($('mission-go'), (S.talk || '').trim().length < 3 && !ML.teacher);
+      $('talk').addEventListener('input', talkReady);
+      talkReady();
       $('mission-go').addEventListener('click', async () => {
-        if (S.talk.trim().length < 3) { $('talk').focus(); $('talk-saved').textContent = 'Write a few words with your partner first.'; return; }
+        if ((S.talk || '').trim().length < 3 && !ML.teacher) {
+          $('talk-saved').textContent = 'Write a few words with your partner first.';
+          C.nope($('mission-go'), $('talk-saved')); flagTodo([$('talk').closest('.ask-box')]); $('talk').focus(); return;
+        }
         await api('mission', { talk: S.talk });
         show('build');
       });
@@ -220,13 +307,14 @@
         `<div class="step-nav"><button type="button" class="btn ghost" id="step-back" ${i ? '' : 'disabled'}>◀ Back</button>` +
         `<span class="need" id="step-need"></span><span class="saved" id="step-saved"></span>` +
         `<button type="button" class="btn go big" id="step-next">${last ? 'Got it! On to the quiz ▶' : 'Got it! Next ▶'}</button></div></section>`;
+      box.querySelector('.step-head').after(flagWidget('step', i));
       if (St.ask) $('step-ask').value = row.answer || '';
       box.querySelectorAll('[data-field]').forEach((inp) => { inp.value = (row.fields || [])[+inp.dataset.field] || ''; });
       afterDraw(box);
       box.querySelectorAll('.step-dots button').forEach((b) => b.addEventListener('click', () => { stepAt = +b.dataset.step; drawBuild(); }));
       const sync = () => {
         const need = stepReady(i);
-        $('step-next').disabled = !!need.length && !ML.teacher;
+        setLocked($('step-next'), need.length && !ML.teacher);
         $('step-need').textContent = need.length ? 'To go on: ' + need.join(', ') + '.' : '';
       };
       const save = debounce(async () => {
@@ -236,6 +324,7 @@
       }, 600);
       const changed = () => { $('step-saved').textContent = 'Saving…'; sync(); save(); };
       box.querySelectorAll('[data-test]').forEach((c) => c.addEventListener('change', () => {
+        if (c.checked) C.sound('tick');
         row.tests = [...box.querySelectorAll('[data-test]:checked')].map((x) => +x.dataset.test);
         changed();
       }));
@@ -265,6 +354,13 @@
       if (St.ask) $('step-ask').addEventListener('input', () => { row.answer = $('step-ask').value; changed(); });
       $('step-back').addEventListener('click', () => { stepAt = Math.max(0, i - 1); drawBuild(); });
       $('step-next').addEventListener('click', async () => {
+        if ($('step-next').classList.contains('locked')) {
+          C.nope($('step-next'), $('step-need'));
+          flagTodo([...box.querySelectorAll('[data-test]:not(:checked)')].map((x) => x.closest('label'))
+            .concat(St.ask && !(row.answer || '').trim() ? [$('step-ask').closest('.ask-box')] : [])
+            .concat([...box.querySelectorAll('[data-field]')].some((x) => !x.value.trim()) ? [box.querySelector('.fields-row')] : []));
+          return;
+        }
         $('step-next').disabled = true;
         const r = await api('step', { i, tests: row.tests, answer: row.answer, fields: row.fields, code: row.code });
         row.done = !!r.step_done || !!r.teacher;
@@ -290,9 +386,10 @@
         q.choices.forEach((c, ci) => {
           const b = grid.appendChild(el('button', 'quiz-choice', `<span class="letter">${'ABCD'[ci]}</span><span>${c}</span>`));
           b.type = 'button';
-          b.addEventListener('click', () => { if (box.dataset.graded) return; picks[qi] = ci; mark(); });
+          b.addEventListener('click', () => { if (box.dataset.graded) return; picks[qi] = ci; C.sound('tick'); mark(); });
         });
         card.appendChild(el('p', 'quiz-why'));
+        card.appendChild(flagWidget('quiz', qi));
       });
       function mark(res) {
         qs.querySelectorAll('.quiz-q').forEach((card, qi) => {
@@ -307,7 +404,7 @@
         });
         const left = L.quiz.length - picks.filter((p) => p != null).length;
         $('quiz-need').textContent = !res && left ? `${left} to go` : '';
-        $('quiz-go').disabled = !res && left > 0;
+        setLocked($('quiz-go'), !res && left > 0);
       }
       function graded(res) {
         box.dataset.graded = '1';
@@ -322,10 +419,17 @@
         };
       }
       $('quiz-go').onclick = async () => {
+        if ($('quiz-go').classList.contains('locked')) {
+          C.nope($('quiz-go'), $('quiz-need'));
+          flagTodo([...qs.querySelectorAll('.quiz-q')].filter((_, qi) => picks[qi] == null));
+          return;
+        }
         $('quiz-go').disabled = true;
         const r = await api('quiz', { answers: picks });
         if (!r.quiz) { $('quiz-need').textContent = r.error || 'Could not check that.'; $('quiz-go').disabled = false; return; }
         S.quiz_answers = picks.slice(); S.quiz_results = r.quiz;
+        if (!r.quiz.passed) C.nope($('quiz-go'), $('quiz-score'));
+        else if (!(r.rewards && r.rewards.xp_gained)) C.sound('pass');
         graded(r.quiz);
       };
       if (results) graded(results); else mark();
@@ -346,6 +450,7 @@
         (ship.note ? `<p class="muted">${ship.note}</p>` : '') + turnInBox() +
         `<div class="step-nav"><span class="saved" id="ship-saved"></span><span class="missing" id="ship-missing"></span>` +
         `<button type="button" class="btn go big" id="ship-go">Ship it! 🚀</button></div></section>`;
+      box.querySelector('.panel').appendChild(ratingCard());
       if ($('share')) $('share').value = S.share || '';
       if ($('ship-code')) $('ship-code').textContent = latestCode() || S.code || '';
       box.querySelectorAll('[data-reflect]').forEach((t) => { t.value = reflect[+t.dataset.reflect] || ''; });
@@ -374,7 +479,7 @@
         const r = await api('ship', b);
         $('ship-go').disabled = false;
         if (r.teacher) { $('ship-missing').textContent = '(Teacher preview: nothing is saved.)'; return; }
-        if (r.missing && r.missing.length && !r.shipped) { $('ship-missing').textContent = 'Not yet: ' + r.missing.join(' '); return; }
+        if (r.missing && r.missing.length && !r.shipped) { $('ship-missing').textContent = 'Not yet: ' + r.missing.join(' '); C.nope($('ship-go'), $('ship-missing')); return; }
         Object.assign(S, b, { shipped_at: S.shipped_at || new Date().toISOString() });
         S.ext = {}; b.ext.forEach((k) => { S.ext[k] = true; });
         drawShip();
@@ -392,6 +497,7 @@
         `<span>I showed my teacher my robot working.</span></label></div></div>`;
     }
     function celebrate() {
+      C.confetti();
       const box = $('stage-view').querySelector('.panel');
       box.insertAdjacentHTML('afterbegin', `<div class="shipped" style="margin-bottom:14px">🏁 <b>Lesson complete!</b> ` +
         `<a href="/map">See what you unlocked on the skill tree →</a></div>` +
@@ -437,5 +543,39 @@
     drawStages();
     show(view);
     if (!ML.teacher) partner();
+
+    // ------------------------------------------------------------ ✋ I'm stuck: rings on the teacher's class display
+    let helpOn = !!d.help, helpTimer = null;
+    function drawHelp(open) {
+      const box = $('help-box');
+      if (!box) return;
+      if (helpOn) {
+        box.className = 'side-panel help-panel waiting';
+        box.innerHTML = `<h3>✋ Help is on the way!</h3><p class="small">Your teacher can see you need help. Keep trying while you wait, ` +
+          `or ask your partner.</p><button type="button" class="btn small ghost" id="help-cancel">I figured it out 👍</button>`;
+        $('help-cancel').addEventListener('click', async () => { await ML.api('/api/help', { action: 'cancel' }); helpOn = false; drawHelp(); });
+        clearInterval(helpTimer);
+        helpTimer = setInterval(async () => {        // the teacher pressed ✓ Helped on the display
+          const r = await ML.api('/api/help', { action: 'status' }).catch(() => null);
+          if (r && r.ok && !r.help) { helpOn = false; clearInterval(helpTimer); drawHelp(); }
+        }, 20000);
+        return;
+      }
+      box.className = 'side-panel help-panel';
+      box.innerHTML = open
+        ? `<h3>✋ What are you stuck on?</h3><textarea id="help-note" rows="2" maxlength="140" placeholder="Optional, e.g. my code shows an error"></textarea>` +
+          `<div class="row"><button type="button" class="btn small go" id="help-send">Ask for help</button><button type="button" class="btn small ghost" id="help-no">Never mind</button></div>`
+        : `<button type="button" class="btn help-btn" id="help-ask">✋ I'm stuck: ask for help</button>`;
+      if (!open) { $('help-ask').addEventListener('click', () => drawHelp(true)); return; }
+      $('help-note').focus();
+      $('help-no').addEventListener('click', () => drawHelp(false));
+      $('help-send').addEventListener('click', async () => {
+        $('help-send').disabled = true;
+        const r = await ML.api('/api/help', { action: 'ask', lesson: L.id, stage: view, step: stepAt, note: $('help-note').value });
+        if (r && r.ok) { helpOn = true; C.sound('ready'); }
+        drawHelp();
+      });
+    }
+    drawHelp();
   };
 })();

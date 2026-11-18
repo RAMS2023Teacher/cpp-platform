@@ -11,6 +11,12 @@ work stays in the teacher's Google Drive. **To install or update it, follow
 * **Turning in:** at the end of each lesson students ship their program from the last simulator step, or tick that they showed the teacher the real robot (lessons with no code). It shows in the gradebook.
 * **Grades:** each class is grade 7 or grade 8 (set when you create it, or on the class page). Students see that
   grade's lessons. A class imported from Google Classroom is grade 7 if its name has a 7 in it, else grade 8.
+* **Help requests:** every lesson has "✋ I'm stuck: ask for help". The Class display rings, shows who is stuck and
+  where, and you clear it with "✓ Helped".
+* **Lesson feedback:** students can flag a step or quiz question as confusing and rate each lesson (+10 XP). The
+  **Feedback** page shows it by lesson, with a report (no names) to copy and paste to Claude to improve the lessons.
+* **Sounds and locked buttons:** a grey button still responds to a click and shows what is missing. The 🔊 button
+  in the top bar turns sounds off on that device.
 * **Teams:** on their Arena page students start a team (name, mascot, logo shape and color, motto) or join one.
   On the class page you set the team size (default 3), lock teams, move students, rename or delete a team.
 * **Circuit City Arena:** on the class page, pick a challenge, type each team's points and save (a student with

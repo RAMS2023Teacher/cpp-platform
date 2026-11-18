@@ -76,7 +76,7 @@ def lesson_data(lesson: dict) -> dict:
     std = L.standards_table()
     m = lesson["mission"]
     out = {
-        "id": lesson["id"], "number": lesson["number"], "title": lesson["title"], "tagline": lesson.get("tagline", ""),
+        "id": lesson["id"], "file": "course/lessons/" + lesson["_file"], "number": lesson["number"], "title": lesson["title"], "tagline": lesson.get("tagline", ""),
         "icon": lesson["icon"], "color": lesson["color"], "python": lesson["python"], "hardware": lesson["hardware"], "grade": lesson["grade"],
         "minutes": lesson.get("minutes", 45), "wired": L.wired(lesson), "lang": lesson.get("lang", "cpp"), "turn_in": L.turn_in(lesson),
         "mission": {"goal": md(m["goal"]), "picture": picture(m.get("picture")), "you_need": [md_inline(x) for x in m["you_need"]],
@@ -168,7 +168,7 @@ def build_assets() -> dict:
     # Apps Script strips comment marks out of <style> blocks anyway.
     styles = re.sub(r"/\*.*?\*/", "", read("vendor/codemirror.css"), flags=re.S) + "\n" + read("css/base.css") + "\n" + read("css/theme.css") + "\n" + read("css/robocode.css") + "\n" + read("css/arena.css")
     app = "\n".join([
-        read("shim.js"), read("lib/avatar.js"), read("lib/crest.js"), read("lib/rewards.js"), read("lib/visuals.js"), read("lib/screen.js"), read("lib/game.js"),
+        read("lib/sfx.js"), read("shim.js"), read("lib/avatar.js"), read("lib/crest.js"), read("lib/rewards.js"), read("lib/visuals.js"), read("lib/screen.js"), read("lib/game.js"),
         "window.__runMap = function () {\n" + read("lib/map.js") + "\n};",
         "window.__runProfile = function () {\n" + read("lib/profile.js") + "\n};",
         read("pages.js"), read("lesson.js"),

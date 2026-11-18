@@ -99,6 +99,10 @@ function syncRewards_(rec, cfg) {
       award_(rec, 'complete:' + lid, X.complete, T.complete + t, gained);
     }
   });
+  Object.keys(rec.lesson_fb || {}).forEach(function (lid) {     // rating a lesson (60_feedback.js)
+    var L = DATA.lessons[lid];
+    if (L && rec.lesson_fb[lid].rating) award_(rec, 'rate:' + lid, X.rating, T.rating + ' · ' + L.title, gained);
+  });
   ((cfg.bonuses || {})[rec.email] || []).forEach(function (b) { award_(rec, b.key, b.amount, b.reason, gained); });
   var newBadges = [], earned = badgeChecks_(rec, cfg);
   Object.keys(earned).sort().forEach(function (bid) {
@@ -130,7 +134,13 @@ function possibleXp_(L) {
 }
 
 function badgeList_(rec) {
-  return DATA.badges.map(function (b) {
+  // a badge for one lesson only shows to the grade that has that lesson (or to anyone who already earned it)
+  var grade = 0;
+  try { grade = gradeOf_(rec, config_()); } catch (e) { grade = 0; }
+  return DATA.badges.filter(function (b) {
+    var rule = b[4] || [], c = rule[0] === 'lesson' ? DATA.course_by_id[rule[1]] : null;
+    return !c || !grade || c.grade === grade || (rec.badges || {})[b[0]];
+  }).map(function (b) {
     var at = (rec.badges || {})[b[0]];
     return { id: b[0], icon: b[1], name: b[2], desc: b[3], earned: !!at, earned_at: at || null };
   });

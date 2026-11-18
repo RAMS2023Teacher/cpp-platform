@@ -7,11 +7,19 @@
   'use strict';
   var ML = window.ML || {};
 
+  // Every server call goes through the one function every version has: api(). ML.run('createClass', ...) becomes
+  // api('/api/run', {fn: 'createClass', args: [...]}) and the server picks the function (40_api.js, RUN_).
+  function callApi(path, body) {
+    return new Promise(function (ok, no) {
+      google.script.run.withSuccessHandler(ok).withFailureHandler(no).api(path, body);
+    });
+  }
   function run(name) {
     var args = Array.prototype.slice.call(arguments, 1);
-    return new Promise(function (ok, no) {
-      var r = google.script.run.withSuccessHandler(ok).withFailureHandler(no);
-      r[name].apply(r, args);
+    if (name === 'api') return callApi(args[0], args[1]);
+    return callApi('/api/run', JSON.stringify({ fn: name, args: args })).then(function (r) {
+      if (r && r.body && r.body.ok) return r.body.value;
+      throw new Error((r && r.body && r.body.error) || 'Something went wrong.');
     });
   }
   ML.run = run;
@@ -103,8 +111,11 @@
         '" data-size="30"></span><span class="nav-xp"><b id="nav-level">Lv ' + d.level.level + '</b><span class="nav-xp-bar"><i id="nav-xp-fill" style="width:' +
         d.level.pct + '%"></i></span></span> ' + ML.esc(d.name || '') + '</a>');
     }
-    h.push('</nav>');
+    h.push('<button type="button" class="sound-toggle" id="sound-toggle" title="Sound on or off"></button></nav>');
     bar.innerHTML = h.join('');
+    var st = document.getElementById('sound-toggle');
+    var drawSound = function () { var off = window.SFX && window.SFX.muted(); st.textContent = off ? '🔇' : '🔊'; st.setAttribute('aria-label', off ? 'Turn sound on' : 'Turn sound off'); };
+    if (window.SFX) { drawSound(); st.addEventListener('click', function () { window.SFX.toggle(); drawSound(); }); } else st.remove();
   }
   // "Arcade open" in the top bar, while the teacher has the arcade open and the student has play time (35_arcade.js)
   ML.arcadePill = function (st) {
