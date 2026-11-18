@@ -18,7 +18,7 @@ so the two can't share a project. The old project and its spreadsheet can stay a
 | File | Add it as | Size |
 |---|---|---|
 | `Assets.gs` | Script (+ → Script), name it `Assets` | 231 KB |
-| `Code.gs` | Script (+ → Script), name it `Code` | 112 KB |
+| `Code.gs` | Script (+ → Script), name it `Code` | 113 KB |
 | `Data.gs` | Script (+ → Script), name it `Data` | 717 KB |
 
 4. Press **Ctrl+S**. There are no HTML files in this project.
@@ -51,6 +51,10 @@ so the two can't share a project. The old project and its spreadsheet can stay a
 2. Open `Code.gs`, choose **setup** in the function menu at the top, and press **Run**. Allow access when Google
    asks ("Advanced → Go to RoboCode Academy" if it warns you). It makes the **RoboCode Academy data** folder in
    your Drive.
+
+   **Tick "Select all"** on Google's permission screen. Google lets you allow only some permissions, and the site
+   needs all of them. If something later says "You do not have permission to call..." (for example Google
+   Classroom), run **resetPermissions**, then run **checkInstall** and tick "Select all" this time.
 
 ## 3. Deploy
 

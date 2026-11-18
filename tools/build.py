@@ -284,6 +284,10 @@ so the two can't share a project. The old project and its spreadsheet can stay a
    asks ("Advanced → Go to RoboCode Academy" if it warns you). It makes the **RoboCode Academy data** folder in
    your Drive.
 
+   **Tick "Select all"** on Google's permission screen. Google lets you allow only some permissions, and the site
+   needs all of them. If something later says "You do not have permission to call..." (for example Google
+   Classroom), run **resetPermissions**, then run **checkInstall** and tick "Select all" this time.
+
 ## 3. Deploy
 
 1. **Deploy → New deployment**. Gear → **Web app**.

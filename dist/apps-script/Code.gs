@@ -1802,7 +1802,9 @@ function teacherPage_(path) {
 }
 
 function classroomImportData_() {
-  try { return classroomCourses(); } catch (e) { return { courses: [], classes: [], problem: e.message }; }
+  try { return classroomCourses(); } catch (e) {
+    return { courses: [], classes: [], problem: e.message + (/permission/i.test(e.message) ? ' To fix it: in the Apps Script editor run resetPermissions, then run checkInstall and tick "Select all" on Google\'s permission screen.' : '') };
+  }
 }
 
 function merge_(a, b) {
@@ -1927,7 +1929,26 @@ function installProblems_() {
 }
 
 /** Run this from the editor (choose checkInstall, press Run) to check everything; the result is in the log. */
+/** Run this from the editor if Google never asked for a permission the site needs (for example Google Classroom).
+ *  Google lets you allow only some permissions; this asks again for any that are missing. If nothing pops up,
+ *  it forgets every permission, so the next Run (checkInstall) asks for all of them: tick "Select all". */
+function allowAccess() {
+  if (typeof ScriptApp.requireAllScopes === 'function') {
+    ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
+    return 'Every permission in appsscript.json is allowed. Now run checkInstall.';
+  }
+  ScriptApp.invalidateAuth();
+  return 'Permissions were reset. Run checkInstall now and allow everything Google asks for.';
+}
+
+/** Forgets every permission this project was given, so the next Run asks for all of them again. */
+function resetPermissions() {
+  ScriptApp.invalidateAuth();
+  return 'Permissions were reset. Run checkInstall now, and on Google\'s screen tick "Select all" before Continue.';
+}
+
 function checkInstall() {
+  try { if (typeof ScriptApp.requireAllScopes === 'function') ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL); } catch (e) { /* the lines below say what is missing */ }
   var lines = [], ok = function (good, text) { lines.push((good ? '✅ ' : '❌ ') + text); };
   var problems = installProblems_();
   ok(!problems.length, problems.length ? 'Files: ' + problems.join(' | ') : 'All ' + BUILD_FILES.length + ' files are pasted, complete, and match (Code.gs ' + BUILD_ID + ')');
@@ -1940,7 +1961,7 @@ function checkInstall() {
   try { var icon = faviconUrl_(); ok(true, 'Tab icon: ' + icon); } catch (e) { ok(false, 'Tab icon: ' + e.message); }
   try { config_(); ok(true, 'Settings file reads'); } catch (e) { ok(false, 'Settings: ' + e.message); }
   try { ok(true, 'Google Classroom: ' + classroomCoursesRaw_().length + ' active classes you teach'); }
-  catch (e) { ok(false, 'Google Classroom: ' + e.message); }
+  catch (e) { ok(false, 'Google Classroom: ' + e.message + (/permission/i.test(e.message) ? ' → Run resetPermissions, then run checkInstall again and tick "Select all" on Google\'s permission screen.' : '')); }
   try { ok(ScriptApp.getService().isEnabled(), 'Web app is deployed: ' + ScriptApp.getService().getUrl()); } catch (e) { ok(false, 'Deployment: ' + e.message); }
   var report = lines.join('\n');
   Logger.log(report);
@@ -2010,6 +2031,6 @@ function render_(me, page) {
     .setTitle((page.title ? page.title + ' · ' : '') + APP_NAME)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1'));
 }
-var BUILD_ID = "b65eacb805";
+var BUILD_ID = "6a8d68f21b";
 var BUILD_EXPECT = {"Assets": "726a33235d", "Data": "a563f482c4"};
 var BUILD_FILES = ["Assets.gs", "Code.gs", "Data.gs"];
