@@ -22,6 +22,9 @@ work stays in the teacher's Google Drive. **To install or update it, follow
   help requests are off. A gold strip at the top has **Exit student view**.
 * **Your data and backups:** My classes → 🗄️ Your data shows the Drive folder in use, counts and daily backups.
   See [RELIABILITY.md](RELIABILITY.md).
+* **Arena leaderboard (projector):** on a class page, **🏟️ Arena leaderboard** shows today's challenge and how it
+  is scored, 1st to 5th place with team logos, The Pack, and a single-elimination bracket for up to 8 teams. Seed
+  the bracket from the scores or by random draw, then click the winner of each match.
 * **Teams:** on their Arena page students start a team (name, mascot, logo shape and color, motto) or join one.
   On the class page you set the team size (default 3), lock teams, move students, rename or delete a team.
 * **Circuit City Arena:** on the class page, pick a challenge, type each team's points and save (a student with

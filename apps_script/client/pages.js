@@ -564,6 +564,7 @@
     h.push('<div class="page-head"><div><a class="muted small" href="/">← My classes</a><h1>' + E(c.name) + '</h1>' +
       '<label class="small">Course <select id="cls-grade">' + d.grades.map(function (g) { return '<option value="' + g.grade + '"' + (g.grade === d.grade ? ' selected' : '') + '>' + E(g.name) + '</option>'; }).join('') + '</select></label></div>' +
       '<div class="row"><a class="btn" href="/teacher/classes/' + E(c.id) + '/screen">📺 Class display</a>' +
+      '<a class="btn" href="/teacher/classes/' + E(c.id) + '/arena">🏟️ Arena leaderboard</a>' +
       '<button type="button" class="btn ghost" id="student-view" title="Use the site as a student in this class">👀 Student view</button>' +
       '<a class="btn ghost" href="/teacher/classes/' + E(c.id) + '/google-classroom">Google Classroom grades</a></div>' +
       '<div class="join-code">Join code <b>' + E(c.code) + '</b><small>' + E(d.url) + '</small></div></div>');
@@ -919,6 +920,93 @@
   };
 
   // ---------------------------------------------------------------- class display (projector)
+  // The Circuit City Leaderboard: a projector page for arena days
+  pages.board = function () {
+    var b = d.board, cid = b.cls.id, busy = false;
+    var ORD = ['1st', '2nd', '3rd', '4th', '5th'];
+    var card = function (e, extra) {
+      return '<span class="bd-team">' + (e.team ? crest(e.team, 54) : '<span class="bd-solo">🤖</span>') + '<span class="bd-team-name">' + E(e.name) + '</span>' + (extra || '') + '</span>';
+    };
+    var slot = function (e, round, match, won, clickable) {
+      if (!e) return '<span class="bd-slot empty"></span>';
+      return '<button type="button" class="bd-slot' + (won ? ' won' : '') + '"' + (clickable ? ' data-win="' + round + ':' + match + ':' + E(e.key) + '" title="Click the winner"' : ' disabled') + '>' +
+        (e.team ? crest(e.team, 26) : '') + '<span>' + E(e.name) + '</span></button>';
+    };
+    var match = function (a, c, round, m, winner) {
+      var both = !!(a && c);
+      return '<div class="bd-match">' + slot(a, round, m, a && winner && winner.key === a.key, both) + slot(c, round, m, c && winner && winner.key === c.key, both) + '</div>';
+    };
+    var draw = function () {
+      var ev = b.event, h = [];
+      h.push('<div class="bd"><header class="bd-head"><h1>Circuit City Leaderboard</h1><div class="bd-tools">' +
+        '<select id="bd-event" aria-label="Challenge">' + b.events.map(function (e) { return '<option value="' + E(e.id) + '"' + (ev && e.id === ev.id ? ' selected' : '') + '>' + E(e.icon + ' ' + e.name) + (e.scored ? ' ✓' : '') + '</option>'; }).join('') + '</select>' +
+        '<button type="button" class="btn small ghost" id="bd-full">⛶ Full screen</button><a class="btn small ghost" href="/teacher/classes/' + E(cid) + '">Exit</a></div></header>');
+      if (!ev) { main.innerHTML = h.join('') + '<p class="bd-empty">This course has no arena challenges.</p></div>'; return; }
+      h.push('<section class="bd-top"><div class="bd-box"><h2>Today\'s challenge:</h2><div class="bd-white"><b>' + E(ev.icon + ' ' + ev.name) + '</b><span>' + E(ev.blurb) + '</span>' +
+        '<small>' + E(b.cls.name) + ' · ' + (ev.kind === 'code' ? 'coded, no driver' : 'driver control') + '</small></div></div>' +
+        '<div class="bd-box"><h2>Scoring method:</h2><div class="bd-white bd-guide">' + ev.guide.map(function (g) { return '<span><i>' + E(g[0]) + '</i><b>' + (g[1] > 0 ? '+' : '') + g[1] + '</b></span>'; }).join('') + '</div></div></section>');
+      // places 1st to 5th (ties share a row), then The Pack
+      var rows = [[], [], [], [], []], pack = [];
+      b.results.forEach(function (r) { if (r.place <= 5) rows[r.place - 1].push(r); else pack.push(r); });
+      h.push('<section class="bd-main"><div class="bd-left"><div class="bd-places">');
+      rows.forEach(function (list, i) {
+        h.push('<div class="bd-place p' + (i + 1) + '"><span class="bd-medal">' + ORD[i] + '</span><div class="bd-row">' +
+          (list.length ? list.map(function (r) { return card(r, '<b class="bd-score">' + r.score + '</b>'); }).join('') : '<span class="bd-team blank"></span>') + '</div></div>');
+      });
+      h.push('</div><div class="bd-pack"><h3>The Pack</h3><div class="bd-pack-list">' +
+        (pack.length || b.unscored.length ? pack.map(function (r) { return '<span class="bd-chip">' + (r.team ? crest(r.team, 22) : '') + E(r.name) + ' <b>' + r.score + '</b></span>'; }).join('') +
+          b.unscored.map(function (e) { return '<span class="bd-chip waiting">' + (e.team ? crest(e.team, 22) : '') + E(e.name) + '</span>'; }).join('')
+          : '<span class="bd-note">Everyone is on the board!</span>') + '</div></div></div>');
+      // the bracket: left side, the final, right side
+      var br = b.bracket;
+      h.push('<div class="bd-right"><div class="bd-bracket"><h2>Single elimination tournament bracket</h2>');
+      if (br) {
+        var s = br.slots, w1 = br.w1, w2 = br.w2;
+        h.push('<div class="bd-tree"><div class="bd-col">' + match(s[0], s[1], 1, 0, w1[0]) + match(s[2], s[3], 1, 1, w1[1]) + '</div>' +
+          '<div class="bd-col semi">' + match(w1[0], w1[1], 2, 0, w2[0]) + '</div>' +
+          '<div class="bd-col final"><span class="bd-final-label">Final</span>' + match(w2[0], w2[1], 3, 0, br.champ) + '</div>' +
+          '<div class="bd-col semi">' + match(w1[2], w1[3], 2, 1, w2[1]) + '</div>' +
+          '<div class="bd-col">' + match(s[4], s[5], 1, 2, w1[2]) + match(s[6], s[7], 1, 3, w1[3]) + '</div></div>' +
+          '<p class="bd-controls"><span class="bd-note">Click the winner of each match.</span> <button type="button" class="linklike" data-seed="scores">Re-seed from scores</button> · ' +
+          '<button type="button" class="linklike" data-seed="random">Random draw</button> · <button type="button" class="linklike" id="bd-clear">Clear</button></p>');
+      } else {
+        h.push('<div class="bd-setup"><p>' + (b.entrants < 2 ? 'A bracket needs at least 2 teams. Students make teams on their Arena page.'
+          : 'Set up a bracket for up to 8 teams. With more than 8, the top 8 by score play.') + '</p>' +
+          (b.entrants < 2 ? '' : '<p><button type="button" class="btn go" data-seed="scores">Seed from scores</button> <button type="button" class="btn ghost" data-seed="random">Random draw</button></p>') + '</div>');
+      }
+      var champ = br && br.champ, f1 = br && br.w2[0], f2 = br && br.w2[1];
+      h.push('</div><div class="bd-box bd-champ"><h2>Championship match:</h2><div class="bd-white">' +
+        (champ ? '<span class="bd-winner">🏆 ' + (champ.team ? crest(champ.team, 64) : '') + '<b>' + E(champ.name) + '</b><small>Champions!</small></span>'
+          : f1 && f2 ? '<span class="bd-versus">' + card(f1) + '<i>vs</i>' + card(f2) + '</span>'
+            : '<span class="bd-note dark">' + (br ? 'Waiting for the finalists…' : 'Set up the bracket to play for the championship.') + '</span>') + '</div></div></div></section>');
+      h.push('<p class="bd-msg bad" id="bd-msg" role="status"></p></div>');
+      main.innerHTML = h.join('');
+      var $ = function (id) { return document.getElementById(id); };
+      var go = function (action, payload, eventId) {
+        if (busy) return;
+        busy = true;
+        ML.run('arenaBracket', cid, eventId || ev.id, action, payload || {}).then(function (r) { busy = false; b = r; draw(); })
+          .catch(function (e) { busy = false; $('bd-msg').textContent = (e && e.message) || 'Something went wrong.'; });
+      };
+      $('bd-event').addEventListener('change', function () { go('event', {}, this.value); });
+      $('bd-full').addEventListener('click', function () { var el = document.documentElement; if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(function () {}); });
+      document.querySelectorAll('[data-seed]').forEach(function (x) { x.addEventListener('click', function () {
+        if (!b.bracket || confirm('Start the bracket over?')) go('seed', { mode: x.dataset.seed });
+      }); });
+      if ($('bd-clear')) $('bd-clear').addEventListener('click', function () { if (confirm('Clear the bracket?')) go('clear'); });
+      document.querySelectorAll('[data-win]').forEach(function (x) { x.addEventListener('click', function () {
+        var p = x.dataset.win.split(':');
+        go('win', { round: +p[0], match: +p[1], key: p.slice(2).join(':') });
+      }); });
+    };
+    draw();
+    // new scores typed on the class page show up by themselves (not from a background tab)
+    setInterval(function () {
+      if (document.hidden || busy) return;
+      ML.run('arenaBoard', cid, b.event ? b.event.id : '').then(function (r) { if (!busy) { b = r; draw(); } }).catch(function () {});
+    }, 30000);
+  };
+
   pages.screen = function () {
     main.innerHTML = '<div id="screen-root"></div>';
     var id = d.cls.id;

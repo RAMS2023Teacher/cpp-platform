@@ -268,6 +268,37 @@ assert.ok(ta.events.find((e) => e.id === 'battle-bot-challenge').results.length 
 assert.ok(ta.standings.length === 1 && ta.standings[0].team.members.length === 2 && ta.entrants.length === 1);
 assert.strictEqual(w.call(T, 'screenData', [cls.id]).arena.standings[0].team.name, 'Gear Grinders');
 assert.strictEqual(pageData(S, '/').team.name, 'Gear Grinders');
+// a student who joined a moment ago (not in the class summary yet) still sees the team they make
+const NEWKID = 'newkid@students.school.org';
+w.call(NEWKID, 'joinClass', [cls.code, 'Nia N.']);
+const nk = team(NEWKID, 'teamSave', [{ name: 'Brand New' }]).arena;
+assert.ok(nk.my_team && nk.my_team.name === 'Brand New' && nk.my_team.members[0].me, JSON.stringify(nk.my_team));
+team(NEWKID, 'teamLeave');
+w.call(T, 'removeStudent', [cls.id, NEWKID]);
+
+// the Circuit City Leaderboard: places for a challenge, The Pack, and a bracket the teacher runs by clicking winners
+let bd = w.call(T, 'arenaBoard', [cls.id, 'autonomy-challenge']);
+assert.ok(bd.event.id === 'autonomy-challenge' && bd.results.length === 1 && bd.results[0].team.name === 'Gear Grinders' && !bd.bracket, JSON.stringify(bd.results));
+assert.ok(!JSON.stringify(bd).includes('@'), 'the leaderboard shows no emails');
+assert.throws(() => w.call(T, 'arenaBracket', [cls.id, 'autonomy-challenge', 'seed', { mode: 'scores' }]), /at least 2 teams/);
+const t2 = team(S7, 'teamSave', [{ name: 'Rookies' }]);                                                  // (another class: not in this bracket)
+w.call(T, 'teamAdmin', [cls.id, 'move', { email: S2, team: '' }]);                                       // Ava plays alone, so there are 2 entrants
+w.call(T, 'arenaSave', [cls.id, 'autonomy-challenge', { [tkey]: 35, [S2]: 20 }]);
+bd = w.call(T, 'arenaBracket', [cls.id, 'autonomy-challenge', 'seed', { mode: 'scores' }]);
+assert.ok(bd.bracket.slots[0].name === 'Gear Grinders' && bd.bracket.slots[1] === null && bd.bracket.slots[4].name === 'Ava', JSON.stringify(bd.bracket.slots));
+assert.ok(bd.bracket.w1[0].name === 'Gear Grinders' && bd.bracket.w2[0].name === 'Gear Grinders' && bd.bracket.w2[1].name === 'Ava' && !bd.bracket.champ, 'byes move up by themselves');
+bd = w.call(T, 'arenaBracket', [cls.id, 'autonomy-challenge', 'win', { round: 3, match: 0, key: S2 }]);
+assert.strictEqual(bd.bracket.champ.name, 'Ava');
+bd = w.call(T, 'arenaBracket', [cls.id, 'autonomy-challenge', 'win', { round: 3, match: 0, key: S2 }]);  // click again to undo
+assert.strictEqual(bd.bracket.champ, null);
+assert.throws(() => w.call(S, 'arenaBracket', [cls.id, 'autonomy-challenge', 'clear', {}]), /Only the teacher/);
+assert.throws(() => w.call(S, 'arenaBoard', [cls.id, '']), /Only the teacher/);
+assert.strictEqual(w.call(T, 'arenaBracket', [cls.id, 'wall-maze', 'event', {}]).event.id, 'wall-maze');
+assert.strictEqual(w.call(T, 'arenaBoard', [cls.id, '']).event.id, 'wall-maze');                         // the board remembers the challenge
+assert.ok(/"page":"board"/.test(pageView(T, `/teacher/classes/${cls.id}/arena`)));
+w.call(T, 'arenaBracket', [cls.id, 'autonomy-challenge', 'clear', {}]);
+w.call(T, 'arenaSave', [cls.id, 'autonomy-challenge', { [tkey]: 35, [S2]: '' }]);
+w.call(T, 'teamAdmin', [cls.id, 'move', { email: S2, team: tid }]);
 // the teacher: team size, lock, move, rename, delete
 ta = w.call(T, 'teamAdmin', [cls.id, 'settings', { max: 2, locked: true }]);
 assert.ok(ta.team_max === 2 && ta.teams_locked);

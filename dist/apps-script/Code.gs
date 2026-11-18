@@ -912,6 +912,8 @@ var RUN_ = {
   teamJoin: function (a) { return teamJoin(a[0]); },
   teamLeave: function () { return teamLeave(); },
   teamAdmin: function (a) { return teamAdmin(a[0], a[1], a[2]); },
+  arenaBoard: function (a) { return arenaBoard(a[0], a[1]); },
+  arenaBracket: function (a) { return arenaBracket(a[0], a[1], a[2], a[3]); },
   studentView: function (a) { return studentView(a[0]); },
   studentViewExit: function (a) { return studentViewExit(a[0]); },
   helpList: function (a) { return helpList(a[0]); },
@@ -1762,7 +1764,7 @@ function teamStudent_(fn) {
     saveConfig_(ctx.cfg);
     var rewards = syncRewards_(ctx.rec, ctx.cfg);
     if (rewards.xp_gained) saveStudent_(ctx.rec);
-    return { arena: arenaData_(ctx.cfg, cid, ctx.rec.email, false), rewards: rewards };
+    return { arena: arenaData_(ctx.cfg, cid, ctx.rec.email, false, ctx.rec), rewards: rewards };
   });
 }
 
@@ -1834,7 +1836,7 @@ function arenaEntrants_(cfg, cid, students, names, me, teacher) {
   students.forEach(function (s) { by[s.email] = s; });
   Object.keys(all).sort(function (a, b) { return Number(a) - Number(b); }).forEach(function (k) {
     var t = all[k], v = teamView_(t, names, me, teacher);
-    if (!v.members.length) return;
+    if (!t.members.length) return;
     t.members.forEach(function (e) { taken[e] = 1; });
     out['t' + k] = { key: 't' + k, name: t.name, team: v, avatar: null, emails: t.members, me: v.mine };
   });
@@ -1845,9 +1847,12 @@ function arenaEntrants_(cfg, cid, students, names, me, teacher) {
 }
 
 /** Everything about a class's arena: teams, each event with its results, and the season standings. `me` marks one student's rows. */
-function arenaData_(cfg, cid, me, teacher) {
+function arenaData_(cfg, cid, me, teacher, fresh) {
   var c = cfg.classes[cid], grade = gradeOfClass_(c), saved = (cfg.arena || {})[cid] || {};
-  var students = classStudents_(cfg, summary_(), cid), names = teacher ? {} : shownNames_(students, 'first');
+  var students = classStudents_(cfg, summary_(), cid);
+  // the class list can be a minute behind: a student who just joined still sees themselves and their team
+  if (fresh && !students.some(function (s) { return s.email === fresh.email; })) students.push({ email: fresh.email, name: fresh.name, avatar: avatarOf_(fresh) });
+  var names = teacher ? {} : shownNames_(students, 'first');
   if (teacher) students.forEach(function (s) { names[s.email] = s.name; });
   var ent = arenaEntrants_(cfg, cid, students, names, me, teacher), season = {};
   var row = function (e, extra) {
@@ -1930,7 +1935,7 @@ function arenaRecord_(rec, cfg) {
 /** The student's Arena page: their class's teams, challenges, results and standings. */
 function arenaPage_(rec, cfg) {
   var ids = studentClassIds_(rec, cfg);
-  return arenaData_(cfg, ids[ids.length - 1], rec.email, false);
+  return arenaData_(cfg, ids[ids.length - 1], rec.email, false, rec);
 }
 
 /** The class display's arena card: season top 5 and the newest event with scores. */
@@ -1940,6 +1945,110 @@ function arenaScreen_(cfg, cid) {
   var last = scored[scored.length - 1];
   return { standings: a.standings.slice(0, 5).map(function (r) { return { name: r.name, team: r.team, avatar: r.avatar, points: r.points, place: r.place }; }),
            event: { icon: last.icon, name: last.name, top: last.results.slice(0, 3).map(function (r) { return { name: r.name, score: r.score, place: r.place }; }) } };
+}
+
+// ---------------------------------------------------------------- the Circuit City Leaderboard (projector page)
+// Today's challenge and how it is scored, 1st to 5th place with team logos, "The Pack" (everyone else), and a
+// single-elimination bracket for up to 8 teams. The bracket is kept with the class's settings:
+// cfg.brackets[class id][event id] = { slots: [8 entrant keys or ''], w1: [4], w2: [2], champ: '' }.
+// Slots are in bracket order: matches (0,1) and (2,3) on the left side, (4,5) and (6,7) on the right.
+
+var BRACKET_SEEDS_ = [1, 8, 4, 5, 2, 7, 3, 6];      // which seed sits in each slot, so 1 and 2 can only meet in the final
+
+function emptyBracket_() { return { slots: ['', '', '', '', '', '', '', ''], w1: ['', '', '', ''], w2: ['', ''], champ: '' }; }
+
+/** Who is in each match and who won, with byes filled in. keys only; valid[] says which entrants still exist. */
+function bracketResolve_(b, valid) {
+  var has = function (k) { return k && valid[k] ? k : ''; };
+  var slots = b.slots.map(has);
+  var decide = function (a, c, picked, aEmpty, cEmpty) {      // a bye wins by itself; otherwise the teacher's pick
+    if (picked && (picked === a || picked === c)) return picked;
+    if (a && !c && cEmpty) return a;
+    if (c && !a && aEmpty) return c;
+    return '';
+  };
+  var w1 = [0, 1, 2, 3].map(function (i) { return decide(slots[2 * i], slots[2 * i + 1], b.w1[i], true, true); });
+  var none1 = [0, 1, 2, 3].map(function (i) { return !slots[2 * i] && !slots[2 * i + 1]; });
+  var w2 = [0, 1].map(function (i) { return decide(w1[2 * i], w1[2 * i + 1], b.w2[i], none1[2 * i], none1[2 * i + 1]); });
+  var none2 = [0, 1].map(function (i) { return none1[2 * i] && none1[2 * i + 1]; });
+  var champ = decide(w2[0], w2[1], b.champ, none2[0], none2[1]);
+  return { slots: slots, w1: w1, w2: w2, champ: champ };
+}
+
+/** Everything the leaderboard page shows for one challenge. */
+function arenaBoard_(cfg, cid, eventId) {
+  var c = cfg.classes[cid], a = arenaData_(cfg, cid, null, true);
+  var pick = a.events.filter(function (e) { return e.id === (eventId || c.board_event); })[0];
+  if (!pick) {                                         // default: the newest challenge with scores, else the first
+    var scored = a.events.filter(function (e) { return e.results.length; });
+    pick = scored[scored.length - 1] || a.events[0];
+  }
+  var by = {}, names = shownNames_(a.students.map(function (s) { return { email: s.email, name: s.name }; }), 'first');
+  a.entrants.forEach(function (e) {                    // first names only: this page is shown to the whole room
+    by[e.key] = { key: e.key, name: e.team ? e.name : names[e.key] || e.name, team: e.team ? { name: e.team.name, shape: e.team.shape, hex: e.team.hex, emoji: e.team.emoji } : null,
+                  members: e.team ? e.team.members.map(function (m) { return names[m.email] || m.name; }) : [] };
+  });
+  var valid = {};
+  Object.keys(by).forEach(function (k) { valid[k] = 1; });
+  var saved = pick ? ((cfg.brackets || {})[cid] || {})[pick.id] : null, r = saved ? bracketResolve_(saved, valid) : null;
+  var view = function (k) { return k ? by[k] : null; };
+  return {
+    cls: { id: cid, name: c.name }, grade_name: a.grade_name,
+    events: a.events.map(function (e) { return { id: e.id, icon: e.icon, name: e.name, scored: e.results.length }; }),
+    event: pick ? { id: pick.id, icon: pick.icon, name: pick.name, blurb: pick.blurb, kind: pick.kind, guide: pick.guide } : null,
+    results: pick ? pick.results.map(function (x) { var e = by[x.key]; return { key: x.key, name: e.name, team: e.team, members: e.members, score: x.score, place: x.place }; }) : [],
+    unscored: pick ? Object.keys(by).filter(function (k) { return !pick.results.some(function (x) { return x.key === k; }); }).map(view) : [],
+    season: a.standings.slice(0, 5).map(function (x) { return { name: by[x.key].name, team: by[x.key].team, points: x.points, place: x.place }; }),
+    bracket: r ? { slots: r.slots.map(view), w1: r.w1.map(view), w2: r.w2.map(view), champ: view(r.champ) } : null,
+    entrants: Object.keys(by).length
+  };
+}
+function arenaBoard(cid, eventId) {
+  var cfg = teacher_();
+  if (!cfg.classes[cid]) throw new Error('No such class.');
+  return arenaBoard_(cfg, cid, eventId);
+}
+
+/** Teacher: change the board. action: event {} (show this challenge) · seed {mode: 'scores' | 'random'} ·
+ *  win {round: 1 | 2 | 3, match, key} (click again to undo) · clear {} */
+function arenaBracket(cid, eventId, action, d) {
+  teacher_();
+  summary_();                    // read before the lock
+  return withLock_(function () {
+    var cfg = teacher_(), c = cfg.classes[cid];
+    if (!c) throw new Error('No such class.');
+    var ev = arenaEvents_(gradeOfClass_(c)).filter(function (e) { return e.id === eventId; })[0];
+    if (!ev) throw new Error('No such arena challenge for this class.');
+    d = d || {};
+    cfg.brackets = cfg.brackets || {};
+    var all = cfg.brackets[cid] = cfg.brackets[cid] || {};
+    if (action === 'event') c.board_event = ev.id;
+    else if (action === 'clear') delete all[ev.id];
+    else if (action === 'seed') {
+      var a = arenaData_(cfg, cid, null, true), scores = {};
+      (a.events.filter(function (e) { return e.id === ev.id; })[0].results || []).forEach(function (x) { scores[x.key] = x.score; });
+      var keys = a.entrants.map(function (e) { return e.key; });
+      if (keys.length < 2) throw new Error('A bracket needs at least 2 teams.');
+      if (d.mode === 'random') { for (var i = keys.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = keys[i]; keys[i] = keys[j]; keys[j] = t; } }
+      else {
+        if (!Object.keys(scores).length) throw new Error('No scores yet for this challenge. Type scores on the class page, or use a random draw.');
+        keys = keys.filter(function (k) { return k in scores; }).sort(function (x, y) { return scores[y] - scores[x]; });
+      }
+      var b = emptyBracket_();
+      BRACKET_SEEDS_.forEach(function (seed, slot) { b.slots[slot] = keys[seed - 1] || ''; });
+      all[ev.id] = b;
+    } else if (action === 'win') {
+      var br = all[ev.id];
+      if (!br) throw new Error('Set up the bracket first.');
+      var m = Math.floor(Number(d.match)) || 0, key = String(d.key || '');
+      if (d.round === 1 && m >= 0 && m < 4) { br.w1[m] = br.w1[m] === key ? '' : key; br.w2[Math.floor(m / 2)] = ''; br.champ = ''; }
+      else if (d.round === 2 && m >= 0 && m < 2) { br.w2[m] = br.w2[m] === key ? '' : key; br.champ = ''; }
+      else if (d.round === 3) br.champ = br.champ === key ? '' : key;
+      else throw new Error('No such match.');
+    } else throw new Error('Unknown action.');
+    saveConfig_(cfg);
+    return arenaBoard_(cfg, cid, ev.id);
+  });
 }
 
 // ---------------------------------------------------------------- student view (teacher only)
@@ -2051,6 +2160,10 @@ function teacherPage_(path) {
     if (!cfg.classes[m[1]]) throw new Error('No such class.');
     return { name: 'screen', title: 'Class display', bodyClass: 'screen-page', mainClass: 'screen-main',
              data: merge_(base, { cls: { id: m[1], name: cfg.classes[m[1]].name }, units: screenUnits_() }) };
+  }
+  if ((m = /^\/teacher\/classes\/(\w+)\/arena$/.exec(path))) {
+    if (!cfg.classes[m[1]]) throw new Error('No such class.');
+    return { name: 'board', title: 'Circuit City Leaderboard', bodyClass: 'screen-page board-page', mainClass: 'screen-main', data: merge_(base, { board: arenaBoard_(cfg, m[1], '') }) };
   }
   if ((m = /^\/teacher\/classes\/(\w+)\/google-classroom$/.exec(path))) return { name: 'google', title: 'Google Classroom', data: merge_(base, gradebook(m[1])) };
   if (path === '/arcade') return { name: 'arcade', title: 'Robot Rush', data: merge_(base, merge_(arcadeData_(null, cfg, true), { avatar: DATA.default_avatar })) };
@@ -2496,6 +2609,6 @@ function dataInfo() {
     others: others, history: history.slice(-10).reverse(),
   };
 }
-var BUILD_ID = "4175520808";
-var BUILD_EXPECT = {"Assets": "ce9fb6e4c3", "Data": "8b74ae60b6"};
+var BUILD_ID = "1898c3e4b3";
+var BUILD_EXPECT = {"Assets": "c498f533a0", "Data": "8b74ae60b6"};
 var BUILD_FILES = ["Assets.gs", "Code.gs", "Data.gs"];

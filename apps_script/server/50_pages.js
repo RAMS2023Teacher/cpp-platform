@@ -62,6 +62,10 @@ function teacherPage_(path) {
     return { name: 'screen', title: 'Class display', bodyClass: 'screen-page', mainClass: 'screen-main',
              data: merge_(base, { cls: { id: m[1], name: cfg.classes[m[1]].name }, units: screenUnits_() }) };
   }
+  if ((m = /^\/teacher\/classes\/(\w+)\/arena$/.exec(path))) {
+    if (!cfg.classes[m[1]]) throw new Error('No such class.');
+    return { name: 'board', title: 'Circuit City Leaderboard', bodyClass: 'screen-page board-page', mainClass: 'screen-main', data: merge_(base, { board: arenaBoard_(cfg, m[1], '') }) };
+  }
   if ((m = /^\/teacher\/classes\/(\w+)\/google-classroom$/.exec(path))) return { name: 'google', title: 'Google Classroom', data: merge_(base, gradebook(m[1])) };
   if (path === '/arcade') return { name: 'arcade', title: 'Robot Rush', data: merge_(base, merge_(arcadeData_(null, cfg, true), { avatar: DATA.default_avatar })) };
   if ((m = /^\/teacher\/feedback(?:\/(\w+))?$/.exec(path))) return { name: 'feedback', title: 'Lesson feedback', data: merge_(base, feedbackReport(m[1])) };

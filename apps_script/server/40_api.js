@@ -101,6 +101,8 @@ var RUN_ = {
   teamJoin: function (a) { return teamJoin(a[0]); },
   teamLeave: function () { return teamLeave(); },
   teamAdmin: function (a) { return teamAdmin(a[0], a[1], a[2]); },
+  arenaBoard: function (a) { return arenaBoard(a[0], a[1]); },
+  arenaBracket: function (a) { return arenaBracket(a[0], a[1], a[2], a[3]); },
   studentView: function (a) { return studentView(a[0]); },
   studentViewExit: function (a) { return studentViewExit(a[0]); },
   helpList: function (a) { return helpList(a[0]); },
