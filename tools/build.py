@@ -134,7 +134,7 @@ def build_data() -> dict:
     check_sims()
     lessons = {l["id"]: lesson_data(l) for l in L.all_lessons()}
     course = [{"id": c[0], "number": c[1], "title": c[2], "icon": c[3], "color": c[4], "python": c[5], "hardware": c[6],
-               "pos": list(c[7])} for c in rules.COURSE]
+               "pos": list(c[7]), "grade": c[8]} for c in rules.COURSE]
     for c in course:                     # a written lesson's own title wins over the plan's
         if c["id"] in lessons:
             c["title"] = lessons[c["id"]]["title"]

@@ -23,7 +23,7 @@ def main(path: str) -> int:
     data["_file"] = Path(path).name
     plan = {c[0]: c for c in rules.COURSE}.get(data.get("id"))
     if plan:
-        _, data["number"], data["title_plan"], data["icon"], data["color"], data["python"], data["hardware"], data["pos"] = plan
+        _, data["number"], data["title_plan"], data["icon"], data["color"], data["python"], data["hardware"], data["pos"], data["grade"] = plan
     errs = L.validate(data)
     for e in errs:
         print("  FORMAT:", e)

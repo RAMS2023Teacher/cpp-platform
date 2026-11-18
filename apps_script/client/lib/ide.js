@@ -76,7 +76,7 @@
         '<span><kbd>A</kbd><kbd>D</kbd> <kbd>←</kbd><kbd>→</kbd> sideways</span><span><kbd>Q</kbd><kbd>Z</kbd> L buttons</span><span><kbd>E</kbd><kbd>C</kbd> R buttons</span>' +
         '<span class="ide-pad" aria-live="off"></span></div>' : '') +
       '<div class="ide-hud" aria-hidden="true"></div>' +
-      '<div class="ide-brain"><span class="ide-brain-label">Brain screen</span><pre class="ide-screen" aria-live="polite"></pre></div>' +
+      '<div class="ide-brain"><span class="ide-brain-label">Brain screen</span><pre class="ide-screen" aria-live="polite"></pre></div><div class="ide-tune" aria-live="off"></div>' +
       '<div class="ide-msg" role="status"></div></div></div></div></div>';
     var q = function (s) { return host.querySelector(s); };
     var cm = window.CodeMirror.fromTextArea(q('textarea'), { mode: 'text/x-c++src', lineNumbers: true, indentUnit: 2, tabSize: 2,
@@ -90,6 +90,22 @@
 
     var say = function (text, kind) { msg.className = 'ide-msg' + (kind ? ' ' + kind : ''); msg.textContent = text || ''; };
     sim.on('screen', function () { screen.textContent = sim.screen.lines.slice(-6).join('\n'); });
+    // Brain notes: a beep in the browser, and the note names under the Brain screen
+    var NOTE_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'], SEMIS = [0, 2, 4, 5, 7, 9, 11], audio = null, tune = q('.ide-tune'), played = [];
+    sim.on('note', function (n) {
+      played.push(n.sound !== undefined ? '(' + n.sound + ')' : NOTE_NAMES[n.note] + n.octave);
+      tune.textContent = '♪ ' + played.slice(-16).join(' ');
+      if (n.sound !== undefined) return;
+      try {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        audio = audio || new AC();
+        var o = audio.createOscillator(), g = audio.createGain(), len = Math.max(0.05, n.ms / 1000 / (sim.speed || 1));
+        o.type = 'square'; o.frequency.value = 261.63 * Math.pow(2, (SEMIS[n.note] + 12 * (n.octave - 1)) / 12);
+        g.gain.value = 0.06; g.gain.setTargetAtTime(0, audio.currentTime + len * 0.85, 0.01);
+        o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + len);
+      } catch (e) { audio = null; }
+    });
     sim.on('error', function (e) { say(e.message, 'bad'); });
     sim.on('frame', function () {
       if (frame++ % 6) return;
@@ -117,6 +133,7 @@
     async function run() {
       if (running || dead) return;
       setRunning(true);
+      played = []; tune.textContent = '';
       say(drive ? 'Running. Click the field and drive!' : 'Running…');
       if (drive) fieldBox.focus();
       var code = cm.getValue();

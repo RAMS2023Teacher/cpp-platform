@@ -58,3 +58,5 @@
 /* ---------- turn-in */
 .ship-code { max-height: 320px; overflow: auto; margin: 6px 0 0; padding: 10px 12px; border: 2.5px solid var(--line); border-radius: 12px; background: #fff; font: 600 .88rem/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
 .lesson-side .makecode-btn + .makecode-btn { margin-top: 8px; }
+
+.ide-tune { font: 700 .95rem/1.5 var(--mono); color: var(--ink-2); min-height: 1.5em; margin-top: 6px; word-break: break-word; }

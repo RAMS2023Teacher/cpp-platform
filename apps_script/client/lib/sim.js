@@ -302,7 +302,7 @@
       this.led = null; this.running = false;
       this.motors = { LeftMotor: { vel: 50, on: false, fwd: 1, pos: 0 }, RightMotor: { vel: 50, on: false, fwd: 1, pos: 0 } };
       this.pad = { A: 0, B: 0, C: 0, D: 0 }; this.reachedGoal = false; this.leftRing = false; this.traveled = 0;
-      this.screen = { lines: [''], row: 0, col: 0 }; this.output = '';
+      this.screen = { lines: [''], row: 0, col: 0 }; this.output = ''; this.notes = [];
       this.emit('screen'); this.draw();
     }
     // ---------- geometry
@@ -512,6 +512,8 @@
       inches: 'inches', mm: 'mm', cm: 'cm', degrees: 'degrees', deg: 'degrees', turns: 'turns', rev_: 'turns',
       seconds: 'seconds', sec: 'seconds', msec: 'msec', percent: 'percent', pct: 'percent', rpm: 'rpm', velocityUnits: {}, coast: 'coast', brake: 'brake', hold: 'hold',
       red: 'red', green: 'green', blue: 'blue', yellow: 'yellow', orange: 'orange', purple: 'purple', white: 'white', black: 'black', transparent: 'transparent', none: 'none', blue_green: 'green',
+      siren: 'siren', wrongWay: 'wrongWay', wrongWaySlow: 'wrongWaySlow', fillup: 'fillup', headlightsOn: 'headlightsOn', headlightsOff: 'headlightsOff',
+      tollBooth: 'tollBooth', alarm: 'alarm', tada: 'tada', doorClose: 'doorClose', ratchet: 'ratchet', wrench: 'wrench', powerDown: 'powerDown',
       endl: '\n', true: true, false: false,
       __int: v => Math.trunc(Number(v)),
       __vec: (n = 0, v = 0) => Array.from({ length: n }, () => v),
@@ -550,6 +552,14 @@
           setCursor: async (r, c) => { const s = sim.screen; s.row = Math.max(0, r - 1); s.col = Math.max(0, c - 1); while (s.lines.length <= s.row) s.lines.push(''); sim.emit('screen'); },
           setFont: async () => {}, setPenColor: async () => {}, setFillColor: async () => {}, drawRectangle: async () => {}, drawCircle: async () => {}
         },
+        // 1st gen Brain: playNote(octave 1-3, note 0-6 = C D E F G A B, milliseconds)
+        playNote: async (octave, note, ms = 500) => {
+          live(); note = Math.max(0, Math.min(6, Math.round(Number(note) || 0))); octave = Math.max(1, Math.min(3, Math.round(Number(octave) || 1)));
+          ms = Math.max(0, Math.min(5000, Number(ms) || 0));
+          sim.notes.push({ octave, note, ms }); sim.emit('note', { octave, note, ms });
+          await sim.sleep(ms / 1000); live();
+        },
+        playSound: async (name) => { live(); sim.notes.push({ sound: String(name) }); sim.emit('note', { sound: String(name) }); await sim.sleep(0.6); live(); },
         Timer: {
           time: async (u = 'msec') => { const t = sim.t - sim.timerStart; return u === 'seconds' ? +t.toFixed(3) : Math.round(t * 1000); },
           clear: async () => { sim.timerStart = sim.t; }, reset: async () => { sim.timerStart = sim.t; }
@@ -682,6 +692,7 @@
         else if (ch.type === 'noCollision') pass = sim.collisions === 0;
         else if (ch.type === 'cubesOutOfRing') { const R = sim.field.ring; pass = !!R && sim.cubes.length > 0 && sim.cubes.every(c => Math.hypot(c.x - R.x, c.y - R.y) > R.r); }
         else if (ch.type === 'stayInRing') pass = !!sim.field.ring && !sim.leftRing;
+        else if (ch.type === 'notes') { const n = sim.notes.filter(x => x.sound === undefined); pass = n.length >= (ch.count || 1) && new Set(n.map(x => x.octave * 7 + x.note)).size >= (ch.different || 1); }
         else if (ch.type === 'drove') pass = sim.traveled >= (ch.inches || 12);
         else if (ch.type === 'output') pass = new RegExp(ch.pattern, ch.flags || 'i').test(sim.output);
         else if (ch.type === 'code') pass = new RegExp(ch.pattern, ch.flags || '').test(src.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*[\/]/g, ''));

@@ -1,11 +1,11 @@
 # Writing a lesson
 
-One YAML file per lesson in `course/lessons/`, named like `04-hello-brain.yaml`. The lesson's number, icon, color,
+One YAML file per lesson in `course/lessons/grade7/` or `course/lessons/grade8/`, named like `03-hello-brain.yaml`. The lesson's number, icon, color,
 big idea and hardware come from its row in `course/rules.py` (`COURSE`). `python tools/build.py` checks every lesson,
 runs every simulator step's solution through the real simulator, and refuses to build if something is wrong.
-`course/lessons/04-hello-brain.yaml` is the model to copy.
+`course/lessons/grade8/03-hello-brain.yaml` is the model to copy.
 
-Text fields are Markdown: `**bold**`, `` `code` ``, lists. Keep sentences short and plain (8th graders, some
+Text fields are Markdown: `**bold**`, `` `code` ``, lists. Keep sentences short and plain (7th and 8th graders, some
 reading below grade level). The validator enforces the word limits below.
 
 ```yaml
@@ -64,7 +64,7 @@ quiz:                           # 3-6 questions; pass at 75%
 
 ship:
   turn_in: code                 # code (default with a sim step): their program from the last sim step
-                                # link: a MakeCode share link (lesson 1) · show: they show the teacher the real robot
+                                # link: a share link · show: they show the teacher the real robot
   note: Optional sentence shown above the turn-in box
   extensions:                   # they must add at least one
     - title: Count down first
@@ -83,6 +83,32 @@ standards:
   - code: 6-8.CT.d.5            # MA DLCS codes from course/standards.yaml
     how: What in the lesson meets it
 ```
+
+## The lab: Circuit City Arena
+
+Both grades work in the same robot lab, which about 30 sections share. Write every lesson for this room:
+
+- **Parts live in labeled bins.** Students fetch what they need and put it back. No lesson has students build a
+  whole robot from loose parts, and no robot belongs to one team for the term unless the teacher says so.
+- **Students pick a ready-built chassis and modify it.** The four chassis (also in `rules.CHASSIS`):
+  **2WD Standard** (two drive wheels and a caster: quick turns, all-rounder), **2WD Lite** (smaller and lighter:
+  fast, nimble, easy to push), **3WD Side Crawler** (three wheels: climbs well, turns differently) and **4WD**
+  (four driven wheels: most grip and pushing power, slower to turn).
+- **Modifications** are what students build: swap the wheels, move the Brain (weight and balance), and bolt on
+  add-ons such as sensors, a claw, an arm, a wedge or a pusher. Building steps are about choosing, changing one
+  thing and testing, not following a long assembly guide.
+- **Each week teaches one part of the robot** (the Brain, the controller, wheels and weight, manipulators, a
+  sensor), then students use it in a **Circuit City Arena challenge**: scored, team against team, with prizes.
+  The events and their scoring guides are in `rules.ARENA_EVENTS`; the teacher types scores on the class page and
+  the class display shows the standings. A challenge lesson should state the rules and the scoring exactly as
+  they are in `rules.ARENA_EVENTS`, tell teams to write down their score, and say that the teacher enters it.
+- The arena challenges: **Brain Song** (program a tune), **The Impossible Bridge** (a steep bridge with only two
+  beams to drive on: needs careful driving, the right wheels and the weight in the right place), **Castle
+  Crasher** (knock down block towers, bring home blocks of your color), **Sumo** (push the other bot out of the
+  ring or knock down its pillar), **Maze Runner** (coded, no driver: an easy course and a hard course) and, in
+  grade 8, the **Collection Run** (the robot drives itself, collects a block and parks).
+- Grade 7 is the "Rookie Season" (10 lessons). Grade 8 is the "Pro Season" (11 lessons); most 8th graders did the
+  7th grade course the year before, so grade 8 can say "you may remember" but must not depend on it.
 
 ## The robot (VEX IQ 1st generation)
 
@@ -114,6 +140,8 @@ TouchLED.setColor(green);       // red, green, blue, yellow, orange, purple, whi
 Gyro.heading()                  // 0-360 degrees;  Gyro.rotation()
 
 // Brain and timing
+Brain.playNote(1, 0, 500);      // octave 1-3, note 0-6 (C D E F G A B), milliseconds. The simulator beeps.
+Brain.playSound(soundType::tada);   // siren, wrongWay, fillup, alarm, tada, doorClose, ratchet, wrench, powerDown...
 Brain.Screen.print("Score: %d", score);  Brain.Screen.newLine();  Brain.Screen.clearScreen();  Brain.Screen.setCursor(1, 1);
 Brain.Timer.time(seconds);  Brain.Timer.clear();
 wait(1, seconds);  wait(200, msec);
@@ -161,6 +189,7 @@ Checks (`type`):
 | `stayInRing` | the robot's center never left the ring |
 | `visitedTiles` | the Color sensor passed over every tile |
 | `drove` + `inches` | the robot traveled at least that far |
+| `notes` + `count`, `different` | the Brain played at least `count` notes, with at least `different` different pitches |
 
 ## Pictures
 

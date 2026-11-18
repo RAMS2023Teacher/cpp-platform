@@ -24,7 +24,7 @@ HERE = Path(__file__).resolve().parent
 LEVELS = ("Easier", "Medium", "Challenge")
 STEP_KEYS = {"part", "title", "say", "do", "code", "new", "what", "tip", "stuck", "test", "ask", "fields", "picture", "wiring", "sim", "lang"}
 SIM_KEYS = {"starter", "field", "checks", "solution", "drive", "pilot", "carry", "speed"}
-CHECK_TYPES = {"goal", "reachGoal", "noCollision", "output", "code", "cubesInZones", "cubesOutOfRing", "stayInRing", "visitedTiles", "drove"}
+CHECK_TYPES = {"goal", "reachGoal", "noCollision", "output", "code", "cubesInZones", "cubesOutOfRing", "stayInRing", "visitedTiles", "drove", "notes"}
 FIELD_KEYS = {"start", "walls", "lines", "tiles", "goal", "cubes", "zones", "ring"}
 TURN_INS = ("code", "link", "show")
 LANGS = ("cpp", "python")
@@ -199,14 +199,14 @@ def validate(lesson: dict) -> list[str]:
 def _load() -> tuple:
     plan = {c[0]: c for c in rules.COURSE}
     out = []
-    for path in sorted((HERE / "lessons").glob("*.yaml")):
+    for path in sorted((HERE / "lessons").rglob("*.yaml")):
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
-        data["_file"] = path.name
+        data["_file"] = str(path.relative_to(HERE / "lessons"))
         c = plan.get(data.get("id"))
         if c:
-            _, data["number"], data["title_plan"], data["icon"], data["color"], data["python"], data["hardware"], data["pos"] = c
+            _, data["number"], data["title_plan"], data["icon"], data["color"], data["python"], data["hardware"], data["pos"], data["grade"] = c
         out.append(data)
-    out.sort(key=lambda l: l.get("number", 99))
+    out.sort(key=lambda l: (l.get("grade", 99), l.get("number", 99)))
     return tuple(out)
 
 
