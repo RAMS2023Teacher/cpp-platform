@@ -60,3 +60,24 @@
 .lesson-side .makecode-btn + .makecode-btn { margin-top: 8px; }
 
 .ide-tune { font: 700 .95rem/1.5 var(--mono); color: var(--ink-2); min-height: 1.5em; margin-top: 6px; word-break: break-word; }
+
+/* Circuit City Arena */
+.grade-head { margin: 26px 0 10px; padding-bottom: 4px; border-bottom: 3px solid var(--outline); }
+.arena-board { display: grid; gap: 6px; margin: 8px 0; padding: 0; }
+.arena-board li { display: flex; gap: 10px; align-items: center; padding: 6px 10px; background: var(--panel-2); border-radius: 4px; }
+.arena-board li.me { background: #fff2bf; outline: 2px solid var(--gold-edge); }
+.arena-board .place { min-width: 2em; font-weight: 800; text-align: center; }
+.arena-board .grow { flex: 1; font-weight: 700; }
+.arena-events { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
+.arena-event, .arena-teacher { padding: 16px; }
+.arena-event h3 { margin: 0 0 4px; }
+.arena-guide { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: .92rem; }
+.arena-guide td { border-bottom: 1px solid var(--line); padding: 4px 6px; }
+.arena-guide td:last-child { text-align: right; white-space: nowrap; }
+.arena-scores { border-collapse: collapse; width: 100%; margin-bottom: 10px; }
+.arena-scores th, .arena-scores td { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+.arena-scores input { width: 6em; }
+.chassis-list li { margin-bottom: 8px; }
+.class-card.new select { margin: 6px 0; }
+
+.arena-banner { margin-bottom: 16px; }

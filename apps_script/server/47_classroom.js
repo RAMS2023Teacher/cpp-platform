@@ -68,7 +68,7 @@ function importClassroom(choices) {
     if (!cid) {
       cid = String(nextId_(cfg));
       var name = (c.name + (c.section ? ' (' + c.section + ')' : '')).slice(0, 80);
-      cfg.classes[cid] = { id: cid, name: name, code: joinCode_(cfg), created_at: now_() };
+      cfg.classes[cid] = { id: cid, name: name, code: joinCode_(cfg), grade: /(^|[^0-9])7(th)?([^0-9]|$)/i.test(name) ? 7 : DATA.default_grade, created_at: now_() };
     }
     cfg.classes[cid].classroom = { id: c.id, name: c.name || '', section: c.section || '', link: c.alternateLink || '' };
     results.push(syncInto_(cfg, cid));

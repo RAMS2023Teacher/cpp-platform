@@ -13,13 +13,22 @@ def test_every_lesson_is_valid():
 def test_course_plan_is_consistent():
     ids = [c[0] for c in rules.COURSE]
     assert len(ids) == len(set(ids))
-    assert [c[1] for c in rules.COURSE] == list(range(1, len(ids) + 1))
+    for grade in rules.GRADES:
+        nums = [c[1] for c in rules.COURSE if c[8] == grade]
+        assert nums == list(range(1, len(nums) + 1)), grade
+    assert rules.DEFAULT_GRADE in rules.GRADES and all(c[8] in rules.GRADES for c in rules.COURSE)
+    grade_of = {c[0]: c[8] for c in rules.COURSE}
     for lid, reqs in rules.REQUIRES.items():
-        assert lid in ids and all(r in ids for r in reqs), lid
+        assert lid in ids and all(r in ids and grade_of[r] == grade_of[lid] for r in reqs), lid
+    for e in rules.ARENA_EVENTS:
+        assert grade_of[e[2]] == e[1] and e[5] in ("driver", "code") and e[7], e[0]
+    assert len({e[0] for e in rules.ARENA_EVENTS}) == len(rules.ARENA_EVENTS)
     badge_ids = {b[0] for b in rules.BADGES}
     for b in rules.BADGES:
         if b[4][0] == "lesson":
             assert b[4][1] in ids, b[0]
+        if b[4][0] == "lesson_any":
+            assert all(x in ids for x in b[4][1]), b[0]
     for opts in rules.AVATAR_OPTIONS.values():
         for _, _, unlock in opts:
             assert unlock is None or unlock[0] in ("level", "cost") or unlock[1] in badge_ids, unlock
@@ -41,4 +50,4 @@ def test_simulator_steps_are_checked():
     bad = {**good, "build": [{**sim_step, "sim": {"starter": "int main() {}", "checks": [{"type": "nope"}]}}] * 3}
     errs = " ".join(L.validate(bad))
     assert "needs a 'solution'" in errs and "each check needs" in errs
-    assert L.turn_in(good) == "code" and L.turn_in(L.get("light-it-up")) == "link" and L.turn_in(L.get("drive-base")) == "show"
+    assert L.turn_in(good) == "code" and L.turn_in(L.get("pick-your-chassis")) == "show"

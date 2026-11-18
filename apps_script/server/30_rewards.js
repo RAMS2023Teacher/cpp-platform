@@ -46,6 +46,10 @@ function badgeChecks_(rec, cfg) {
   DATA.badges.forEach(function (b) {
     var rule = b[4] || [], ok = false;
     if (rule[0] === 'lesson') ok = !!c.done[rule[1]];
+    else if (rule[0] === 'lesson_any') ok = rule[1].some(function (l) { return c.done[l]; });
+    else if (rule[0] === 'course') { var mine = courseFor_(gradeOf_(rec, cfg)).filter(function (x) { return DATA.lessons[x.id]; }); ok = mine.length > 0 && mine.every(function (x) { return c.done[x.id]; }); }
+    else if (rule[0] === 'arena_events') ok = arenaRecord_(rec, cfg).events >= rule[1];
+    else if (rule[0] === 'arena_place') { var ar = arenaRecord_(rec, cfg); ok = ar.best > 0 && ar.best <= rule[1]; }
     else if (rule[0] === 'avatar') ok = !!rec.avatar;
     else if (rule[0] === 'teacher') ok = !!(cfg.picks || {})[rec.email];
     else if (rule[0] === 'early') {
@@ -141,13 +145,14 @@ function assignedIds_(rec, cfg) {
 
 var COLOR_UNIT_ = { blue: 1, gold: 2, green: 3, red: 4, purple: 5, teal: 6, orange: 7, pink: 4 };
 
-function mapData_(rec, assigned) {
-  var prog = (rec && rec.progress) || {}, complete = {}, nodes = [], current = null;
+function mapData_(rec, assigned, grade) {
+  var prog = (rec && rec.progress) || {}, complete = {}, nodes = [], current = null, course = courseFor_(grade), inCourse = {};
+  course.forEach(function (c) { inCourse[c.id] = 1; });
   DATA.course.forEach(function (c) { var L = DATA.lessons[c.id]; if (L && complete_(L, prog[c.id])) complete[c.id] = 1; });
-  var recent = Object.keys(prog).filter(function (l) { return DATA.lessons[l] && !complete[l]; })
+  var recent = Object.keys(prog).filter(function (l) { return DATA.lessons[l] && inCourse[l] && !complete[l]; })
     .sort(function (a, b) { return String(prog[b].updated_at || '').localeCompare(String(prog[a].updated_at || '')); });
   if (recent.length) current = recent[0];
-  DATA.course.forEach(function (c, i) {
+  course.forEach(function (c, i) {
     var L = DATA.lessons[c.id], p = prog[c.id], pct = L && p ? percent_(p, L) : 0;
     var reqs = DATA.requires[c.id] || [];
     var unlocked = !reqs.length || reqs.some(function (r) { return complete[r]; }) || assigned[c.id] || pct > 0;

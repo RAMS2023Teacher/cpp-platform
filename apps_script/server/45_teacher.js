@@ -23,12 +23,12 @@ function dateOrEmpty_(s) {
   return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : '';
 }
 
-function createClass(name) {
+function createClass(name, grade) {
   var cfg = teacher_();
   name = String(name || '').trim().slice(0, 80);
   if (!name) throw new Error('Give the class a name.');
   var id = String(nextId_(cfg));
-  cfg.classes[id] = { id: id, name: name, code: joinCode_(cfg), created_at: now_() };
+  cfg.classes[id] = { id: id, name: name, code: joinCode_(cfg), grade: cleanGrade_(grade), created_at: now_() };
   saveConfig_(cfg);
   return cfg.classes[id];
 }
@@ -139,7 +139,7 @@ function teacherHome() {
   var cfg = teacher_(), sum = summary_();
   return { classes: Object.keys(cfg.classes).map(function (cid) {
     var c = cfg.classes[cid];
-    return { id: c.id, name: c.name, code: c.code, students: classStudents_(cfg, sum, cid).length, classroom: c.classroom || null,
+    return { id: c.id, name: c.name, code: c.code, grade: gradeOfClass_(c), grade_name: DATA.grades[String(gradeOfClass_(c))], students: classStudents_(cfg, sum, cid).length, classroom: c.classroom || null,
              assignments: cfg.assignments.filter(function (a) { return a.class_id === cid; }).length };
   }) };
 }
@@ -284,7 +284,7 @@ function screenPayload_(cfg, cid) {
     var mine = cfg.assignments.filter(function (a) { return a.class_id === cid && DATA.lessons[a.lesson_id]; })
       .sort(function (a, b) { return (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0; });
     var next = mine.filter(function (a) { return !a.due || a.due >= today; })[0] || mine[0];
-    L = next ? DATA.lessons[next.lesson_id] : lessonList_()[0];
+    L = next ? DATA.lessons[next.lesson_id] : lessonList_().filter(function (x) { return x.grade === gradeOfClass_(cfg.classes[cid]); })[0] || lessonList_()[0];
   }
   var rows = students.map(function (s) {
     var w = wheres[s.email], here = (s.lessons || {})[L.id], sd = here && here.stages;
@@ -313,7 +313,7 @@ function screenPayload_(cfg, cid) {
            goal: settings.xp === 'hide' || !goal ? null : { target: goal, today: todayXp, auto: settings.goal === '' },
            lesson: { id: L.id, number: L.number, title: L.title }, auto_lesson: !DATA.lessons[settings.lesson_id],
            track: trackStops_(), question: settings.question || L.mission.big_question || '', big_idea: 'Big idea: ' + L.python,
-           standards: standardsInPlay_(working, L.id), arcade: arcadeTeacher_(cfg, cid) };
+           standards: standardsInPlay_(working, L.id), arcade: arcadeTeacher_(cfg, cid), arena: arenaScreen_(cfg, cid) };
 }
 
 function screenData(cid) {
@@ -336,7 +336,9 @@ function screenSave(cid, d) {
 }
 
 function screenUnits_() {
-  return [{ title: 'Lessons', lessons: lessonList_().map(function (L) { return { id: L.id, number: L.number, title: L.title }; }) }];
+  return gradeList_().map(function (g) {
+    return { title: g.name, lessons: lessonList_().filter(function (L) { return L.grade === g.grade; }).map(function (L) { return { id: L.id, number: L.number, title: L.title }; }) };
+  });
 }
 
 // ---------------------------------------------------------------- the icon in the browser tab

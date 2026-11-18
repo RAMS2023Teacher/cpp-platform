@@ -77,7 +77,7 @@ def lesson_data(lesson: dict) -> dict:
     m = lesson["mission"]
     out = {
         "id": lesson["id"], "number": lesson["number"], "title": lesson["title"], "tagline": lesson.get("tagline", ""),
-        "icon": lesson["icon"], "color": lesson["color"], "python": lesson["python"], "hardware": lesson["hardware"],
+        "icon": lesson["icon"], "color": lesson["color"], "python": lesson["python"], "hardware": lesson["hardware"], "grade": lesson["grade"],
         "minutes": lesson.get("minutes", 45), "wired": L.wired(lesson), "lang": lesson.get("lang", "cpp"), "turn_in": L.turn_in(lesson),
         "mission": {"goal": md(m["goal"]), "picture": picture(m.get("picture")), "you_need": [md_inline(x) for x in m["you_need"]],
                     "learn": [md_inline(x) for x in m.get("learn") or []], "talk": md_inline(m["talk"]), "talk_text": plain(m["talk"]), "big_question": plain(m["big_question"])},
@@ -148,6 +148,11 @@ def build_data() -> dict:
         "avatar_parts": rules.AVATAR_PARTS, "arcade": rules.ARCADE,
         "powerups": [{"id": u[0], "icon": u[1], "name": u[2], "desc": u[3], "costs": u[4]} for u in rules.POWERUPS], "default_avatar": rules.DEFAULT_AVATAR, "makecode_url": rules.MAKECODE_URL,
         "vexcode_url": rules.VEXCODE_URL, "cad_url": rules.CAD_STUDIO_URL,
+        "grades": {str(g): name for g, name in rules.GRADES.items()}, "default_grade": rules.DEFAULT_GRADE,
+        "chassis": [{"id": c[0], "name": c[1], "blurb": c[2]} for c in rules.CHASSIS],
+        "arena": {"place_points": rules.ARENA_PLACE_POINTS,
+                  "events": [{"id": e[0], "grade": e[1], "lesson_id": e[2], "icon": e[3], "name": e[4], "kind": e[5], "blurb": e[6],
+                              "guide": [list(g) for g in e[7]]} for e in rules.ARENA_EVENTS]},
     }
 
 
@@ -242,7 +247,7 @@ so the two can't share a project. The old project and its spreadsheet can stay a
 ## 1. Make the project (your teacher account)
 
 1. Go to <https://script.google.com/home/projects/create> in Chrome, signed in to your school account.
-2. Rename it **RoboCode Academy 12** (click "Untitled project").
+2. Rename it **RoboCode Academy** (click "Untitled project").
 3. Add one **Script** file for each row below. Click **+** next to "Files", choose **Script**, and type the name
    exactly (Apps Script adds `.gs`). Open the file from this folder, select all, copy, and paste it in.
    `Code.gs` already exists: replace what's in it.
@@ -274,7 +279,7 @@ so the two can't share a project. The old project and its spreadsheet can stay a
 ```
 
 2. Open `Code.gs`, choose **setup** in the function menu at the top, and press **Run**. Allow access when Google
-   asks ("Advanced → Go to RoboCode Academy 12" if it warns you). It makes the **RoboCode Academy data** folder in
+   asks ("Advanced → Go to RoboCode Academy" if it warns you). It makes the **RoboCode Academy data** folder in
    your Drive.
 
 ## 3. Deploy

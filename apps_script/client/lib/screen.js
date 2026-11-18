@@ -187,10 +187,31 @@
         li.title = st.lessons.join(', ');
       });
       if (!(data.standards || []).length) stds.appendChild(el('li', 'muted', 'This lesson has no standards listed.'));
-      const wins = $('screen-wins');
-      wins.textContent = '';
       drawArcade();
-      if (arcadeOpen()) return;                       // while the arcade is open, this card shows its leaderboard
+      drawWins();
+      fillSetup();
+      drawClock();
+    }
+
+    // ----- the wins card: recent wins, taking turns with the Circuit City Arena standings when there are scores -----
+    let showArena = false;
+    function drawWins() {
+      if (!data || arcadeOpen()) return;                // while the arcade is open, this card shows its leaderboard
+      const wins = $('screen-wins'), ar = data.arena;
+      wins.textContent = '';
+      if (ar && showArena) {
+        $('wins-title').textContent = '🏟️ Arena standings';
+        ar.standings.forEach((r) => {
+          const li = wins.appendChild(el('li', 'arcade-row'));
+          li.appendChild(el('span', 'win-icon', ['🥇', '🥈', '🥉'][r.place - 1] || String(r.place)));
+          li.appendChild(el('span', 'else-bot')).innerHTML = window.RobotAvatar.svg(r.avatar, 34);
+          li.appendChild(el('span', 'win-text', r.name));
+          li.appendChild(el('b', 'arcade-score', r.points + ' pts'));
+        });
+        wins.appendChild(el('li', 'muted', ar.event.icon + ' ' + ar.event.name + ': ' + ar.event.top.map((t) => t.name + ' ' + t.score).join(' · ')));
+        return;
+      }
+      $('wins-title').textContent = '🏆 Recent wins';
       if (!(data.wins || []).length) wins.appendChild(el('li', 'muted', 'Badges, finished lessons and perfect quizzes show up here.'));
       (data.wins || []).slice(0, 5).forEach((w) => {
         const li = wins.appendChild(el('li'));
@@ -198,9 +219,8 @@
         li.appendChild(el('span', 'win-text', w.text));
         li.appendChild(el('small', 'muted', ago(w.at)));
       });
-      fillSetup();
-      drawClock();
     }
+    setInterval(() => { if (data && data.arena) { showArena = !showArena || !(data.wins || []).length; drawWins(); } }, 12000);
 
     // ----- Robot Rush: closed unless the teacher opens it here (or on the class page) -----
     let arcadeEnd = null;

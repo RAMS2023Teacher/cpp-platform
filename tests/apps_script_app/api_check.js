@@ -1,13 +1,13 @@
 // Runs the generated Apps Script app against fake Google services: a class, students joining, working
-// through Light It Up (Mission → Build → Quiz → Ship it), partners, XP and badges, the teacher's pages, and the
-// three kinds of turn-in (a MakeCode link, the program from a simulator step, showing the teacher).
+// through Motors and Gears (Mission → Build → Quiz → Ship it), partners, XP and badges, the teacher's pages, and the
+// kinds of turn-in (the program from a simulator step, showing the teacher), the two grades and Circuit City Arena.
 // Called by tests/test_apps_script_app.py.
 const assert = require('assert');
 const fs = require('fs'), os = require('os'), path = require('path');
 const { makeWorld } = require('./fake_google');
 const dist = process.argv[2];
 const w = makeWorld(dist);
-const LID = 'light-it-up';
+const LID = 'motors-and-gears';
 
 /** A page's HTML plus its decoded page setup (ML.data), the way the browser's loader sees it. */
 function pageView(who, p, world) {
@@ -28,7 +28,7 @@ const L = w.g.DATA.lessons[LID];
 // setup and a class
 assert.match(w.call(T, 'setup'), /Set up/);
 const cls = w.call(T, 'createClass', ['Period 3']);
-assert.strictEqual(w.call(T, 'assignLessons', [cls.id, [LID, 'no-such-lesson'], '2030-01-01', 'Bring a micro:bit']).added, 1);
+assert.strictEqual(w.call(T, 'assignLessons', [cls.id, [LID, 'no-such-lesson'], '2030-01-01', 'Bring a partner']).added, 1);
 assert.match(pageView(S), /"page":"join"/);
 w.call(S, 'joinClass', [cls.code, 'Sam K.']);
 w.call(S2, 'joinClass', [cls.code, 'Ava R.']);
@@ -38,7 +38,7 @@ let home = pageData(S, '/');
 assert.strictEqual(home.next_up.lesson.id, LID);
 assert.strictEqual(home.rows[0].lesson.id, LID);
 assert.ok(home.badges.length >= 15 && home.badges.every((b) => !b.earned));
-assert.strictEqual(home.total, 12);
+assert.strictEqual(home.total, 11);
 
 // the lesson page: answers never reach the browser
 const lp = pageView(S, '/lessons/' + LID);
@@ -78,14 +78,14 @@ r = api(S, 'quiz', { answers: right });
 assert.ok(r.body.quiz.passed && r.body.stages.quiz && r.body.stage === 'ship');
 assert.ok(!r.body.rewards.items.some((x) => /first try/.test(x.reason)));   // second attempt
 
-// Ship it: needs a MakeCode link, an extension and the reflections
-r = api(S, 'ship', { share: 'https://example.com/x', ext: [], reflect: [], submit: true });
+// Ship it: needs showing the teacher, an extension and the reflections
+r = api(S, 'ship', { ext: [], reflect: [], submit: true });
 assert.strictEqual(r.body.ok, false);
 assert.strictEqual(r.body.missing.length, 2 + L.ship.reflect.length);
-r = api(S, 'ship', { share: 'https://makecode.microbit.org/_Abc123XyZ', ext: [0, 2], reflect: L.ship.reflect.map(() => 'A for loop counts; a while loop waits.'), submit: true });
+r = api(S, 'ship', { shown: true, ext: [0, 2], reflect: L.ship.reflect.map(() => 'A for loop counts; a while loop waits.'), submit: true });
 assert.ok(r.body.shipped && r.body.percent === 100 && r.body.stage === 'done');
 const names = r.body.rewards.badges.map((b) => b.id);
-assert.ok(['finisher', 'shipper', 'circuit-builder'].every((b) => names.includes(b)), names.join());
+assert.ok(['finisher', 'shipper', 'gear-head'].every((b) => names.includes(b)), names.join());
 assert.strictEqual(r.body.stars, 3);                               // perfect quiz (second try counts) + extension + shipped
 const sam = w.g.loadStudent_(S);
 assert.ok(sam.xp_keys['ext_2:' + LID] && sam.xp_keys['complete:' + LID]);
@@ -157,7 +157,7 @@ assert.strictEqual(api(S, 'partner', { action: 'leave' }).body.status, 'none');
 w.advance(120000);
 const gb = w.call(T, 'gradebook', [cls.id]);
 const cell = gb.grid[S + '|' + gb.cols[0].id];
-assert.ok(cell.status === 'complete' && cell.share === 'https://makecode.microbit.org/_Abc123XyZ' && cell.quiz_best === L.quiz.length);
+assert.ok(cell.status === 'complete' && cell.quiz_best === L.quiz.length);
 const det = w.call(T, 'studentDetail', [cls.id, S]).items.find((i) => i.id === LID);
 assert.ok(det.p.talk && det.steps.length === L.build.length && det.reflect_q.length);
 const scr = w.call(T, 'screenData', [cls.id]);
@@ -172,18 +172,18 @@ assert.ok(tp.key.quiz.length === L.quiz.length && tp.key.notes);
 assert.ok(api(T, 'step', { i: 0, tests: [0] }).body.teacher);
 assert.ok(api(T, 'quiz', { answers: right }).body.quiz.passed);
 const map = pageData(S, '/map').map;
-assert.strictEqual(map.nodes.length, 12);
+assert.strictEqual(map.nodes.length, 11);
 assert.strictEqual(map.nodes.find((n) => n.id === LID).state, 'complete');
 assert.ok(map.nodes.every((n) => !n.soon), 'a lesson is missing');
-assert.match(w.call(T, 'classroomPackage', [cls.id, 'both', [LID]]).assignments[0].title, /Light It Up/);
+assert.match(w.call(T, 'classroomPackage', [cls.id, 'both', [LID]]).assignments[0].title, /Motors and Gears/);
 assert.throws(() => w.call(S, 'gradebook', [cls.id]), /Only the teacher/);
 
 // simulator steps and the other turn-ins: solutions stay with the teacher, a program is turned in as code,
 // and a build lesson is turned in by showing the teacher
-const CODE = 'hello-brain', SHOW = 'drive-base', LC = w.g.DATA.lessons[CODE], LS = w.g.DATA.lessons[SHOW];
+const CODE = 'hello-brain', SHOW = 'pick-your-chassis', LC = w.g.DATA.lessons[CODE], LS = w.g.DATA.lessons[SHOW];
 w.call(T, 'assignLessons', [cls.id, [CODE, SHOW], '2030-01-01', '']);
 const simStep = LC.build.findIndex((s) => s.sim);
-assert.ok(LC.build[simStep].sim.solution && LC.turn_in === 'code' && LS.turn_in === 'show' && L.turn_in === 'link');
+assert.ok(LC.build[simStep].sim.solution && LC.turn_in === 'code' && LS.turn_in === 'show' && L.turn_in === 'show');
 assert.ok(pageData(S, '/lessons/' + CODE).lesson.build.every((s) => !s.sim || !('solution' in s.sim)), 'a solution reached a student');
 assert.ok(pageData(T, '/lessons/' + CODE).lesson.build[simStep].sim.solution);
 // only a lesson with a simulator step carries the editor bundle (three packed parts instead of two)
@@ -206,12 +206,48 @@ assert.ok(!r.body.shipped && /teacher/.test(r.body.missing.join(' ')));
 r = api(S, 'ship', { shown: true, ext: [0], reflect: LS.ship.reflect.map(() => 'The frame was wobbly at first.'), submit: true }, SHOW);
 assert.ok(r.body.shipped);
 
+// two grades: a grade 7 class sees only the Rookie Season; the teacher sees both
+const S7 = 'kai@students.school.org', c7 = w.call(T, 'createClass', ['Period 1', 7]);
+assert.strictEqual(c7.grade, 7);
+w.call(S7, 'joinClass', [c7.code, 'Kai T.']);
+const home7 = pageData(S7, '/');
+assert.ok(home7.total === 10 && home7.next_up.lesson.id === 'welcome-to-circuit-city' && /Grade 7/.test(home7.grade_name), JSON.stringify(home7.next_up));
+assert.ok(pageData(S7, '/lessons').course.every((c) => c.grade === 7) && pageData(S, '/lessons').course.every((c) => c.grade === 8));
+assert.strictEqual(pageData(S7, '/map').map.nodes.length, 10);
+assert.strictEqual(pageData(T, '/lessons').course.length, 21);
+assert.strictEqual(pageData(T, '/map/7').map.nodes.length, 10);
+assert.strictEqual(pageData(T, `/teacher/classes/${c7.id}`).course.length, 10);
+assert.strictEqual(w.call(T, 'setClassGrade', [other.id, 7]).grade, 7);
+assert.strictEqual(w.call(T, 'setClassGrade', [other.id, 99]).grade, 8);
+assert.ok(w.call(T, 'screenData', [c7.id]).lesson.id === 'welcome-to-circuit-city');
+
+// Circuit City Arena: the teacher types scores, the site ranks them and keeps season standings
+assert.throws(() => w.call(T, 'arenaSave', [cls.id, 'brain-song', {}]), /No such arena challenge/);   // a grade 7 event, a grade 8 class
+assert.throws(() => w.call(S, 'arenaSave', [cls.id, 'battle-bot-challenge', {}]), /Only the teacher/);
+assert.strictEqual(w.call(T, 'screenData', [cls.id]).arena, null);
+let ar = w.call(T, 'arenaSave', [cls.id, 'battle-bot-challenge', { [S]: 30, [S2]: '45', 'stranger@x.org': 99 }]);
+let ev = ar.events.find((e) => e.id === 'battle-bot-challenge');
+assert.deepStrictEqual(ev.results.map((x) => [x.email, x.place, x.points]), [[S2, 1, 100], [S, 2, 80]]);
+ar = w.call(T, 'arenaSave', [cls.id, 'wall-maze', { [S]: 40, [S2]: 40 }]);                             // a tie shares first place
+assert.deepStrictEqual(ar.events.find((e) => e.id === 'wall-maze').results.map((x) => x.place), [1, 1]);
+assert.deepStrictEqual(ar.standings.map((x) => [x.name, x.points, x.place]), [['Ava R.', 200, 1], ['Sam K.', 180, 2]]);
+ar = w.call(T, 'arenaSave', [cls.id, 'wall-maze', { [S2]: '' }]);                                      // a blank removes a score
+assert.strictEqual(ar.events.find((e) => e.id === 'wall-maze').results.length, 1);
+const mine = pageData(S, '/arena').arena;
+assert.ok(mine.events.length === 3 && mine.standings.find((x) => x.me).points === 180 && mine.standings.every((x) => !('email' in x)), JSON.stringify(mine.standings));
+assert.ok(!JSON.stringify(mine).includes(S2), 'a classmate\'s email reached a student');
+const scrAr = w.call(T, 'screenData', [cls.id]).arena;
+assert.ok(scrAr.standings.length === 2 && scrAr.event.name === 'Maze Runner Pro', JSON.stringify(scrAr));
+pageView(S, '/');                                                                                      // loading a page awards new badges
+assert.ok(['arena-rookie', 'arena-podium', 'arena-champion'].every((b) => w.g.loadStudent_(S).badges[b]), Object.keys(w.g.loadStudent_(S).badges).join());
+assert.strictEqual(pageData(S7, '/arena').arena.events.length, 5);
+
 // every page renders for the teacher and a student
-for (const p of ['/', '/lessons', '/map', '/help', '/teacher/standards', '/teacher/videos', `/teacher/classes/${cls.id}`,
+for (const p of ['/', '/lessons', '/map', '/help', '/map/7', '/map/8', '/teacher/standards', '/teacher/videos', `/teacher/classes/${c7.id}`, `/teacher/classes/${cls.id}`,
   `/teacher/classes/${cls.id}/students/${encodeURIComponent(S)}`, `/teacher/classes/${cls.id}/google-classroom`, `/teacher/classes/${cls.id}/screen`, '/lessons/' + LID]) {
   assert.ok(!/"page":"error"/.test(pageView(T, p)), 'teacher page failed: ' + p);
 }
-for (const p of ['/', '/lessons', '/map', '/me', '/help', '/lessons/' + LID]) assert.ok(!/"page":"error"/.test(pageView(S, p)), 'student page failed: ' + p);
+for (const p of ['/', '/lessons', '/map', '/arena', '/me', '/help', '/lessons/' + LID]) assert.ok(!/"page":"error"/.test(pageView(S, p)), 'student page failed: ' + p);
 
 // the install check, and broken installs get a plain message
 const report = w.call(T, 'checkInstall');

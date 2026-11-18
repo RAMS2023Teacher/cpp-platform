@@ -188,6 +188,8 @@ function mergeProgress_(a, b) {
   a.ext = a.ext || {};
   Object.keys(b.ext || {}).forEach(function (k) { if (b.ext[k]) a.ext[k] = true; });
   if (!a.share && b.share) a.share = b.share;
+  if (!a.code && b.code) a.code = b.code;
+  if (b.shown) a.shown = true;
   if (!(a.reflect || []).join('') && (b.reflect || []).join('')) a.reflect = b.reflect;
   ['shipped_at', 'completed_at', 'started_at'].forEach(function (f) {
     if (b[f] && (!a[f] || b[f] < a[f])) a[f] = b[f];

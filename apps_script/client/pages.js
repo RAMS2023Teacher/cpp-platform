@@ -35,7 +35,48 @@
   };
   var meter = function (pct) { return '<span class="meter" title="' + pct + '% done"><i style="width:' + pct + '%"></i></span>'; };
 
+  var byGrade = function (list, draw) {      // teacher lists: one heading per grade
+    var out = [];
+    (d.grades || []).forEach(function (g) {
+      var mine = list.filter(function (l) { return l.grade === g.grade; });
+      if (mine.length) out.push('<h2 class="grade-head">' + E(g.name) + '</h2>' + draw(mine));
+    });
+    return out.join('');
+  };
+  var place = function (n) { return n === 1 ? '🥇' : n === 2 ? '🥈' : n === 3 ? '🥉' : n + '.'; };
+  var standingsTable = function (rows, empty) {
+    if (!rows.length) return '<p class="muted">' + empty + '</p>';
+    return '<ol class="arena-board plain">' + rows.map(function (r) {
+      return '<li' + (r.me ? ' class="me"' : '') + '><span class="place">' + place(r.place) + '</span><span data-avatar="' + A(r.avatar || {}) + '" data-size="30"></span>' +
+        '<span class="grow">' + E(r.name) + '</span><small class="muted">' + r.events + ' challenge' + (r.events === 1 ? '' : 's') + '</small><b>' + r.points + ' pts</b></li>';
+    }).join('') + '</ol>';
+  };
+  var guideTable = function (ev) {
+    return '<table class="arena-guide"><tbody>' + ev.guide.map(function (g) { return '<tr><td>' + E(g[0]) + '</td><td><b>' + (g[1] > 0 ? '+' : '') + g[1] + '</b></td></tr>'; }).join('') + '</tbody></table>';
+  };
+
   var pages = {};
+
+  pages.arena = function () {
+    var a = d.arena, h = ['<div class="banner red arena-banner"><div class="banner-icon">🏟️</div><div class="grow"><small>' + E(a.grade_name) + '</small><h1>Circuit City Arena</h1>' +
+      '<p>Pick a chassis, tune it, and score points for your team in every challenge.</p></div></div>'];
+    h.push('<div class="grid-2"><section class="card"><h2>🏆 Season standings</h2>' + standingsTable(a.standings, 'No scores yet. The first challenge is coming up!') +
+      '<p class="muted small">Season points for each challenge: ' + a.place_points.map(function (p, i) { return (i === a.place_points.length - 1 ? 'everyone else ' : place(i + 1) + ' ') + p; }).join(' · ') + '</p></section>' +
+      '<section class="card"><h2>🤖 The chassis</h2><ul class="plain chassis-list">' + a.chassis.map(function (c) { return '<li><b>' + E(c.name) + '</b><br><span class="muted">' + E(c.blurb) + '</span></li>'; }).join('') +
+      '</ul><p class="muted small">You can swap the wheels, move the Brain and add parts from the bins.</p></section></div>');
+    h.push('<h2 class="grade-head">The challenges</h2><div class="arena-events">');
+    a.events.forEach(function (ev) {
+      var mine = ev.results.filter(function (r) { return r.me; })[0];
+      h.push('<section class="card arena-event"><h3>' + E(ev.icon) + ' ' + E(ev.name) + ' <span class="tag">' + (ev.kind === 'code' ? 'coded' : 'driver') + '</span></h3><p>' + E(ev.blurb) +
+        (ev.lesson ? ' <a class="small" href="/lessons/' + E(ev.lesson_id) + '">Lesson ' + E(ev.lesson) + ' →</a>' : '') + '</p>' +
+        '<details><summary>How to score</summary>' + guideTable(ev) + '</details>' +
+        (ev.results.length ? '<ol class="arena-board plain">' + ev.results.slice(0, 5).map(function (r) {
+          return '<li' + (r.me ? ' class="me"' : '') + '><span class="place">' + place(r.place) + '</span><span class="grow">' + E(r.name) + '</span><b>' + r.score + '</b></li>';
+        }).join('') + '</ol>' + (mine && mine.place > 5 ? '<p class="small">You: place ' + mine.place + ' with <b>' + mine.score + '</b></p>' : '')
+          : '<p class="muted small">Not scored yet.</p>') + '</section>');
+    });
+    main.innerHTML = h.join('') + '</div>';
+  };
 
   pages.error = function () {
     main.innerHTML = '<div class="card center"><h1>Hmm</h1><p></p><a class="btn" href="/">Go home</a></div>';
@@ -92,15 +133,16 @@
   };
 
   pages.catalog = function () {
-    var h = ['<h1>Lessons</h1><p class="muted">12 projects, from a single circuit to a robot that drives itself. You build with VEX IQ, code in C++ and test in the simulator.</p><div class="course-grid">'];
-    d.course.forEach(function (c) {
+    var h = ['<h1>Lessons</h1><p class="muted">Pick a chassis, tune it, code it in C++ and test in the simulator. Then take it into Circuit City Arena.</p>'];
+    var card = function (c) {
       var inner = '<span class="num">' + E(c.number) + '</span><span class="icon-tile ' + E(c.color) + '">' + E(c.icon) + '</span><h3>' + E(c.title) + '</h3>' +
         (c.soon ? '<p class="muted">Coming soon</p>' : '<p>' + E(c.tagline) + '</p>' + (c.pct ? meter(c.pct) : '')) +
         '<div class="tags"><span class="tag">💡 ' + E(c.python) + '</span><span class="tag">🔌 ' + E(c.hardware) + '</span>' +
         (c.stars ? '<span class="tag">' + '★'.repeat(c.stars) + '</span>' : '') + '</div>';
-      h.push(c.soon ? '<div class="card course-card soon">' + inner + '</div>' : '<a class="card course-card" href="/lessons/' + E(c.id) + '">' + inner + '</a>');
-    });
-    main.innerHTML = h.join('') + '</div>';
+      return c.soon ? '<div class="card course-card soon">' + inner + '</div>' : '<a class="card course-card" href="/lessons/' + E(c.id) + '">' + inner + '</a>';
+    };
+    var grid = function (list) { return '<div class="course-grid">' + list.map(card).join('') + '</div>'; };
+    main.innerHTML = h.join('') + (d.grade ? grid(d.course) : byGrade(d.course, grid));
   };
 
   pages.lesson = function () {
@@ -130,7 +172,8 @@
   pages.map = function () {
     main.className = 'container wide';
     var lv = d.level, h = ['<div class="page-head"><div><h1>Skill tree</h1><p class="muted">Finish a lesson to send power down the paths after it. ' +
-      'Where the path splits, either lesson unlocks the next one.</p></div>'];
+      'Where the path splits, either lesson unlocks the next one.</p>' +
+      (ML.teacher && d.grades ? '<p class="row">' + d.grades.map(function (g) { return '<a class="btn small' + (g.grade === d.grade ? '' : ' ghost') + '" href="/map/' + g.grade + '">' + E(g.name) + '</a>'; }).join(' ') + '</p>' : '') + '</div>'];
     if (!ML.teacher) h.push('<a class="level-chip card" href="/me"><span data-avatar="' + A(d.avatar) + '" data-size="52"></span><span><b>Level ' + lv.level + ' · ' +
       E(lv.title) + '</b><span class="xpbar"><i style="width:' + lv.pct + '%"></i></span><small class="muted">' + levelLine(lv) + '</small></span></a>');
     h.push('</div><div class="map-layout"><div class="map-scroll card"><div class="map" id="map" aria-label="Lesson map"></div></div><aside class="map-side">' +
@@ -308,10 +351,10 @@
     var h = ['<h1>My classes</h1><div class="class-cards">'];
     d.classes.forEach(function (c) {
       h.push('<a class="card class-card" href="/teacher/classes/' + E(c.id) + '"><h2>' + E(c.name) + '</h2><div class="join-code small">Code <b>' + E(c.code) +
-        '</b></div><p class="muted">' + c.students + ' students · ' + c.assignments + ' assignments' + (c.classroom ? '<br>🔗 Google Classroom' : '') + '</p></a>');
+        '</b></div><p class="muted">' + E(c.grade_name) + '<br>' + c.students + ' students · ' + c.assignments + ' assignments' + (c.classroom ? '<br>🔗 Google Classroom' : '') + '</p></a>');
     });
     var linked = d.classes.filter(function (c) { return c.classroom; }).length;
-    h.push('<div class="card class-card new"><h2>+ New class</h2><input id="new-class" placeholder="e.g. Period 3 Makers" maxlength="80"><button class="btn" id="new-go" type="button">Create</button></div>' +
+    h.push('<div class="card class-card new"><h2>+ New class</h2><input id="new-class" placeholder="e.g. Period 3" maxlength="80"><select id="new-grade" aria-label="Grade"><option value="7">Grade 7</option><option value="8" selected>Grade 8</option></select><button class="btn" id="new-go" type="button">Create</button></div>' +
       '<div class="card class-card new"><h2>🔗 Google Classroom</h2><p class="muted small">Bring in your Classroom classes and their students. No join codes needed.</p>' +
       '<a class="btn" href="/teacher/google-import">Import classes</a>' + (linked ? ' <button class="btn ghost small" id="gc-sync-all" type="button">Update all rosters</button>' : '') + '</div></div>' +
       '<section class="card tab-icon-card"><h2>Tab icon</h2><p class="muted small">The little picture in the browser tab, for you and your students.</p>' +
@@ -326,7 +369,7 @@
       '<li>Assign lessons with due dates. The gradebook shows who\'s done what.</li><li>Open any lesson to see the <b>teacher answer key</b>. Add videos on the <a href="/teacher/videos">Videos</a> page.</li></ol></section>');
     main.innerHTML = h.join('');
     document.getElementById('new-go').addEventListener('click', function () {
-      act(this, 'createClass', [document.getElementById('new-class').value], function (c) { ML.go('/teacher/classes/' + c.id); });
+      act(this, 'createClass', [document.getElementById('new-class').value, document.getElementById('new-grade').value], function (c) { ML.go('/teacher/classes/' + c.id); });
     });
     var pick = document.getElementById('tab-icon-pick'), url = document.getElementById('tab-icon-url');
     document.getElementById('tab-icon-now').src = d.tab_icon_url;
@@ -394,7 +437,8 @@
   pages.classroom = function () {
     main.className = 'container wide';
     var c = d.cls, h = [];
-    h.push('<div class="page-head"><div><a class="muted small" href="/">← My classes</a><h1>' + E(c.name) + '</h1></div>' +
+    h.push('<div class="page-head"><div><a class="muted small" href="/">← My classes</a><h1>' + E(c.name) + '</h1>' +
+      '<label class="small">Course <select id="cls-grade">' + d.grades.map(function (g) { return '<option value="' + g.grade + '"' + (g.grade === d.grade ? ' selected' : '') + '>' + E(g.name) + '</option>'; }).join('') + '</select></label></div>' +
       '<div class="row"><a class="btn" href="/teacher/classes/' + E(c.id) + '/screen">📺 Class display</a>' +
       '<a class="btn ghost" href="/teacher/classes/' + E(c.id) + '/google-classroom">Google Classroom grades</a></div>' +
       '<div class="join-code">Join code <b>' + E(c.code) + '</b><small>' + E(d.url) + '</small></div></div>');
@@ -427,10 +471,10 @@
         });
         h.push('</tr>');
       });
-      h.push('</tbody></table></div><p class="muted small">Stage = where they are (Mission, Build step, Quiz, Ship it) · Q = best quiz score · 🔗 = a shipped MakeCode project (lesson 1). Click a student\'s name to read their programs. ' +
+      h.push('</tbody></table></div><p class="muted small">Stage = where they are (Mission, Build step, Quiz, Ship it) · Q = best quiz score · Click a student\'s name to read their programs. ' +
         'The gradebook catches up with new work within about a minute.</p>');
     }
-    h.push('</section><section class="card arcade-teacher" id="arcade-card"></section>');
+    h.push('</section><section class="card arena-teacher" id="arena-card"></section><section class="card arcade-teacher" id="arcade-card"></section>');
     h.push('<div class="grid-2"><section class="card"><h2>Assign lessons</h2><div class="assign-picker">');
     h.push('<fieldset><legend>The course</legend>');
     d.course.forEach(function (l) {
@@ -460,6 +504,37 @@
       '<input id="del-name"> <button class="btn small danger" id="del-go" type="button">Delete class</button></details></section></div>');
     main.innerHTML = h.join('');
     var $ = function (id) { return document.getElementById(id); };
+    $('cls-grade').addEventListener('change', function () { act(this, 'setClassGrade', [c.id, this.value]); });
+    var arena = d.arena, arenaPick = arena.events.length ? arena.events[0].id : '';
+    var drawArena = function () {
+      var ev = arena.events.filter(function (e) { return e.id === arenaPick; })[0], h2 = ['<h2>🏟️ Circuit City Arena</h2>'];
+      if (!ev) { $('arena-card').innerHTML = h2.join('') + '<p class="muted">No arena challenges for this course.</p>'; return; }
+      var scores = {};
+      ev.results.forEach(function (r) { scores[r.email] = r; });
+      h2.push('<p class="muted small">Type each student\'s points for a challenge (teammates get the same number) and save. The site ranks them, and the season standings show on the 📺 Class display and the students\' Arena page.</p>' +
+        '<div class="grid-2"><div><label class="field"><span>Challenge</span><select id="arena-ev">' + arena.events.map(function (e) {
+          return '<option value="' + E(e.id) + '"' + (e.id === arenaPick ? ' selected' : '') + '>' + E(e.icon + ' ' + e.name) + (e.results.length ? ' ✓' : '') + '</option>'; }).join('') + '</select></label>' +
+        '<p class="small">' + E(ev.blurb) + ' <a href="/lessons/' + E(ev.lesson_id) + '">Lesson ' + E(ev.lesson) + '</a></p>' + guideTable(ev) + '</div><div>');
+      if (!arena.students.length) h2.push('<p class="muted">No students yet.</p>');
+      else {
+        h2.push('<table class="arena-scores"><thead><tr><th>Student</th><th>Points</th><th>Place</th></tr></thead><tbody>');
+        arena.students.forEach(function (s) {
+          var r = scores[s.email];
+          h2.push('<tr><td>' + E(s.name) + '</td><td><input type="number" step="1" class="arena-in" data-email="' + E(s.email) + '" value="' + (r ? r.score : '') + '" aria-label="Points for ' + E(s.name) + '"></td><td>' + (r ? place(r.place) : '') + '</td></tr>');
+        });
+        h2.push('</tbody></table><button class="btn" id="arena-save" type="button">Save scores</button> <span class="saved small" id="arena-msg" role="status"></span>');
+      }
+      h2.push('</div></div><h3>Season standings</h3>' + standingsTable(arena.standings, 'No scores yet.'));
+      $('arena-card').innerHTML = h2.join('');
+      window.RobotAvatar.renderAll($('arena-card'));
+      $('arena-ev').addEventListener('change', function () { arenaPick = this.value; drawArena(); });
+      if ($('arena-save')) $('arena-save').addEventListener('click', function () {
+        var map = {}, b = this;
+        document.querySelectorAll('.arena-in').forEach(function (i) { map[i.dataset.email] = i.value.trim(); });
+        act(b, 'arenaSave', [c.id, arenaPick, map], function (r) { arena = r; drawArena(); $('arena-msg').textContent = 'Saved ✓'; });
+      });
+    };
+    drawArena();
     $('as-go').addEventListener('click', function () {
       var ids = Array.prototype.map.call(document.querySelectorAll('.as-pick:checked:not(:disabled)'), function (x) { return x.value; });
       act(this, 'assignLessons', [c.id, ids, $('as-due').value, $('as-note').value]);
@@ -557,10 +632,10 @@
   pages.videos = function () {
     var h = ['<h1>Lesson videos</h1><p class="muted">Paste a link for any lesson: YouTube, Google Drive ("Anyone with the link" or your school), Vimeo, or a direct .mp4 link. ' +
       'It appears in the lesson\'s Mission.</p><div class="card" style="padding:18px">'];
-    d.course.filter(function (l) { return !l.soon; }).forEach(function (l) {
-      h.push('<label class="field video-field"><span>' + E(l.icon) + ' ' + E(l.number) + '. ' + E(l.title) + '</span><input type="url" class="vid" data-lesson="' + E(l.id) + '" value="' +
-        E((d.urls || {})[l.id] || '') + '" placeholder="https://youtu.be/…"></label>');
-    });
+    h.push(byGrade(d.course.filter(function (l) { return !l.soon; }), function (list) { return list.map(function (l) {
+      return '<label class="field video-field"><span>' + E(l.icon) + ' ' + E(l.number) + '. ' + E(l.title) + '</span><input type="url" class="vid" data-lesson="' + E(l.id) + '" value="' +
+        E((d.urls || {})[l.id] || '') + '" placeholder="https://youtu.be/…"></label>';
+    }).join(''); }));
     h.push('<button class="btn" id="vid-go" type="button">Save videos</button></div>');
     main.innerHTML = h.join('');
     document.getElementById('vid-go').addEventListener('click', function () {
@@ -595,10 +670,10 @@
 
   pages.standards = function () {
     var h = ['<h1>MA DLCS standards</h1><p class="muted">What each lesson covers, and how.</p>'];
-    d.lessons.forEach(function (l) {
-      h.push('<section class="card" style="padding:16px;margin-bottom:14px"><h2>' + E(l.number) + '. ' + E(l.title) + '</h2><ul>' +
-        l.standards.map(function (st) { return '<li><b>' + E(st.code) + '</b> ' + E(st.text) + '<br><small class="muted">In this lesson: ' + E(st.how) + '</small></li>'; }).join('') + '</ul></section>');
-    });
+    h.push(byGrade(d.lessons, function (list) { return list.map(function (l) {
+      return '<section class="card" style="padding:16px;margin-bottom:14px"><h3>' + E(l.number) + '. ' + E(l.title) + '</h3><ul>' +
+        l.standards.map(function (st) { return '<li><b>' + E(st.code) + '</b> ' + E(st.text) + '<br><small class="muted">In this lesson: ' + E(st.how) + '</small></li>'; }).join('') + '</ul></section>';
+    }).join(''); }));
     main.innerHTML = h.join('');
   };
 

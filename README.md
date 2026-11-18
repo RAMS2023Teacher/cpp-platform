@@ -1,32 +1,55 @@
 # RoboCode Academy
 
-A 12-project robotics course for 8th grade: **circuits, mechanics and C++ with VEX IQ (1st generation)**. It starts
-with a single circuit on a micro:bit and ends with a robot that finishes a course with no driver. It looks and works
-like the teacher's other courses (micro:bit Maker Lab, AppVenture, Scratch Quest) and is built on Maker Lab's engine.
+Robotics courses for grades 7 and 8: **mechanics and C++ with VEX IQ (1st generation)**, built around the
+teacher's robot lab, **Circuit City Arena**. Students pick a ready-built chassis, modify it, learn one part of the
+robot each week, and compete in scored arena challenges. It looks and works like the teacher's other courses
+(micro:bit Maker Lab, AppVenture, Scratch Quest) and is built on Maker Lab's engine.
 It runs as a **Google Apps Script web app** in the teacher's school Google account, and student work stays in the
 teacher's Drive.
 
 **To install or update it, follow [dist/apps-script/INSTALL.md](dist/apps-script/INSTALL.md)** (paste 3 Script files
 into a new Apps Script project).
 
-## The course
+## The courses
 
-| # | Project | Big idea | Hardware |
+Each class is set to grade 7 or grade 8, and its students see only that course.
+
+### Grade 7 · Rookie Season
+
+| # | Lesson | Big idea | Arena challenge |
 |---|---|---|---|
-| 1 | Light It Up | Circuits: input → decide → output | micro:bit, LED, resistor, button |
-| 2 | Motors and Gears | Gear ratios: speed or strength | Smart Motor, gears, shafts |
-| 3 | Build the Drive Base | Structure, bracing and Smart Ports | VEX IQ kit, 2 motors, Brain |
-| 4 | Hello, Brain | A C++ program runs in order | Drive base + USB cable |
-| 5 | Take the Wheel | Loops · joystick numbers → motor speed | Controller |
-| 6 | Battle Bot Design | if / else · buttons run a mechanism | Extra motor, beams for a wedge |
-| 7 | **Battle Bot Challenge** | Test, improve, compete (driver-controlled sumo) | Your battle bot + the ring |
-| 8 | Drive by Code | Sequences and for loops | Drive base + Gyro Sensor |
-| 9 | Feel the Wall | if / else with a sensor | Bumper Switch + Touch LED |
-| 10 | See It Coming | while loops with a sensor | Distance Sensor |
-| 11 | Follow the Line | Functions and thresholds | Color Sensor |
-| 12 | **Autonomy Challenge** | Sense → decide → act, all together | Your robot + the course |
+| 1 | Welcome to Circuit City | Every robot design is a trade-off |  |
+| 2 | Brain Song | A C++ program runs in order | **Brain Song** |
+| 3 | Driver's Ed | Loops · joystick numbers → motor speed |  |
+| 4 | Tune Your Bot | Traction, weight and balance |  |
+| 5 | The Impossible Bridge | Test, change one thing, test again | **The Impossible Bridge** |
+| 6 | Claws and Arms | if / else · buttons run a mechanism |  |
+| 7 | Castle Crasher | Strategy: plan before you drive | **Castle Crasher** |
+| 8 | Sumo Showdown | Pushing power: torque, grip, low weight | **Sumo Showdown** |
+| 9 | Robot, Drive Yourself | Sequences: exact moves in order |  |
+| 10 | Maze Runner | Plan, measure, code, debug | **Maze Runner** |
+
+### Grade 8 · Pro Season
+
+| # | Lesson | Big idea | Arena challenge |
+|---|---|---|---|
+| 1 | Motors and Gears | Gear ratios: speed or strength |  |
+| 2 | Pick Your Chassis | Drive trains, structure and Smart Ports |  |
+| 3 | Hello, Brain | A C++ program runs in order |  |
+| 4 | Take the Wheel | Loops · joystick numbers → motor speed |  |
+| 5 | Battle Bot Design | if / else · buttons run a mechanism |  |
+| 6 | Battle Bot Challenge | Test, improve, compete | **Battle Bot Challenge** |
+| 7 | Drive by Code | Sequences and for loops |  |
+| 8 | Feel the Wall | if / else with a sensor | **Maze Runner Pro** |
+| 9 | See It Coming | while loops with a sensor |  |
+| 10 | Follow the Line | Functions and thresholds |  |
+| 11 | Autonomy Challenge | Sense → decide → act, all together | **Collection Run** |
 
 Each lesson is about two class periods and is split into two Parts.
+
+**Circuit City Arena.** The chassis (2WD Standard, 2WD Lite, 3WD Side Crawler, 4WD), the arena challenges and their
+scoring guides are in `course/rules.py`. On a class page the teacher types each student's points for a challenge;
+the site ranks them and keeps season standings, shown on the students' **Arena** page and the Class display.
 
 ## How a lesson works
 
@@ -42,8 +65,8 @@ VEX IQ robot. The step's 🤖 Test it boxes tick themselves when the program pas
 never hits a wall, prints the right thing, and so on). In driving lessons the keyboard is the controller. A
 **Copy for VEXcode** button hands the program to **VEXcode IQ**, which opens in its own tab and puts it on the real Brain.
 
-Turn-ins are the program from the last simulator step (coding lessons), a MakeCode share link (lesson 1), or
-ticking "I showed my teacher my robot" (build lessons and the Battle Bot Challenge).
+Turn-ins are the program from the last simulator step (coding lessons), or ticking "I showed my teacher my
+robot" (lessons with no code).
 
 Around that: XP, levels, badges and a robot avatar; a skill tree; partners on one Chromebook (work saves to both);
 a teacher gradebook with each student's stage, quiz score, answers and programs; a projector **Class display** with
@@ -77,7 +100,7 @@ add `?as=sam@students.school.org` to be a student).
 
 | Folder | What's in it |
 |---|---|
-| `course/lessons/` | The 12 lessons, one YAML file each. [docs/LESSONS.md](docs/LESSONS.md) explains the format, the robot's C++ commands and the simulator. |
+| `course/lessons/grade7/`, `grade8/` | The lessons, one YAML file each. [docs/LESSONS.md](docs/LESSONS.md) explains the format, the robot's C++ commands and the simulator. |
 | `course/rules.py` | The course plan, XP, levels, badges, avatar parts and the links to VEXcode IQ and CAD Studio. |
 | `course/shots/`, `course/pictures.py` | VEXcode IQ screenshots, and the list of VEX part pictures (linked from VEX's website). |
 | `apps_script/server/` | The Apps Script backend. |
