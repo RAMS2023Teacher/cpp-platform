@@ -136,22 +136,6 @@ def lines_of(text: str, size: int = 20000) -> list[str]:
     return [text[i:i + size] for i in range(0, len(text), size)]
 
 
-def faq_data() -> dict:
-    """The About page from course/faq.yaml, as HTML for the site. Also writes docs/FAQ.md so it can be read on GitHub."""
-    import yaml
-    src = yaml.safe_load((ROOT / "course" / "faq.yaml").read_text(encoding="utf-8"))
-    lines = [f"# {src['title']}", "", str(src["intro"]).strip(), ""]
-    for sec in src["sections"]:
-        lines += [f"## {sec['title']}", ""]
-        for item in sec["questions"]:
-            lines += [f"### {item['q']}", "", str(item["a"]).strip(), ""]
-    lines += ["---", "", "*This page is made from `course/faq.yaml`. The same text is shown inside the site on the About page.*", ""]
-    (ROOT / "docs" / "FAQ.md").write_text("\n".join(lines), encoding="utf-8")
-    return {"title": src["title"], "intro": md(src["intro"]),
-            "sections": [{"title": sec["title"], "questions": [{"q": plain(i["q"]), "a": md(i["a"])} for i in sec["questions"]]}
-                         for sec in src["sections"]]}
-
-
 def build_data() -> dict:
     problems = [(l["_file"], e) for l in L.all_lessons() for e in L.validate(l)]
     if problems:
@@ -164,7 +148,7 @@ def build_data() -> dict:
         if c["id"] in lessons:
             c["title"] = lessons[c["id"]]["title"]
     return {
-        "faq": faq_data(), "shots": SHOTS, "lessons": lessons, "order": [c["id"] for c in course if c["id"] in lessons],
+        "shots": SHOTS, "lessons": lessons, "order": [c["id"] for c in course if c["id"] in lessons],
         "course": course, "course_by_id": {c["id"]: c for c in course}, "requires": rules.REQUIRES,
         "xp": rules.XP, "labels": rules.LABELS, "quiz_pass": rules.QUIZ_PASS,
         "levels": [list(x) for x in rules.LEVELS], "badges": [list(b) for b in rules.BADGES],

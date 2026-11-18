@@ -340,10 +340,8 @@ for (const p of ['/', '/lessons', '/map', '/help', '/map/7', '/map/8', '/teacher
   `/teacher/classes/${cls.id}/students/${encodeURIComponent(S)}`, `/teacher/classes/${cls.id}/google-classroom`, `/teacher/classes/${cls.id}/screen`, '/lessons/' + LID]) {
   assert.ok(!/"page":"error"/.test(pageView(T, p)), 'teacher page failed: ' + p);
 }
-assert.ok(/"page":"about"/.test(pageView(S, '/about')) && /"page":"about"/.test(pageView(T, '/about')) && /"page":"about"/.test(pageView('nobody@students.school.org', '/about')), 'About opens for everyone');
-assert.ok(pageData(S, '/about').faq.sections.length >= 3 && /href=\\?"[^"]*about/.test(pageView(S, '/')), 'the footer links to About');
 // no page a student opens carries a classmate's email
-for (const p of ['/', '/lessons', '/map', '/arena', '/me', '/arcade', '/help', '/about', '/lessons/' + LID, '/lessons/' + CODE]) {
+for (const p of ['/', '/lessons', '/map', '/arena', '/me', '/arcade', '/help', '/lessons/' + LID, '/lessons/' + CODE]) {
   const setup = pageView(S, p).split('\n').pop();                  // the page's data, where anything about classmates would be
   for (const other of [S2, S7, T]) assert.ok(!setup.toLowerCase().includes(other), other + ' is on the student page ' + p);
 }

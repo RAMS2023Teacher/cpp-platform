@@ -189,16 +189,4 @@ body.screen-page.board-page { background-color: #0b0a3a; background-image: radia
 .bd-tree { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .bd-slot span { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.05; }
 .bd-slot .crest { width: 22px; height: 22px; }
-
-/* About page */
-.about { max-width: 860px; margin: 0 auto; }
-.about-intro { font-size: 1.1rem; }
-.about-jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 18px; }
-.about-sec { padding: 16px 20px; margin-bottom: 16px; }
-.about-sec h2 { margin: 0 0 8px; }
-.about details { border-top: 1px solid var(--line); padding: 8px 0; }
-.about summary { cursor: pointer; font-weight: 800; font-size: 1.05rem; }
-.about-a { padding: 4px 0 2px 18px; }
-.about-a p { margin: 6px 0; } .about-a ul { margin: 6px 0; }
-.footer a { color: inherit; font-weight: 700; }
-@media print { .about-jump, .about-tools, .preview-bar { display: none !important; } .about details { break-inside: avoid; } }
+@media print { .preview-bar { display: none !important; } }
