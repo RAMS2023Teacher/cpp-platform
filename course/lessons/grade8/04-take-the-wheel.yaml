@@ -20,7 +20,7 @@ mission:
     caption: "Input → decide → output, about 50 times every second."
   you_need:
     - A partner
-    - Your drive base (left motor in Port 1, right motor in Port 6)
+    - Your chassis (left motor in Port 1, right motor in Port 6)
     - A VEX IQ Controller with a charged battery
     - A USB cable for the Brain
     - 2 paper cups, tape and a timer
@@ -34,7 +34,7 @@ build:
   - part: "Part 1: In the simulator"
     title: A joystick is a number
     say: |
-      In Light It Up, a button was an input with two answers: pressed or not. A **joystick** is an input with
+      A button is an input with two answers: pressed or not. A **joystick** is an input with
       many answers. It gives a **number**. All the way up is **100**. In the middle is **0**. All the way down is
       **-100**. `Controller.AxisA.position()` asks for the left stick's number right now.
     do:
@@ -278,7 +278,7 @@ build:
       so the Devices list has to change. The right motor faces the other way on your robot, so it must be
       **reversed**. Then "forward" means forward for both wheels.
     do:
-      - Click **Open VEXcode IQ**. Start a new C++ text project, like last time. In **Devices**, choose the **1st gen** Brain.
+      - Click **Open VEXcode IQ**. Start a new C++ text project, as you did in Hello, Brain. In **Devices**, choose the **1st gen** Brain.
       - "Add a **Motor** on **Port 1**. Name it **LeftMotor**."
       - "Add a **Motor** on **Port 6**. Name it **RightMotor**. Switch on **Reverse** for this motor."
       - "Add a **Controller**. Do **not** add a Drivetrain. Ports 1 and 6 can only be used once."
@@ -292,7 +292,7 @@ build:
   - part: "Part 2: On the real robot"
     title: Paste your program
     say: |
-      Same path as last time. Your tank drive program goes into VEXcode's `main.cpp`, **under** the folded
+      Same path as in Hello, Brain. Your tank drive program goes into VEXcode's `main.cpp`, **under** the folded
       device block. Keep that block. It holds the Devices setup you just made.
     do:
       - Your program is in the editor below. Press **Copy for VEXcode**, then **Copy code**.
@@ -339,7 +339,7 @@ build:
     title: Download and drive
     say: |
       The controller talks to the Brain by **radio**. Each controller must be **paired** with one Brain, so it
-      drives your robot and nobody else's. Then you download the program, just like last time.
+      drives your robot and nobody else's. Then you download the program, just as you did in Hello, Brain.
     wiring:
       - "Check that the Brain and the Controller each have a **radio** and a charged battery."
       - "Ask your teacher how to **pair** your Controller with your Brain. You only do this once."

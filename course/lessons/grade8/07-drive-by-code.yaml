@@ -20,7 +20,8 @@ mission:
     caption: Plan first. It is faster than guessing.
   you_need:
     - A partner
-    - Your robot, with a Gyro Sensor
+    - Your chassis
+    - "From the bins: a Gyro Sensor and a Smart Cable, if your chassis has none"
     - A USB cable for the Brain
     - Paper and a pencil
     - A ruler or tape measure

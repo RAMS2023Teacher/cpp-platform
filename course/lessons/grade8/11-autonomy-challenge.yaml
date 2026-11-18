@@ -1,27 +1,29 @@
 id: autonomy-challenge
 title: Autonomy Challenge
-tagline: One program, no driver. Your robot runs the whole course by itself
-minutes: 80          # about two class periods: Part 1 plan and build in the simulator, Part 2 official runs on the real course
+tagline: The season finale. One program, no driver, and points at every checkpoint
+minutes: 120         # about three class periods: Part 1 plan and build in the simulator, Part 2 practice, then official runs on the real course
 
 mission:
   big_question: "How do sensing, deciding and acting work together to finish a mission?"
   goal: |
-    This is the end-of-term challenge. Your robot must finish a course with **no driver**: follow the black
-    line, stop before the wall, turn and park in the zone, then turn its LED green and show its time.
-    You'll **break the mission into functions**, test each one in the simulator, then make
-    **three official runs** on the real course.
+    This is the season finale in Circuit City Arena: the **Collection Run**. With **no driver**, your robot
+    leaves the start box, follows the black line, stops before the wall, collects a block and parks in the
+    zone. Every **checkpoint** earns points, even if the full run fails. You'll **break the mission into
+    functions**, test each one in the simulator, then make **three official runs**.
   picture:
     type: flow
     steps:
-      - {icon: "🛤️", label: "Follow the line (Color Sensor)", color: "#e5484d"}
-      - {icon: "🧱", label: "Stop at the wall (Distance Sensor)", color: "#2f6bff"}
-      - {icon: "🅿️", label: "Turn and park in the zone", color: "#9b51e0"}
-      - {icon: "🟢", label: "LED green, print the time", color: "#33c95a"}
-    caption: Four stages. Each one is a function. Each one is worth points.
+      - {icon: "🚦", label: "Leave the start box: 5", color: "#f5a623"}
+      - {icon: "🛤️", label: "Follow the line to the end: 10", color: "#e5484d"}
+      - {icon: "🧱", label: "Stop before the wall: 10", color: "#2f6bff"}
+      - {icon: "📦", label: "Collect the block: 15", color: "#9b51e0"}
+      - {icon: "🅿️", label: "Park in the zone: 10", color: "#33c95a"}
+    caption: Five checkpoints, 50 points. You keep every checkpoint you reach.
   you_need:
-    - Your team and your robot (Color Sensor, Distance Sensor, Touch LED)
+    - Your team and your chassis (Color Sensor, Distance Sensor, Touch LED)
     - Your line follower from Follow the Line
-    - The taped course on the field
+    - "Optional, from the bins: a pusher for the front, to hold the block"
+    - The Collection Run course (your teacher will show you)
     - A USB cable for the Brain
     - A stopwatch or the Brain's timer
   learn:
@@ -36,20 +38,19 @@ build:
     title: Know the course
     say: |
       Read the course before you write any code. The robot starts in the **start box**. After someone presses
-      start, it's **hands off**. Each stage ends when a **sensor** or a **measured move** says so. Your best
-      official run out of three is your score.
+      start, it's **hands off**. The course has five **checkpoints**. You score each one the robot reaches,
+      so a run that fails halfway still earns points. Your best official run out of three is your arena score.
     do:
-      - "**Stage 1 (20 points):** follow the black line to its end."
-      - "**Stage 2 (20 points):** stop by itself before the wall."
-      - "**Stage 3 (20 points):** turn and park. The robot stops inside the parking zone."
-      - "**Stage 4 (20 points):** the Touch LED turns green and the Brain shows the time."
-      - "**Bonus:** +10 if the robot never touches a wall. +10 if the cube ends inside the zone."
-      - "**Rules:** one program. No controller. If you touch the robot, the run ends and you keep the points earned so far. Ties are settled by the faster time."
-      - Walk to the real course with your team. Push your robot through the course by hand, with the power off.
+      - "**Left the start box on its own:** 5 points."
+      - "**Followed the line to the end:** 10 points."
+      - "**Stopped before the wall:** 10 points."
+      - "**Collected the block:** 15 points. **Parked in the zone:** 10 points."
+      - "**Rules:** one program. No controller. If you touch the robot, the run ends and you keep the points earned so far."
+      - Walk to the real course with your team. Push your robot through it by hand, with the power off.
     test:
-      - I can point to where each of the four stages starts and ends
+      - I can point to where each of the five checkpoints is on the course
       - My team pushed the robot through the course by hand
-    ask: Which sensor ends Stage 1 and Stage 2? Which stage has no sensor to help it, and what could go wrong there?
+    ask: Which sensor helps with the line, and which with the wall? Which checkpoints have no sensor to help, and what could go wrong there?
 
   - part: "Part 1: Plan and build in the simulator"
     title: Plan before you code
@@ -279,7 +280,7 @@ build:
     say: |
       Test one stage **alone**. Here the robot starts where Stage 1 ended, facing the wall. To skip Stage 1
       for now, turn its call into a **comment** with `//`. Then write `park()`: turn right 90 degrees and
-      drive into the zone. The cube is in the way. Just push it along.
+      drive into the zone. The block is on the way. Push it along: that is how you **collect** it.
     do:
       - "In `main()`, put `//` in front of `followLineToWall();`."
       - "Replace the body of `park()` with a right turn and a drive of about 32 inches."
@@ -406,7 +407,7 @@ build:
     do:
       - "Replace the body of `finish()` with the highlighted lines."
       - "In `main()`, remove the `//` so Stage 1 runs again. Add the timer and the red LED at the top."
-      - Press **Run** and keep your hands off. This is the whole mission.
+      - Press **Run** and keep your hands off. This is the whole mission, and the block should end in the zone.
       - Run it three times. Is the time the same every time?
     code: |
       void finish() {
@@ -427,7 +428,7 @@ build:
     stuck:
       - "**The robot turns right at the start?** `followLineToWall();` is still commented out. Remove the `//`."
       - "**No time on the screen?** Check the print line has `%.1f` inside the quotes and the timer after the comma."
-      - "**It parks outside the goal?** Go back and check the turn (90) and the drive (about 32)."
+      - "**It parks outside the goal, or loses the block?** Go back and check the wall distance (12), the turn (90) and the drive (about 32)."
     sim:
       carry: true
       starter: |
@@ -478,7 +479,7 @@ build:
         - {type: goal, message: "The robot finishes parked inside the zone"}
         - {type: noCollision, message: "The robot never touches a wall"}
         - {type: output, pattern: "Time:\\s*\\d", message: "The Brain prints the time"}
-        - {type: code, pattern: "int\\s+main\\s*\\(\\s*\\)\\s*\\{[\\s\\S]*followLineToWall\\s*\\(\\s*\\)\\s*;[\\s\\S]*park\\s*\\(\\s*\\)\\s*;[\\s\\S]*finish\\s*\\(\\s*\\)\\s*;", message: "main() runs all three stages"}
+        - {type: cubesInZones, message: "The block is collected: it ends in the zone"}
       solution: |
         int threshold = 50;
 
@@ -529,7 +530,7 @@ build:
       the simulator and are probably wrong on the real field: the **threshold**, the **wall distance** and the
       **parking drive**. Measure before you run.
     do:
-      - "Calibrate like last lesson: read the Color Sensor over the floor and over the tape. Put the middle number in `threshold`."
+      - "Calibrate as you did in Follow the Line: read the Color Sensor over the floor and over the tape. Put the middle number in `threshold`."
       - Measure from the end of the line to the middle of the parking zone with a ruler. Use that for the drive in `park()`.
       - Go back one step to **The full run**. Press **Copy for VEXcode**, then **Copy code**. Paste it into VEXcode over `int main()` and everything below it.
       - "Type in your real numbers. Check **Devices** lists the Drivetrain, `Color`, `Distance` and `TouchLED`. Download."
@@ -543,43 +544,49 @@ build:
     fields: ["Floor reading", "Tape reading", "My threshold", "Parking drive (in)"]
 
   - part: "Part 2: Official runs on the real course"
-    title: Practice one stage at a time
+    title: Practice one checkpoint at a time
     say: |
-      Don't practice the whole course yet. Test it the way you built it: **one stage at a time**. Start the
-      robot by hand at the beginning of each stage. When a stage works **two times in a row**, move on. Change
-      **one** number between tries, so you know what fixed it.
+      Don't practice the whole course yet. Work **one checkpoint at a time**, in order, and bank each one.
+      When a checkpoint works **two times in a row**, move on. Change **one** number between tries, so you
+      know what fixed it. Running out of time? A robot that reaches three checkpoints every time beats one
+      that reaches five once.
     do:
-      - "**Stage 1 and 2:** run from the start box. Does it follow the line and stop before the wall?"
-      - "**Stage 3:** comment out `followLineToWall();`, put the robot at the end of the line, and run. Does it park?"
-      - "**Stage 4:** does the LED turn green and the time show?"
+      - "**Leave the box, follow the line:** run from the start box. Does it reach the end of the line?"
+      - "**Stop before the wall:** does it stop by itself, without touching?"
+      - "**Collect and park:** comment out `followLineToWall();`, put the robot at the end of the line, and run. Does the block end in the zone with the robot?"
       - Remove the `//`, download, and make one full practice run.
     stuck:
+      - "**It never leaves the box?** Check the program started and the sensor is at the tape's left edge. Leaving the box alone is 5 points."
+      - "**The block slides away?** Add a wide, flat pusher from the bins to the front, or change where the robot stops at the wall."
       - "**It loses the line?** Recalibrate the threshold, or start with the sensor right at the tape's left edge."
       - "**It bumps the wall?** Stop sooner: make the 12 bigger."
       - "**It misses the zone?** Check the robot's angle when it stops at the wall. Then fix the turn before the drive."
       - "**It doesn't stop at the wall?** Check the Distance Sensor points straight ahead and its cable is in."
     test:
-      - Stage 1 and 2 worked two times in a row
-      - Stage 3 worked two times in a row
-      - The LED turns green and the Brain shows a time
+      - The robot reached the end of the line two times in a row
+      - It stopped before the wall two times in a row
+      - We practiced collecting the block and parking
       - We made one full practice run
-    ask: Which stage was the least reliable in practice, and what do you think causes it?
+    fields: ["Checkpoints we can reach every time"]
+    ask: Which checkpoint was the least reliable in practice, and what do you think causes it?
 
   - part: "Part 2: Official runs on the real course"
     title: Official run 1
     say: |
       Time for the first official run. One teammate places the robot in the start box and presses start.
-      After that it's **hands off** for everyone. A second teammate keeps score. A third watches for wall
-      touches. Whatever happens, write it down. A run that fails still gives you data.
+      After that it's **hands off** for everyone. A second teammate keeps score. A third watches the wall
+      and the block. Whatever happens, write it down. A run that fails still earns its checkpoints and
+      still gives you data.
     do:
-      - Place the robot in the start box. Put the cube back on its mark.
+      - Place the robot in the start box. Put the block back on its mark.
       - Press start and step back.
-      - "Score it: 20 points for each stage finished. +10 if it never touched a wall. +10 if the cube ended in the zone."
+      - "Score it: left the start box on its own **5**, followed the line to the end **10**, stopped before the wall **10**."
+      - "Then: collected the block **15**, parked in the zone **10**. Add up the checkpoints the robot reached."
       - Read the time from the Brain screen. If the robot didn't finish, write DNF.
     test:
       - Nobody touched the robot after pressing start
       - We scored the run with the teacher or another team watching
-    fields: ["Stages finished (0-4)", "Bonus points", "Time (s)", "Total points"]
+    fields: ["Checkpoints reached", "Time (s)", "Total points"]
     ask: Where did the run lose points or time? Describe exactly what the robot did there.
 
   - part: "Part 2: Official runs on the real course"
@@ -587,7 +594,7 @@ build:
     say: |
       Engineers don't change five things and hope. They pick the **one** problem that cost the most, make
       **one** change, and test again. That way the next run tells you if the change worked. If run 1 was
-      perfect, make one change to be **faster**.
+      perfect, make one change to make it more **reliable**.
     do:
       - "As a team, agree on the one problem to fix. Find the function it lives in."
       - Make one change. Test that stage alone if there's time.
@@ -595,24 +602,26 @@ build:
     test:
       - We changed only one thing between runs
       - We scored run 2
-    fields: ["The one thing we changed", "Stages finished (0-4)", "Time (s)", "Total points"]
+    fields: ["The one thing we changed", "Checkpoints reached", "Time (s)", "Total points"]
     ask: Did your one change make run 2 better, worse, or the same? How do you know it was that change?
 
   - part: "Part 2: Official runs on the real course"
     title: Run 3 and showcase
     say: |
       Last run. Make one more change, or leave the program alone if it is reliable. Then look back.
-      You started this term by lighting one LED with a button. Circuits, then motors and gears, then code,
-      then sensors, and now a robot that runs a mission alone. All of it was **input → decide → output**.
+      You started this season turning two gears by hand. Then came a chassis, code, a controller and
+      sensors, and now a robot that runs a mission alone. All of it was **sense → decide → act**.
     do:
-      - Make official run 3 and score it. Your **best** run is your score.
+      - Make official run 3 and score it. Your **best** run is your **arena score**.
+      - Write your arena score down and give it to your teacher. They enter it on the site for the final **Circuit City Arena standings**.
       - "Showcase: tell the class your best score, the one fix that helped most, and one thing you would add with another week."
-      - Shake hands with the other teams. Charge the batteries.
+      - Shake hands with the other teams. Take off your add-ons and sensors if your teacher asks, and sort them back into the bins.
     test:
       - We scored run 3
+      - We gave our arena score to our teacher
       - We shared our best run and our best fix with the class
-    fields: ["Run 3 total points", "Run 3 time (s)", "Best score of the three", "Best time"]
-    ask: Pick one earlier lesson, from circuits to sensors. How did what you learned there show up in your robot today?
+    fields: ["Run 3 total points", "Run 3 time (s)", "Our arena score (best of three)"]
+    ask: Pick one earlier lesson, from gears to sensors. How did what you learned there show up in your robot today?
 
 quiz:
   - question: What does it mean to decompose a mission?
@@ -631,14 +640,14 @@ quiz:
     choices: ["To make the program shorter forever", "To test one stage alone, so a problem can only come from that stage", "Because comments make the robot faster", "Because two functions can't be in one program"]
     answer: 1
     why: Testing one piece at a time tells you exactly where a bug lives. You brought the call back for the full run.
-  - question: Run 1 scored 40 points. Why change only ONE thing before run 2?
+  - question: Run 1 scored 25 points. Why change only ONE thing before run 2?
     choices: ["The rules of C++ only allow one change", "So you know which change caused the new result", "Because downloading takes too long", "So the other teams can't copy you"]
     answer: 1
     why: If you change several things and the run gets better or worse, you can't tell which change did it.
 
 ship:
   turn_in: code
-  note: Your full-run program from the simulator is turned in with your run scores and answers.
+  note: Your full-run program from the simulator is turned in with your run scores, your arena score and your answers.
   extensions:
     - title: Stage lights
       level: Easier
@@ -669,25 +678,52 @@ ship:
       hints:
         - "In the simulator, 18 inches from the far wall is inside the zone. On the real course, measure from the middle of the zone to the wall."
         - "Which is more reliable on your real robot: counting inches or sensing the wall? Test both."
-    - title: Deliver the cube
+    - title: Never lose the block
       level: Challenge
-      goal: Earn the cube bonus every time. Make the cube finish inside the zone in the simulator, then on the real course.
-      where: "Tune `followLineToWall()` and `park()`."
+      goal: Earn the block points on every run. Make the block finish inside the zone three times in a row on the real course.
+      where: "Tune `followLineToWall()` and `park()`, and the front of your robot."
       hints:
-        - "The cube slides off if the robot hits it off-center. Change where the robot stops at the wall, 1 inch at a time, until the cube is dead ahead after the turn."
+        - "The block slides off if the robot hits it off-center. Change where the robot stops at the wall, 1 inch at a time, until the block is dead ahead after the turn."
         - "The robot's angle at the wall changes from run to run. After the turn, `Gyro.heading()` should be close to 180. Print it to check."
-        - "On the real robot, a wide flat bumper on the front holds the cube better than a narrow one."
+        - "A wide flat pusher on the front holds the block better than a narrow one. A claw from the bins holds it best, but it needs a motor and more code."
   reflect:
-    - Look back over the term, from your first circuit to today. Which idea helped you most in the challenge, and where did you first learn it?
+    - Look back over the season, from your first gear tester to today. Which idea helped you most in the challenge, and where did you first learn it?
     - If you had one more week, what is the first thing you would change on your robot or in your program, and why?
 
 teacher_notes: |
-  **Pacing (two periods).** Day 1: Mission, then Part 1 (steps 1-5). Teams that finish the full run in the simulator
-  start step 6 (calibrate and paste) so they are ready for Day 2. Day 2: 10 minutes of stage-by-stage practice, then
-  three rounds of official runs, the showcase, the quiz and Ship it. If you can spare a third period, give Day 2
-  entirely to practice and hold the official runs and showcase on Day 3.
+  **Pacing (three periods).** Day 1: Mission, then Part 1 (steps 1-5) in the simulator. Day 2: steps 6-7, calibrate,
+  download and practice one checkpoint at a time on the real course. Day 3: three rounds of official runs (steps 8-10),
+  the showcase, the quiz and Ship it. If you only have two periods, do steps 6-7 in the second half of Day 1 for
+  teams that are ready, and cut to two official runs.
 
-  **Taping the course (before Day 1).** The simulator field is the model. Scale it to your field:
+  **Keeping it achievable.** This challenge is built so that a partial run still scores. The five checkpoints are in
+  course order, and a team keeps every one its robot reaches. Tell teams on Day 2 to bank checkpoints in order and
+  not to chase the full run until the first three are reliable. A team whose line follower is not working can
+  still earn the first 5 points with a single `Drivetrain.driveFor(forward, 14, inches);` out of the box, then
+  add the line. A team that reaches the wall every time has 25 points before it touches the block.
+
+  **Scoring (Circuit City Arena, "Collection Run").** The lesson uses the scoring guide as it is on the site:
+
+  - Left the start box on its own: **5**
+  - Followed the line to the end: **10**
+  - Stopped before the wall: **10**
+  - Collected the block: **15**
+  - Parked in the zone: **10**
+
+  Maximum **50**. The best of three official runs is the team's arena score. Students record each run in steps 8-10
+  and hand you the best one. You type the scores on the class page, and the site ranks them and updates the season
+  standings on the class display. A touch by a student ends the run; points earned so far stay. Have a neutral
+  scorer (you or another team) confirm each official run. The time on the Brain is not part of the score; use it
+  only if you want a tie-breaker, and say so before the first run.
+
+  **Decide and announce before Day 2.** What "collected the block" means in your room. In the simulator the robot
+  pushes the block into the zone, and the lesson teaches that. You could also accept a block held in a claw. What
+  "parked" means (for example, the whole robot inside the zone tape). What "stopped before the wall" means if the
+  robot stops but then nudges the wall during the turn.
+
+  **Taping the course (before Day 1).** The lesson does not give students any course sizes; they are told you will
+  show them. The simulator field is the model, and the sizes below are a suggestion taken from it. Change them to
+  fit your room.
 
   - **Start box:** a 12 inch square in one corner. Mark it with corner marks or light-colored masking tape, **not** black
     tape, or the Color Sensor will read the box as a line.
@@ -696,23 +732,15 @@ teacher_notes: |
     to a field wall**, ending about 8 inches from it. The robot starts with its sensor at the line's **left** edge.
   - **Parking zone:** a tape box about 28 × 28 inches (any color), on the **right** of the line's end. Its near edge
     is about 20 inches from the line. Keep it at least 6 inches from the walls.
-  - **Cube:** one cube or block on a tape mark between the line's end and the zone, about 14 inches from the line.
+  - **Block:** one cube or block on a tape mark between the line's end and the zone, about 14 inches from the line.
   - Check that nothing else stands in front of the line's last straight run, or the Distance Sensor will stop early.
 
-  Run the course yourself once with the lesson's solution and your own calibration, so you know the wall distance
-  (12 inches in the simulator) and parking drive that work on your field.
-
-  **Scoring sheet (per run, best of three counts).**
-
-  - Stage 1: follows the line to its end: **20**
-  - Stage 2: stops by itself before the wall: **20**
-  - Stage 3: stops with the whole robot inside the parking zone: **20** (partly inside: 10)
-  - Stage 4: Touch LED green and a time on the Brain: **20**
-  - Bonus: never touched a wall: **+10**. Cube ends inside the zone: **+10**
-  - Maximum **100**. Ties go to the faster time. A touch by a student ends the run; points earned so far stay.
-
-  Students record stages, bonus, time and total in the lesson (steps 8-10). Have a neutral scorer (you or another
-  team) confirm each official run.
+  **Check on a real robot:**
+  - Run the course yourself once with the lesson's solution and your own calibration, so you know the wall distance
+    (12 inches in the simulator) and parking drive that work on your field.
+  - That each chassis pushes the block straight. A wide flat pusher on the front helps; the 2WD Lite may need one most.
+  - That the Color Sensor, Distance Sensor and Touch LED all fit on each chassis at once, and which ports are free.
+  - That the block is heavy enough not to roll away, and light enough for every chassis to push.
 
   **Running the event.** Call teams to the course in a fixed order, one official run each per round. While waiting,
   teams make their one change and test that stage on a spare strip of tape or in the simulator. With one course and
@@ -721,16 +749,18 @@ teacher_notes: |
   **Common trouble.** Threshold not recalibrated for the challenge course or for today's light. The robot's angle at
   the wall varies by a few degrees, so the parking drive drifts: aim for the middle of the zone, or use the "Park with
   a sensor" extension. `followLineToWall();` left commented out after stage practice. The Distance Sensor pointing
-  down at the floor or blocked by the Color Sensor mount. Low batteries changing the turns between runs.
+  down at the floor or blocked by the Color Sensor mount. Low batteries changing the turns between runs. On shared
+  robots, sensors moved or unplugged by another class: have teams check ports and recalibrate at the start of each day.
 
   **Grading.** The turned-in program shows decomposition (three stage functions and a short `main()`). The run
   records and the "one thing we changed" field show the iteration. Weigh those at least as much as the best score.
 
-  **Simulator note.** In the simulator the cube can slide off the round robot, so the cube is a bonus and is not
-  checked. The simulator only checks parking, the time and wall touches.
+  **Simulator note.** The simulator's last step checks that the robot parks, never touches a wall, prints a time and
+  that the block ends in the zone. With the lesson's numbers the block stays in front of the robot. A team that
+  changes the wall distance may see the block slide off; the fix is the same as on the real robot.
 standards:
   - code: 6-8.CS.a.5
-    how: Teams design and demonstrate a robot that finishes a multi-stage course with no driver, in three scored runs.
+    how: Teams design and demonstrate a robot that runs a five-checkpoint course with no driver, in three scored runs.
   - code: 6-8.CS.a.4
     how: Students use the Color Sensor, Distance Sensor, timer, motors and Touch LED together and explain which sensor ends each stage.
   - code: 6-8.CT.b.3

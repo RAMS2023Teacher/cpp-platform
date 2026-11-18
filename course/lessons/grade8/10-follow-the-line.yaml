@@ -20,7 +20,7 @@ mission:
     caption: The robot does these three things again and again, many times a second.
   you_need:
     - A partner
-    - Your robot with the Distance Sensor from See It Coming
+    - Your chassis with the Distance Sensor from See It Coming
     - A Color Sensor and a Smart Cable
     - Black electrical tape on the field (your teacher sets this up)
     - A USB cable for the Brain
@@ -404,7 +404,7 @@ build:
       the floor: about one finger's width above it. Too high and every reading looks dark. Then VEXcode needs
       to know the sensor is there, with the same name your code uses.
     wiring:
-      - "Mount the Color Sensor at the **front** of the drive base, facing **down**, about a finger's width above the floor."
+      - "Mount the Color Sensor at the **front** of your chassis, facing **down**, about a finger's width above the floor."
       - "Plug a Smart Cable from the Color Sensor into **Port 3** on the Brain. Push until it clicks."
     do:
       - "In VEXcode IQ, open **Devices**, add a device, and choose the **Color** sensor on **Port 3**."

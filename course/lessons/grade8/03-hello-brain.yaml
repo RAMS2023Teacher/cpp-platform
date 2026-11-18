@@ -6,7 +6,7 @@ minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 
 mission:
   big_question: "How does a robot know what to do first, second and third?"
   goal: |
-    Your drive base has motors and a Brain, but the Brain is empty. Today you write your **first C++ program**.
+    Your chassis has motors and a Brain, but the Brain has no program from you yet. Today you write your **first C++ program**.
     You'll test it in the **simulator**, then move it into **VEXcode IQ** and download it to the real Brain.
     By the end, your robot prints a message and drives on its own.
   picture:
@@ -19,7 +19,7 @@ mission:
     caption: Every program in this course follows the same path.
   you_need:
     - A partner
-    - Your drive base from Build the Drive Base
+    - Your chassis from Pick Your Chassis
     - A USB cable for the Brain
     - A ruler or tape measure
   learn:

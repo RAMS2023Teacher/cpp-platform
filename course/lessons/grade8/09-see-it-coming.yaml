@@ -19,8 +19,8 @@ mission:
     caption: Sonar. Bats and submarines use the same trick.
   you_need:
     - A partner
-    - Your robot from Feel the Wall
-    - A Distance Sensor and a Smart Cable
+    - Your chassis, with the Gyro Sensor from Drive by Code
+    - "From the bins: a Distance Sensor and a Smart Cable"
     - A USB cable for the Brain
     - A ruler or tape measure
     - A flat wall or a big box
@@ -256,9 +256,9 @@ build:
       - "Make sure no beam, wheel, bumper or cable is in front of the two round openings."
       - "Plug the Distance Sensor into **Port 7**."
     do:
-      - "Open your VEXcode project from Feel the Wall. Open **Devices**."
+      - "Open your newest VEXcode project (from Feel the Wall, or from Drive by Code). Open **Devices**."
       - "Add a **Distance** sensor on **Port 7**. Name it exactly `Distance`."
-      - "Check the Drivetrain, `Bumper` and `TouchLED` are still in the list."
+      - "Check the Drivetrain is still in the list, with `Bumper` and `TouchLED` if you added them in Feel the Wall."
       - Save the project under a new name, such as your team name and the word Sonar.
     picture: {type: shot, name: vx-devices, caption: "Add the Distance sensor on Port 7 and name it Distance"}
     tip: "**Watch out:** VEXcode may suggest a name with a number on the end, such as Distance7. Type over it so it matches your code."
