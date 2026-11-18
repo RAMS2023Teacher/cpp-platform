@@ -149,6 +149,9 @@ function publicLesson_(L, teacher) {
   v.quiz = L.quiz.map(function (q) { return { question: q.question, choices: q.choices }; });
   delete v.teacher_notes;
   if (!teacher) v.build.forEach(function (s) { if (s.sim) delete s.sim.solution; });
+  var shot = function (pic) { if (pic && pic.shot) { pic.src = DATA.shots[pic.shot]; delete pic.shot; } };   // screenshots are stored once
+  shot(v.mission.picture);
+  v.build.forEach(function (s) { shot(s.picture); });
   return v;
 }
 function hasSim_(L) { return L.build.some(function (s) { return !!s.sim; }); }
