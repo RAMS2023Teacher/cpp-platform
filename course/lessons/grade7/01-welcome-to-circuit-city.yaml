@@ -1,0 +1,329 @@
+id: welcome-to-circuit-city
+title: Welcome to Circuit City
+tagline: Learn how the lab works, meet the robots, and choose your first chassis
+minutes: 80          # about two class periods: Part 1 the lab and the parts, Part 2 the four chassis
+
+mission:
+  big_question: "Can one robot be the best at everything?"
+  goal: |
+    Welcome to **Circuit City Arena**, your robot lab. This is your **Rookie Season**. Today you learn how
+    the lab works and meet the parts of a robot. Then you test the four ready-built robot bodies, called
+    **chassis**, and choose one with your partner. You will not write code today. You will look, push, roll and decide.
+  picture:
+    type: flow
+    steps:
+      - {icon: "🎵", label: "Brain Song", color: "#33c95a"}
+      - {icon: "🌉", label: "The Impossible Bridge", color: "#e5484d"}
+      - {icon: "🏰", label: "Castle Crasher", color: "#e668a7"}
+      - {icon: "🥋", label: "Sumo Showdown", color: "#f2994a"}
+      - {icon: "🏁", label: "Maze Runner", color: "#9b51e0"}
+    caption: The five arena challenges of the Rookie Season. Each one is scored.
+  you_need:
+    - A partner or team (your teacher will tell you how teams are made)
+    - The four chassis, set out on the tables
+    - The parts bins
+    - A clear patch of floor or table for rolling tests
+  learn:
+    - "how the lab works: **bins**, teams and scored **arena challenges**"
+    - "the main parts of a robot: **Brain**, **Smart Motors**, **Smart Ports**, wheels, battery and controller"
+    - "a **trade-off**: getting better at one thing often means getting worse at another"
+    - "how to choose a chassis and give a reason"
+  talk: Think of a sports car, a pickup truck and a bicycle. What is each one best at? What is each one bad at? Could one vehicle win at all three jobs?
+
+build:
+  - part: "Part 1: The lab and the parts"
+    title: How the season works
+    say: |
+      Circuit City Arena runs like a sports season. Most weeks you learn **one part of the robot**.
+      Then you use it in an **arena challenge**. A challenge is **scored**, team against team.
+      Your teacher enters the scores on the class page, and the class display shows the **standings**
+      (who is in which place).
+    picture:
+      type: compare
+      items:
+        - {icon: "🎵", title: "Brain Song", text: "program the Brain to play a tune"}
+        - {icon: "🌉", title: "The Impossible Bridge", text: "drive over a steep bridge with only two beams"}
+        - {icon: "🏰", title: "Castle Crasher", text: "knock down towers, bring home blocks of your color"}
+        - {icon: "🥋", title: "Sumo Showdown", text: "push the other bot out of the ring"}
+        - {icon: "🏁", title: "Maze Runner", text: "code your bot through a maze, with no driver"}
+    do:
+      - Read the five challenges with your partner.
+      - Pick the one you most want to win. Tell your partner why.
+      - Find the class display in the room, where the standings will show.
+    test:
+      - I can name two arena challenges
+      - I know where the standings will show
+    ask: Which challenge do you think will be the hardest? What would a robot need to be good at to win it?
+
+  - part: "Part 1: The lab and the parts"
+    title: The bins
+    say: |
+      About 30 classes share this lab. That only works if every part goes back where it came from.
+      Parts live in **labeled bins**. You take what you need, and you **put it back** before you leave.
+      A part in the wrong bin is a part the next class can't find.
+    picture: {type: vex, names: [beams, pins], caption: "Beams and pins are the parts you will use most. Each kind has its own bin."}
+    do:
+      - Walk to the bins with your partner. Read the labels.
+      - Find the bin for **beams**, the bin for **pins** and the bin for **wheels**.
+      - Take **one** part out. Say its name. Put it back in the same bin.
+    tip: "**Lab rule:** if you find a part on the floor, pick it up and bin it, even if it isn't yours."
+    test:
+      - I found the bins for beams, pins and wheels
+      - I put my part back in the right bin
+    ask: What goes wrong for the next class if your team leaves parts on the table or in the wrong bin?
+
+  - part: "Part 1: The lab and the parts"
+    title: Meet the Brain
+    say: |
+      The **Brain** is the robot's computer. It has a small **screen**, a few **buttons**, and a **battery**
+      that slides into it. Around its edges are 12 numbered sockets called **Smart Ports**.
+      Motors and sensors plug into Smart Ports with **Smart Cables**. A program on the Brain tells every
+      plugged-in part what to do.
+    picture: {type: vex, names: [basebot], caption: "The Brain is the gray box with the screen. On most robots it sits on top."}
+    do:
+      - Go to one chassis. Find the **Brain**. Point to its screen and its buttons.
+      - Find the **battery**. It is the block that slides into the Brain.
+      - Find the small **numbers** printed next to the Smart Ports. Find Port 1 and Port 12.
+      - Count how many ports have a cable plugged in.
+    tip: "**Watch out:** don't pull cables out today. If a plug looks loose, tell your teacher."
+    test:
+      - I found the Brain, its screen and its battery
+      - I found the numbers next to the Smart Ports
+    ask: The Brain has 12 Smart Ports, but your chassis only uses a few. What do you think the empty ports are for?
+
+  - part: "Part 1: The lab and the parts"
+    title: Motors, wheels and the controller
+    say: |
+      A **Smart Motor** turns electricity from the battery into spinning. A metal rod called a **shaft**
+      carries the spin to a **wheel**. The wheel's **grip** on the floor moves the robot.
+      The **controller** has two joysticks and some buttons. It talks to the Brain by radio, so a driver can steer.
+      You will code the controller in Driver's Ed.
+    picture: {type: vex, names: [smartmotor, omniwheel], caption: "A Smart Motor, and omni wheels. The small rollers let an omni wheel slide sideways."}
+    do:
+      - On the same chassis, find every **Smart Motor**. Count them.
+      - Follow one motor's cable with your finger to the Brain.
+      - Look at the wheels. Feel a tire. Is it smooth rubber, bumpy rubber, or does it have small rollers?
+      - Find a **controller**. Find its two joysticks. Don't turn it on yet.
+    test:
+      - I counted the Smart Motors on one chassis
+      - I can say what kind of wheels it has
+      - I found the two joysticks on a controller
+    ask: The Brain, the motors and the battery each do a different job. In your own words, what is the job of each one?
+
+  - part: "Part 2: The four chassis"
+    title: Meet the four chassis
+    say: |
+      A **chassis** (say "CHASS-ee") is the body of a robot: the frame, the motors, the wheels and the Brain.
+      You will not build one from loose parts. This lab has four kinds, **already built**.
+      You pick one and change it over the season. **WD** means **wheel drive**: how many wheels the motors turn.
+    picture:
+      type: compare
+      items:
+        - {icon: "🚗", title: "2WD Standard", text: "two drive wheels and a caster (a small wheel that only rolls along)"}
+        - {icon: "🏎️", title: "2WD Lite", text: "a smaller, lighter 2WD"}
+        - {icon: "🔺", title: "3WD Side Crawler", text: "three wheels in a triangle"}
+        - {icon: "🚜", title: "4WD", text: "four driven wheels"}
+    do:
+      - Visit all four chassis. Read the name tag on each one.
+      - Count the **wheels** on each. Then count the **motors**.
+      - Find the wheels that a motor turns. Those are the **drive wheels**.
+    test:
+      - I looked at all four chassis
+      - I can point to a drive wheel and to a wheel that only rolls
+    ask: Which chassis looks fastest to you? Which looks strongest? What did you see that made you think so?
+
+  - part: "Part 2: The four chassis"
+    title: Hands-on tests
+    say: |
+      Engineers don't guess. They **test**. Do the same four tests on every chassis, so the test is fair.
+      Keep the Brains **off**. Use gentle hands: you are testing the robot, not breaking it.
+    do:
+      - "**Lift test:** pick each chassis up with two hands. Which is lightest? Which is heaviest?"
+      - "**Roll test:** give each one the same gentle push forward on the floor. Which rolls farthest?"
+      - "**Side push test:** push each one gently from the side with one finger. Which is hardest to slide?"
+      - "**Spin test:** turn each one on the spot with your hand. Which turns most easily?"
+      - Write your winners in the boxes.
+    tip: "**Watch out:** a robot with motors feels a little stiff when you roll it. That is normal. Never force a wheel to turn."
+    stuck:
+      - "**Two chassis feel the same?** Test them one right after the other, with the same hand and the same push."
+      - "**You and your partner disagree?** Both do the test again and watch closely. Write what you both see."
+    test:
+      - We did all four tests on all four chassis
+      - We used the same push each time
+    fields: ["Lightest", "Rolls farthest", "Hardest to slide sideways", "Spins most easily"]
+    ask: Why is it important to push every chassis the same way in the roll test?
+
+  - part: "Part 2: The four chassis"
+    title: Every design is a trade-off
+    say: |
+      A **trade-off** means you give up one good thing to get another. A light robot is quick, but it is
+      easy to push around. A robot with lots of **grip** is hard to push, but grip can make it slower to turn.
+      No chassis wins every test. That is why there are four.
+    do:
+      - Read the table below with your partner.
+      - Compare it with your own test results. Put a finger on any box where your tests said something different.
+      - For each chassis, say one thing it is **good** at and one thing it **gives up**.
+    what: |
+      | Chassis | Speed | Turning | Grip and pushing | Weight |
+      |---|---|---|---|---|
+      | **2WD Standard** | medium | quick | medium | medium |
+      | **2WD Lite** | fast | quick and nimble | low, easy to push around | lightest |
+      | **3WD Side Crawler** | medium | turns differently, so try it | good at climbing | medium |
+      | **4WD** | medium | slower | the most | heaviest |
+
+      The table is a starting point. If your own test disagrees, trust your test and tell your teacher what you found.
+    test:
+      - I can explain what a trade-off is
+      - I named one strength and one weakness for each chassis
+    ask: The 4WD has the most grip, but it turns more slowly. Why might extra grip make turning harder?
+
+  - part: "Part 2: The four chassis"
+    title: Match the chassis to the challenge
+    say: |
+      Each arena challenge needs something different. A good engineer asks **"what does this job need?"**
+      before picking a tool. Make a **prediction** for each challenge. A prediction is a smart guess with a reason.
+      Later in the season you will find out if you were right.
+    do:
+      - "**The Impossible Bridge:** a steep ramp, then two thin beams to drive on. What matters most?"
+      - "**Castle Crasher:** knock down block towers and carry blocks home. What matters most?"
+      - "**Sumo Showdown:** push the other robot out of a ring. What matters most?"
+      - "**Maze Runner:** the robot drives itself around tight corners. What matters most?"
+      - Write the chassis you would pick for each one.
+    test:
+      - We wrote a prediction for all four challenges
+      - We have a reason for each prediction
+    fields: ["Bridge", "Castle Crasher", "Sumo", "Maze Runner"]
+    ask: Did you pick the same chassis for every challenge? Why or why not?
+
+  - part: "Part 2: The four chassis"
+    title: Find the Smart Ports
+    say: |
+      The Brain can't see the robot. It only knows "the motor on Port 1". So before anyone codes a robot,
+      they need to know **which port each motor is in**. In this course the left motor is usually in
+      **Port 1** and the right motor in **Port 6**. Check what yours really has.
+    do:
+      - Go to the chassis you like best so far.
+      - Stand **behind** it, like a driver in a car. Now the robot's left is your left.
+      - Follow the **left** motor's cable to the Brain. Read the port number.
+      - Do the same for the **right** motor, and for any other motor.
+      - Write the numbers in the boxes. Don't unplug anything.
+    tip: "**Watch out:** left and right flip when the robot faces you. Always stand behind it."
+    stuck:
+      - "**Can't see the number?** Look at the edge of the Brain right next to the plug. Tilt the robot toward the light."
+      - "**Not sure which end is the front?** Ask your teacher. Then every team uses the same front."
+      - "**More than two motors?** Write the extra port numbers in the third box."
+    test:
+      - I followed each motor cable to the Brain
+      - I wrote down the port number for every motor
+    fields: ["Left motor port", "Right motor port", "Other motor ports (if any)"]
+    ask: If the left and right cables were swapped, what do you think the robot would do when the code says "turn left"?
+
+  - part: "Part 2: The four chassis"
+    title: Choose your chassis
+    say: |
+      Time to decide. With your partner, choose **one** chassis to start the season with.
+      There is no wrong choice, only a choice with **reasons**. Your teacher will tell you if your team
+      keeps the same chassis all season or can change later.
+    do:
+      - Talk it over. Each partner says which chassis they want and why.
+      - Agree on one. If you can't agree, look at your test results again.
+      - Write your choice, two reasons, and one thing your chassis is **weak** at.
+      - Show your teacher. Say your reasons out loud.
+      - Put back any part you took out of a bin.
+    stuck:
+      - "**Can't agree?** Each pick the one challenge you most want to win. Choose the chassis that fits it best."
+      - "**Another team wants the same chassis?** Ask your teacher how the chassis are shared."
+    test:
+      - My partner and I agreed on one chassis
+      - We gave two reasons that come from our tests or the table
+      - We named one weakness of our chassis
+      - Every part is back in its bin
+    fields: ["Our chassis", "Reason 1", "Reason 2", "One thing it is weak at"]
+    ask: What is one change you might make to your chassis later to help with its weakness?
+
+quiz:
+  - question: What is the job of the Brain?
+    choices: ["It holds the wheels on", "It is the robot's computer and runs the program", "It turns electricity into spinning", "It is the remote control"]
+    answer: 1
+    why: The Brain is the computer. It runs the program and tells the motors what to do.
+  - question: What plugs into a Smart Port?
+    choices: ["A wheel", "A pin", "A Smart Cable from a motor or a sensor", "The controller's joystick"]
+    answer: 2
+    why: Each Smart Port is a socket for one Smart Cable. The Brain knows a motor by its port number.
+  - question: What is a trade-off?
+    choices: ["Swapping robots with another team", "Giving up one good thing to get another", "A broken part", "A tie in an arena challenge"]
+    answer: 1
+    why: A light robot is quick but easy to push. You trade pushing power for speed.
+  - question: Which chassis has the most grip and pushing power, but is slower to turn?
+    choices: ["2WD Standard", "2WD Lite", "3WD Side Crawler", "4WD"]
+    answer: 3
+    why: The 4WD has four driven wheels. More driven wheels means more grip, and a slower turn.
+  - question: You finish class with three pins and a beam on your table. What do you do?
+    choices: ["Leave them for the next class", "Put them in your pocket", "Put each one back in its labeled bin", "Drop them all in the nearest bin"]
+    answer: 2
+    why: About 30 classes share the lab. Parts only get found again if they go back in the right bin.
+
+ship:
+  turn_in: show
+  note: Show your teacher the chassis you chose and tell them your two reasons.
+  extensions:
+    - title: Label your robot
+      level: Easier
+      goal: Draw a quick sketch of your chassis from the top. Label the Brain, the battery, each Smart Motor, the drive wheels and the port number of each motor.
+      hints:
+        - "A top view is like looking down from the ceiling. Boxes and circles are fine."
+        - "Draw an arrow to show which end is the front."
+    - title: Second pick
+      level: Medium
+      goal: Choose the chassis you would switch to for **Sumo Showdown**. Write which one, and name the trade-off you would be making compared with your first choice.
+      hints:
+        - "Sumo is about pushing and not being pushed. Which of your four tests matters most?"
+        - "Start your sentence with: \"We would gain ... but we would give up ...\""
+    - title: Rank them all
+      level: Challenge
+      goal: Rank all four chassis from best to worst for **The Impossible Bridge** and again for **Maze Runner**. Give one reason for each first place and each last place.
+      hints:
+        - "The bridge is steep and narrow. Think about grip, weight and how wide the robot is."
+        - "The maze has tight corners. Think about turning and size."
+        - "If your two rankings are the same, check your reasons again."
+  reflect:
+    - Which hands-on test surprised you the most, and why?
+    - What is the biggest trade-off of the chassis you chose?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-4), lab rules and the parts of a robot.
+  Day 2: Part 2 (steps 5-10), the four chassis, then the quiz and Ship it. If Day 1 runs short, start step 5.
+
+  **Before class.** Set out at least one of each chassis (2WD Standard, 2WD Lite, 3WD Side Crawler, 4WD) with a
+  **name tag** on each, batteries in but Brains off. Set out one or two controllers to look at. Check the bin labels
+  are readable, and that beams, pins and wheels each have a bin students can reach. Clear a strip of floor or a
+  table for the roll test. With one set of chassis, run steps 5-9 as stations and rotate teams every few minutes.
+
+  **Decide and tell the class.** The lesson says "your teacher will tell you" for three things:
+  how teams are made, whether a team keeps the same chassis all season or can change, and how chassis are shared
+  when two teams want the same one. Also tell students which end of each chassis is the front.
+
+  **Check these against your own robots.**
+  - The trade-off table in step 7 is built from the one-line chassis descriptions, not from measurements. Check it
+    against your real chassis (for example, whether the 4WD really is the heaviest) and tell students where it differs.
+  - Step 9 says motors are usually on Port 1 (left) and Port 6 (right). The 3WD and 4WD may have more motors or use
+    other ports. Students write down what they find. Later coding lessons assume left = Port 1 and right = Port 6,
+    so re-plug any chassis that differs, or note it.
+  - Step 3 says the Brain has 12 Smart Ports and the battery slides into the Brain. That is true of the
+    1st generation Brain. Check on a real Brain: that the port numbers are easy to read where the Brain is mounted.
+  - Step 4 shows a picture of omni wheels (wheels with small rollers). If your chassis have no omni wheels, say so.
+
+  **Common trouble.** Students unplug cables to "see the port" (remind them: follow the cable, don't pull it).
+  Rough roll tests (model one gentle push). Teams choosing by looks only: ask "which test told you that?"
+
+  **Check for understanding.** At the show-the-teacher step, ask each team for one weakness of the chassis they
+  chose. A team that can name a weakness understands trade-offs.
+
+  **Turn-in.** This lesson has no code. Students show you their choice and reasons, and you mark it as shown.
+standards:
+  - code: 6-8.CS.a.4
+    how: Students find and describe the Brain (control), Smart Motors (actuators), Smart Ports, battery and controller on a real robot.
+  - code: 6-8.CT.a.1
+    how: Students compare four chassis by listing the same attributes for each (speed, turning, grip, weight) in a table and in their own tests.
+  - code: 6-8.CS.a.5
+    how: Students work with a partner to choose a robot chassis for a task and explain the choice with reasons from their tests.

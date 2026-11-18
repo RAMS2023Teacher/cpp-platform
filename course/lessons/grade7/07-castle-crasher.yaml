@@ -1,0 +1,460 @@
+id: castle-crasher
+title: Castle Crasher
+tagline: Plan a strategy, then knock down towers and bring your blocks home
+minutes: 80          # about two class periods: Part 1 plan and practice, Part 2 the scored matches
+
+mission:
+  big_question: "Why does a team with a plan beat a team that just drives fast?"
+  goal: |
+    This week's arena challenge is **Castle Crasher**. Block towers stand in the arena. You score by knocking
+    towers down and by bringing blocks of **your color** home. Wrong-color blocks cost you points. Today your
+    team makes a **strategy**, runs a practice round, improves **one** thing, and then plays for a score.
+  picture:
+    type: flow
+    steps:
+      - {icon: "🧠", label: "Plan", color: "#9b51e0"}
+      - {icon: "🎮", label: "Practice", color: "#2f6bff"}
+      - {icon: "🔧", label: "Improve ONE thing", color: "#ff8a1f"}
+      - {icon: "🏰", label: "Compete", color: "#e0457b"}
+    caption: Plan before you drive.
+  you_need:
+    - Your team and your chassis with its add-on
+    - Your Controller, linked to your Brain
+    - A charged battery
+    - The Castle Crasher arena, when it is your turn
+    - Paper and a pencil for your plan and your score
+  learn:
+    - "a **strategy** is a plan for how to score the most points"
+    - "how to read a **scoring guide** and do the math before you drive"
+    - "how to test, change **one** thing, and test again"
+  talk: In Castle Crasher a tower is worth 5 points and a block of your color brought home is worth 10. Which would you go for first, and why?
+
+build:
+  - part: "Part 1: Plan and practice"
+    title: Know the game
+    say: |
+      Good teams read the rules before they touch the robot. Here is how Castle Crasher is scored. Read it
+      out loud as a team. Your teacher will show you the arena, your **home**, your team **color**, and how
+      long a match lasts.
+    do:
+      - "**Each tower knocked down: 5 points.**"
+      - "**Each block of your color brought home: 10 points.**"
+      - "**Each wrong-color block brought home: minus 5 points.**"
+      - "A block is \"home\" when it is inside your home area at the end of the match. Your teacher will show you where that is."
+      - Only the driver touches the Controller. Nobody touches a robot or a block during a match.
+    picture:
+      type: compare
+      items:
+        - {icon: "🏰", title: "Tower down", text: "5 points for each tower you knock down."}
+        - {icon: "🏠", title: "Your color, home", text: "10 points for each block of your color brought home."}
+        - {icon: "⚠️", title: "Wrong color, home", text: "Minus 5 points for each wrong-color block brought home."}
+    test:
+      - We read the scoring guide out loud
+      - We know where our home is
+      - We know our color and how long a match lasts
+    fields: ["Our color", "Match time (from your teacher)"]
+    ask: Which one thing on the scoring guide can make your score go DOWN? How will your team avoid it?
+
+  - part: "Part 1: Plan and practice"
+    title: Do the score math
+    say: |
+      A **strategy** is a plan for how to score the most points in the time you have. Before you pick one,
+      do the math. Compare three plans. You only need to add and multiply.
+    do:
+      - "**Plan A:** knock down 4 towers and bring nothing home. Work out the score."
+      - "**Plan B:** knock down 2 towers and bring home 2 blocks of your color. Work out the score."
+      - "**Plan C:** knock down 2 towers and shove 5 blocks home with a pusher: 3 of your color and 2 of the wrong color. Work out the score."
+      - Check your answers with your partner. If they do not match, work them out again together.
+    tip: "**Watch out:** a pusher brings home everything in front of it. That can be good or bad."
+    test:
+      - We worked out the score for all three plans
+      - Our answers match
+    fields: ["Plan A score", "Plan B score", "Plan C score"]
+    ask: Which plan scored the most? Which plan would be hardest to do in a real match, and why?
+
+  - part: "Part 1: Plan and practice"
+    title: Fix the dropping claw
+    say: |
+      Another team needs help. "Our claw **drops the block** as soon as we let go of the button! And the
+      robot is slow to listen to the sticks." Their program is in the editor. It has **one** bug. It is not
+      a typing mistake, so there is no error message. Find it by testing.
+    do:
+      - "Press **Run**. Drive to the cube with **W** and the **up arrow**. Tap **Q** (L Up) to grab it. Then back up. What happens?"
+      - Read the claw block near the bottom. When does the claw open?
+      - "Fix it so the claw opens **only** when **L Down** is pressed."
+      - "Run it again. Bring the blue cube back to the blue home and let go with **Z** (L Down)."
+    stuck:
+      - "**Cannot find it?** Look at the word `else`. A plain `else` runs every time L Up is **not** pressed."
+      - "**How do you fix it?** Change `else` to `else if`, and ask if L Down is pressed. You did this in Claws and Arms."
+      - "**The test will not tick?** The cube must be all the way inside the blue square, with the claw open."
+    sim:
+      drive: true
+      pilot: [[0, {A: 100, D: 100}], [1.2, {}], [1.4, {LUp: 1}], [1.5, {}], [2.2, {A: -100, D: -100}], [3.8, {}], [4.0, {LDown: 1}], [4.1, {}], [4.8, {}], [5.3, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            // The bug is in this block.
+            if (Controller.ButtonLUp.pressing()) {
+              ClawMotor.spinFor(forward, 90, degrees);
+            } else {
+              ClawMotor.spinFor(reverse, 90, degrees);
+            }
+
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 48, y: 54, heading: 0}
+        cubes: [{x: 48, y: 28, color: blue}]
+        zones: [{x: 36, y: 46, w: 24, h: 22, color: blue}]
+      checks:
+        - {type: code, pattern: "else\\s+if\\s*\\(\\s*Controller\\.ButtonLDown\\.pressing\\s*\\(\\s*\\)\\s*\\)\\s*\\{\\s*ClawMotor\\.spinFor\\s*\\(\\s*reverse", message: "The claw opens only when L Down is pressed"}
+        - {type: cubesInZones, message: "The blue cube is home, and the claw let go"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            if (Controller.ButtonLUp.pressing()) {
+              ClawMotor.spinFor(forward, 90, degrees);
+            } else if (Controller.ButtonLDown.pressing()) {
+              ClawMotor.spinFor(reverse, 90, degrees);
+            }
+
+            wait(20, msec);
+          }
+        }
+    ask: There was no error message. How did you find the bug anyway?
+
+  - part: "Part 1: Plan and practice"
+    title: Right color, right home
+    say: |
+      Time for a drill. In the real match a wrong-color block costs you 5 points, so drivers must **look at
+      the color** before they grab. Here you drive for both teams. Take the **red** cube to the red home
+      on the right. Take the **blue** cube to the blue home on the left.
+    do:
+      - Press **Run**. Before you move, say your plan out loud. Which cube first? Which way will you turn?
+      - "Drive up to the first cube and grab it with **Q**. Turn toward its home. For a turn in place, one stick goes up and the other goes down."
+      - "Drive into the home and let go with **Z**. Back out, then go for the other cube."
+      - Take turns. The partner who is not driving is the **spotter**. The spotter calls out the color and the turn.
+    stuck:
+      - "**A cube went to the wrong home?** Grab it and carry it across. In a real match that mistake costs 5 points."
+      - "**You bumped the other cube away?** Slow down. Push the sticks only part of the way."
+      - "**The test will not tick?** Both cubes must be fully inside their own color, with the claw open."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [0.85, {}], [1.0, {LUp: 1}], [1.1, {}], [1.8, {A: 50, D: -50}], [2.585, {}], [2.8, {A: 100, D: 100}], [4.3, {}], [4.5, {LDown: 1}], [4.6, {}], [5.3, {A: -100, D: -100}], [6.8, {}], [7.0, {A: -50, D: 50}], [7.785, {}], [8.0, {A: 100, D: 100}], [9.15, {}], [9.3, {LUp: 1}], [9.4, {}], [10.1, {A: -50, D: 50}], [10.885, {}], [11.1, {A: 100, D: 100}], [12.7, {}], [12.9, {LDown: 1}], [13.0, {}], [13.7, {}], [14.2, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            if (Controller.ButtonLUp.pressing()) {
+              ClawMotor.spinFor(forward, 90, degrees);
+            } else if (Controller.ButtonLDown.pressing()) {
+              ClawMotor.spinFor(reverse, 90, degrees);
+            }
+
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 48, y: 60, heading: 0}
+        cubes: [{x: 48, y: 40, color: red}, {x: 48, y: 22, color: blue}]
+        zones: [{x: 74, y: 34, w: 18, h: 24, color: red}, {x: 4, y: 16, w: 18, h: 24, color: blue}]
+      checks:
+        - {type: cubesInZones, message: "Each cube is in the home of its own color"}
+        - {type: code, pattern: "else\\s+if\\s*\\(\\s*Controller\\.ButtonLDown\\.pressing", message: "My program still has the fixed claw code"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            if (Controller.ButtonLUp.pressing()) {
+              ClawMotor.spinFor(forward, 90, degrees);
+            } else if (Controller.ButtonLDown.pressing()) {
+              ClawMotor.spinFor(reverse, 90, degrees);
+            }
+
+            wait(20, msec);
+          }
+        }
+    ask: How did the spotter help the driver? What is one thing the spotter should say in the real match?
+
+  - part: "Part 1: Plan and practice"
+    title: Make your team plan
+    say: |
+      Now plan for the real arena. Pick your **jobs**. The **driver** holds the Controller. The **spotter**
+      watches the blocks and calls out colors. The **scorekeeper** counts towers and blocks. Then decide
+      what your robot does **first**. The start of a match matters most, because the towers are still standing.
+    do:
+      - Look at your add-on from Claws and Arms. Is it right for your plan? You may swap it for another one from the bins now.
+      - Choose a driver, a spotter and a scorekeeper for the first match.
+      - "Agree on your first three moves, like: \"knock down the near tower, grab a block of our color, bring it home\"."
+      - "Quick robot check: battery clicked in, cables tucked in, add-on passes the wiggle test, program starts."
+    tip: "**Watch out:** if you swap to an add-on with a motor, add it in **Devices** with the right name and download again."
+    test:
+      - Everyone on the team has a job
+      - We agreed on our first three moves
+      - Our robot passed the quick check
+    fields: ["Driver", "Spotter and scorekeeper", "Our add-on", "Our first three moves"]
+    ask: Why did your team choose this plan? Use the scoring guide in your answer.
+
+  - part: "Part 1: Plan and practice"
+    title: Practice round
+    say: |
+      A practice round does not count, so use it to **learn**. Run your plan one time. The scorekeeper
+      counts. Everyone else watches **your own robot**. Does the plan work? Is anything slow or hard?
+    do:
+      - Wait for your turn in the arena. If the arena is busy, practice at your table with one small tower and a few blocks.
+      - Run your plan. Start when your teacher says "go" and stop when the time is up.
+      - "Count: towers knocked down, blocks of your color home, wrong-color blocks home."
+      - Work out your practice score with the scoring guide.
+      - Help put the towers back the way you found them.
+    test:
+      - We ran our plan one time
+      - We counted and worked out a practice score
+      - We helped reset the towers
+    fields: ["Towers knocked down", "Our-color blocks home", "Wrong-color blocks home", "Practice score"]
+    ask: What was the ONE thing that cost your team the most points or the most time?
+
+  - part: "Part 1: Plan and practice"
+    title: Improve one thing
+    say: |
+      Fix that one problem before the scored matches. Change **one** thing only. If you change two things
+      and your score goes up, you will not know which change did it.
+    do:
+      - "Robot too slow to grab? Practice lining up, or try a different add-on."
+      - "Blocks fall out on the way home? Close the claw more, or drive home slower."
+      - "Brought home the wrong color? Give the spotter a clear call, like \"blue, go\" or \"red, leave it\"."
+      - "Ran out of time? Change the order of your moves. Do the highest-scoring thing first."
+      - Make your one change. Test it at your table or in another practice round.
+    test:
+      - We changed ONE thing
+      - We tested after the change
+    fields: ["The problem", "The ONE thing we changed", "What happened when we tested it"]
+    ask: Did your change help? How do you know?
+
+  - part: "Part 2: The matches"
+    title: Rules and good sports
+    say: |
+      Before the first scored match, everyone agrees on the rules and on how to treat each other.
+      The match is only fun when it is fair and safe for every team.
+    do:
+      - "**Start:** robots start where your teacher shows you. Hands off until \"go\"."
+      - "**During the match:** only the driver touches the Controller. Nobody touches a robot, a tower or a block."
+      - "**Stop:** when your teacher says \"stop\", let go of the sticks right away."
+      - "**No ramming:** you may knock down towers. You may not crash into another robot on purpose."
+      - "**The count is final.** The referee counts towers and blocks. Scorekeepers count too, then compare."
+      - "**Good sports:** say \"good luck\" before and \"good match\" after, win or lose. Help reset the towers."
+    test:
+      - Our team can say when to start and when to stop
+      - We know only the driver touches the Controller
+      - We agreed to say good luck and good match
+    ask: Your driver brings home a wrong-color block by mistake. What does a good teammate say?
+
+  - part: "Part 2: The matches"
+    title: Scored matches
+    say: |
+      This is it. When your team is called, bring your robot and Controller to the arena. Put the robot
+      where the referee shows you and start your program. After the match, count with the referee and
+      **write your score down** right away. Your teacher enters it on the site, and the class display shows
+      the standings.
+    do:
+      - Find your match on the board. While you wait, watch other teams. What strategy are they using?
+      - Play your match. Follow your plan, and listen to your spotter.
+      - "When time is up, hands off. Count with the referee: towers knocked down, blocks of your color home, wrong-color blocks home."
+      - "Work out your score: towers times 5, plus your-color blocks times 10, minus 5 for each wrong-color block."
+      - Write your score in the boxes and tell your teacher. If you play more than one match, your teacher will tell you which score to write.
+      - Help reset the arena for the next team.
+    stuck:
+      - "**The robot will not move at \"go\"?** Check that the program is running and the Controller is on."
+      - "**The claw or arm stopped working?** Check the motor cable at both ends before your next match."
+    test:
+      - We played our scored match
+      - We counted with the referee
+      - We wrote down our score and told our teacher
+    fields: ["Towers knocked down", "Our-color blocks home", "Wrong-color blocks home", "Our score"]
+
+  - part: "Part 2: The matches"
+    title: Debrief
+    say: |
+      The matches are over. Now think like an engineer about **why** the top teams scored well. It was not
+      luck. It was a good plan, the right add-on, and a driver and spotter who worked together.
+    do:
+      - Think of the team with the highest score. What did their robot do first? What add-on did they use?
+      - Compare your practice score with your match score. Did your one change help?
+      - Tell another team one thing you liked about their robot or their plan.
+      - Put your add-on and any spare parts back in the right bins.
+    test:
+      - We talked about why the top team scored well
+      - We told another team one thing we liked
+      - Our parts are back in the bins
+    fields: ["The top team's strategy", "What we would change next time"]
+    ask: If you played Castle Crasher again tomorrow, what would your first three moves be? Why?
+
+quiz:
+  - question: What is a strategy?
+    choices: ["A plan for how to score the most points", "A kind of wheel", "The fastest robot in the class", "A bug in a program"]
+    answer: 0
+    why: A strategy is a plan. Teams make it before the match by reading the scoring guide and doing the math.
+  - question: "A team knocks down 3 towers and brings home 2 blocks of its own color. What is its score? (Tower: 5. Your color home: 10. Wrong color home: minus 5.)"
+    choices: ["25", "30", "35", "50"]
+    answer: 2
+    why: "3 towers times 5 is 15. 2 blocks times 10 is 20. 15 plus 20 is 35."
+  - question: "A team brings home 2 blocks of its own color and 2 wrong-color blocks. It knocks down no towers. What is its score?"
+    choices: ["40", "20", "10", "0"]
+    answer: 2
+    why: "2 times 10 is 20. Each wrong-color block takes away 5, so 20 minus 10 is 10."
+  - question: "The driver taps L Up to grab a block, then lets go of the button. What does the claw do?\n\n`if (Controller.ButtonLUp.pressing()) {`\n\n`  ClawMotor.spinFor(forward, 90, degrees);`\n\n`} else {`\n\n`  ClawMotor.spinFor(reverse, 90, degrees);`\n\n`}`"
+    choices: ["It keeps holding the block", "It opens and drops the block", "It closes harder", "Nothing, because the program has an error"]
+    answer: 1
+    why: A plain `else` runs whenever L Up is not pressed. So the claw opens as soon as the driver lets go.
+  - question: Your team lost points in practice. You change the add-on, switch drivers and change your plan, all at once. Your score goes up. What is the problem?
+    choices: ["Nothing, a higher score is all that matters", "You cannot tell which change helped", "Three changes are against the rules", "The robot is now too heavy"]
+    answer: 1
+    why: Change one thing and test again. Then you know exactly what made the difference.
+
+ship:
+  turn_in: code
+  note: Your program from the last simulator step is turned in with your plan, your answers and your score.
+  extensions:
+    - title: Team color on the screen
+      level: Easier
+      goal: Show your team name and your team color on the Brain screen, so the referee knows who is who.
+      where: At the top of `int main()`, above `while (true)`.
+      code: |
+        Brain.Screen.print("Team Bolt");
+        Brain.Screen.newLine();
+        Brain.Screen.print("Color: blue");
+      hints:
+        - "This goes **before** the loop, so it prints only once."
+    - title: Scout report
+      level: Medium
+      goal: Watch a match you are not in. Write down the team's add-on, their first three moves and their score. Then write one idea your team could borrow.
+      hints:
+        - "Watch what the robot does in the first ten seconds."
+        - "Did they go for towers or for blocks first? Did it work?"
+    - title: Ten seconds left
+      level: Challenge
+      goal: Make the Brain beep once when 50 seconds have passed, so the driver knows it is time to head home.
+      where: Inside the loop, above `wait(20, msec);`. The variable goes above `while (true)`.
+      hints:
+        - "`Brain.Timer.time(seconds)` gives the number of seconds since the program started."
+        - "Make a variable above the loop: `int beeped = 0;`"
+        - "Use `if (Brain.Timer.time(seconds) > 50 && beeped == 0) { ... }`. Inside, play a note and set `beeped = 1;` so it only beeps once."
+        - "Ask your teacher how long a match is, and change the 50 to fit."
+  reflect:
+    - What was your team's strategy, and how well did it work? Use your score as evidence.
+    - What was the one thing you changed after practice? Did it help?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (rules, score math, two simulator steps, team plan,
+  practice round, one improvement). Day 2: Part 2 (rules and good sports, scored matches, debrief), then the
+  quiz and Ship it. If practice rounds run long, move "Improve one thing" to the first ten minutes of Day 2.
+
+  **Before class.** Build the block towers and mark each team's **home** in the arena. Decide and post:
+  the **match time** (60 to 90 seconds works for a whole class), how many teams are in the arena at once, which
+  **color** each team collects, what counts as a tower **knocked down** (for example, no block left on top of
+  another), and what counts as **home** (for example, the block is fully inside the home area and not touching
+  the robot when time is up). The lesson does not fix these. It tells students "your teacher will show you".
+  Keep a photo or sketch of the tower layout so resets are the same for every team. Charge batteries.
+
+  **Scoring.** The guide is the one in `rules.ARENA_EVENTS`: each tower knocked down 5, each block of your
+  color brought home 10, each wrong-color block brought home minus 5. Teams record their counts and score in
+  the "Scored matches" step. You enter each student's points on the class page and the class display ranks
+  them. If teams play more than one match, tell them before the first match whether you enter the best
+  score, the last score or the total. Decide too whether a tower knocked down by the other team's robot
+  counts for anyone.
+
+  **Running it with a whole class.** One arena is the bottleneck. Post a match order on the board. Give
+  waiting teams jobs: referee's helper (counts towers), timer, reset crew (rebuilds towers from the photo), and
+  scouts (the Medium extension). A match plus reset takes about 3 minutes, so 10 teams need about 30 minutes
+  for one round. For practice rounds, set out a few loose blocks and one small tower at the tables so teams
+  are not all waiting for the arena. If two teams share the arena, start them on opposite sides and seed the
+  second day by practice score, or simply draw names.
+
+  **The simulator steps.** Step 3 has a planted logic bug: a plain `else` opens the claw whenever L Up is not
+  pressed (it also makes the sticks slow to respond, because the claw keeps moving). The fix is
+  `else if (Controller.ButtonLDown.pressing())`. Step 4 is a driving drill with a red and a blue cube. The
+  simulator has no towers, so tower strategy is practiced on the real arena only. Teams with a pusher or
+  wedge still do both simulator steps.
+
+  **Check on a real robot:** the claw code uses `spinFor`, which waits until the motor has turned 90 degrees.
+  If a real claw stalls on a block, the program may wait and the sticks may stop responding. See the note in
+  Claws and Arms. Fix it before match day.
+
+  **Check on a real robot:** make sure every add-on in the bins can knock down a tower without the robot
+  driving over loose blocks and getting stuck on them. If the 2WD Lite gets stuck on blocks, tell teams.
+
+  **Common trouble.** Teams that swap to a motor add-on on match day and forget Devices. Crossed
+  Controllers: label each Controller and Brain with the team number. Dead batteries. Teams that change
+  several things at once (send them back to "Improve one thing"). Arguments about the count: the referee's
+  count is final, and the scorekeeper's job is to check it politely.
+
+  **Safety.** Everyone except the drivers stays back from the arena. Nobody reaches in until you say "stop"
+  and the robots are still. Robots are carried with two hands, never by the claw or arm. Blocks on the floor
+  are a slipping hazard, so the reset crew picks up strays after every match.
+
+  **Sportsmanship.** Give a shout-out or the Teacher's Pick badge to a team that helps another team fix its
+  robot or resets the arena without being asked.
+standards:
+  - code: 6-8.CS.a.5
+    how: Teams use their modified robot to knock down towers and collect blocks in a scored arena challenge.
+  - code: 6-8.CT.d.1
+    how: Students compare three game plans by working out the score each one earns from the scoring guide.
+  - code: 6-8.CT.b.3
+    how: Teams break the match into jobs (driver, spotter, scorekeeper) and into an ordered list of first moves.
+  - code: 6-8.CT.d.5
+    how: Students trace an if / else claw program to find a logic bug that gives no error message.
+  - code: 6-8.CT.d.6
+    how: Teams run a practice round, change one thing, test again, and compare practice and match scores.
+  - code: 6-8.CT.e.3
+    how: Students use the simulator to drill sorting blocks by color before the real matches.

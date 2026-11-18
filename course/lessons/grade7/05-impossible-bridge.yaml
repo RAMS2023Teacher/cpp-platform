@@ -1,0 +1,351 @@
+id: impossible-bridge
+title: The Impossible Bridge
+tagline: Tune, test and drive your bot over the steep two-beam bridge
+minutes: 80          # about two class periods: Part 1 plan and practice, Part 2 the official runs
+
+mission:
+  big_question: "How do engineers solve a problem that looks impossible?"
+  goal: |
+    This is your first **Circuit City Arena** driving challenge. The bridge is steep, and the only things to
+    drive on are **two narrow beams**. Speed alone will not get you over it. You will study the bridge, plan,
+    and do practice runs. After each run you change **one thing** and test again. Then you make your official
+    scored runs.
+  picture:
+    type: flow
+    loop: true
+    steps:
+      - {icon: "🧪", label: "Test", color: "#2f6bff"}
+      - {icon: "👀", label: "Watch what went wrong", color: "#9b51e0"}
+      - {icon: "🔧", label: "Change one thing", color: "#f2994a"}
+      - {icon: "📝", label: "Write it down", color: "#33c95a"}
+    caption: "The engineering design process: go around this loop as many times as you can."
+  you_need:
+    - Your team and your tuned chassis
+    - Your Controller and a USB cable
+    - Your final setup notes from Tune Your Bot
+    - The wheel and tire bins
+    - A timer
+  learn:
+    - "the **engineering design process**: test, change one thing, test again"
+    - "how to keep a **test log** so you know what really helped"
+    - "how to break a big problem into smaller parts"
+  talk: Think of something you could not do at first but can do now, like a bike trick or a hard game level. How did you get better? Did you change everything at once?
+
+build:
+  - part: "Part 1: Plan and practice"
+    title: Study the bridge
+    say: |
+      Do not drive yet. Look first. The bridge has four parts, and each part is its own small problem: the
+      **ramp up**, the **top**, the **two beams**, and the **ramp down**. Splitting a big problem into small
+      parts makes it easier to solve. Each part is worth points. Your teacher will show you where to start
+      and how many official runs you get.
+    do:
+      - Walk around the bridge with your team. Hands off for now.
+      - "Hold your bot **above** the beams without touching them. Do your wheels line up with the two beams?"
+      - "Read the scoring guide below. You earn the points for each part your bot does."
+      - "**Front wheels on the ramp: 5 points.**"
+      - "**Reached the top: 10 points.**"
+      - "**Crossed the beams: 15 points.**"
+      - "**Down the far side on its wheels: 10 points.**"
+      - "**Fastest crossing of the day: 10 points.**"
+    what: "A full crossing is worth 40 points. The team with the fastest full crossing of the day gets 10 more. A slow, careful crossing beats a fast fall."
+    test:
+      - We looked at all four parts of the bridge
+      - We checked how our wheels line up with the beams
+      - We read the scoring guide
+    fields: ["Which part looks hardest for our bot?", "Do our wheels line up with the beams? (yes, almost, no)"]
+    ask: Which part of the bridge worries your team the most, and why?
+
+  - part: "Part 1: Plan and practice"
+    title: Plan your setup
+    say: |
+      In Tune Your Bot you found what helps your chassis climb. Now choose your starting setup for the bridge.
+      Think about **grip** (which wheels), **balance** (where the Brain sits) and **control** (your slow mode
+      number). Going **down** the far side matters too. On the way down, the weight shifts toward the front.
+    do:
+      - Get out your final setup notes from Tune Your Bot.
+      - "Check your bot. Does it still match your notes? If not, put the wheels and the Brain back the way you had them."
+      - "Pick your jobs. The **driver** holds the Controller. The **spotter** stands by the bridge, ready to catch. The **recorder** keeps the test log and the timer."
+      - "Agree on a plan for each part of the bridge. For example: slow on the ramp, stop at the top to line up, creep over the beams."
+    tip: "**Team rule:** everyone on the team takes a turn as driver in practice. Then the team picks its driver for the official runs."
+    test:
+      - Our bot matches our setup notes
+      - Everyone has a job
+      - We have a plan for each part of the bridge
+    fields: ["Wheels", "Brain position", "Speed number", "Driver for run 1"]
+    ask: What is your plan for the two beams? Say what the driver will do with the sticks.
+
+  - part: "Part 1: Plan and practice"
+    title: Stay on the beams drill
+    say: |
+      On the beams there is almost no room for error. Practice that in the simulator first. Here two walls
+      make a narrow lane, like the edges of the beams. This is your driving program from Driver's Ed. Add your
+      **slow mode** from Tune Your Bot. Then drive through the lane to the goal without touching a wall.
+    do:
+      - "Above the loop, make a variable named `speed`. Use your team's speed number."
+      - "Scale both stick numbers: multiply by `speed`, then divide by 100."
+      - "Press **Run**. Drive up, stop, and turn until you are lined up with the lane. **Then** drive through."
+      - Swap seats so each partner gets through at least once.
+    tip: "**Driver tip:** line up **before** you enter the lane. Fixing your aim inside the lane is much harder. The same is true on the real bridge."
+    stuck:
+      - "**Forgot how slow mode looks?** A full push should give `speed`, not 100. The stick number is multiplied by `speed` and divided by 100."
+      - "**You keep clipping the corner?** Drive a little past the lane before you turn. Tap the keys for small turns."
+      - "**Too twitchy?** Make your `speed` number smaller."
+    sim:
+      drive: true
+      pilot: [[0, {A: 100, D: 100}], [3.4, {A: 100, D: -100}], [4.2, {A: 100, D: 100}], [12.4, {}], [12.9, {}]]
+      starter: |
+        int main() {
+          // TODO: make a variable named speed. Use your team's speed number.
+
+          while (true) {
+            // TODO: add slow mode: scale each stick number with speed
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 14, y: 60, heading: 0}
+        walls: [{x: 34, y: 21, w: 30, h: 4}, {x: 34, y: 41, w: 30, h: 4}]
+        goal: {x: 82, y: 33, r: 8}
+      checks:
+        - {type: code, pattern: "int\\s+speed\\s*=\\s*\\d+\\s*;[\\s\\S]*\\*\\s*speed\\s*/\\s*100[\\s\\S]*\\*\\s*speed\\s*/\\s*100", message: "My program has slow mode: both sticks are scaled by a speed variable"}
+        - {type: reachGoal, message: "I drove through the lane to the green goal"}
+        - {type: noCollision, message: "I did not touch a wall"}
+      solution: |
+        int main() {
+          int speed = 50;
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+            RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    test:
+      - This slow mode program is on our real Brain too
+    ask: How is this lane like the two beams? Name one way the real bridge will be harder.
+
+  - part: "Part 1: Plan and practice"
+    title: First practice run
+    say: |
+      Time for the real bridge. Your first run is your **baseline**. It will probably not be perfect, and that
+      is fine. A run that fails still tells you something, as long as you **watch closely** and
+      **write it down**. Score every practice run with the scoring guide, just like an official run.
+    do:
+      - Wait for your turn at the bridge. The spotter stands ready, with hands near the bot but not touching it.
+      - The driver starts where your teacher showed you and drives the plan.
+      - "The recorder watches. **Where** did it go wrong? Did the wheels **slip**? Did the bot **tip**? Did a wheel **drop off** a beam?"
+      - "If the bot falls, the spotter catches it. Stop the sticks. Never grab spinning wheels."
+      - Write down how far you got and the points for this run.
+    stuck:
+      - "**The bot will not drive at all?** Check that the program is running and the Controller is connected."
+      - "**It will not climb, it just hums?** The motors have stalled. Your speed number may be too small."
+    test:
+      - We made one practice run with a spotter
+      - We wrote down what happened
+    fields: ["Run 1: how far did it get?", "Run 1: what went wrong?", "Run 1: points"]
+    ask: What is the **first** problem your bot has to solve to get farther? Name the part of the bridge.
+
+  - part: "Part 1: Plan and practice"
+    title: Change one thing, test again
+    say: |
+      Now go around the engineer's loop. Pick the **one** change most likely to fix your first problem. Make
+      it, test again, and write down the result. If you change two things at once, you cannot tell which one
+      helped. If a change makes things worse, undo it. That is not a failure. You learned what does not work.
+    do:
+      - "Slips on the ramp? Think **grip**: other wheels or tires."
+      - "Tips back on the way up, or tips forward on the way down? Think **balance**: move the Brain."
+      - "A wheel drops off a beam? Think **control**: a smaller speed number, or line up better at the top."
+      - "Stalls on the ramp? Think **power**: a bigger speed number, or take off weight you do not need."
+      - Make one change. Run again. Log it. Then do the loop one more time.
+    tip: "**Watch out:** changing the speed number means changing it in VEXcode and downloading again. Allow time for that before your next turn."
+    test:
+      - We changed only one thing before each run
+      - We logged every run, even the bad ones
+    fields: ["Change before run 2", "Run 2: result and points", "Change before run 3", "Run 3: result and points"]
+    ask: Which change helped the most? Use your log to back up your answer.
+
+  - part: "Part 2: The official runs"
+    title: Pit check
+    say: |
+      Race teams check the car before every race. You do the same. Many runs are lost to small things: a
+      battery that is almost empty, a loose wheel, the wrong program. Lock in your **best setup from your
+      log**. Do not make a new, untested change right before an official run.
+    do:
+      - "**Battery:** is the Brain's battery charged and clicked in? Is the Controller on and connected?"
+      - "**Wheels:** push every wheel all the way on. Spin each one by hand. Nothing should rub."
+      - "**Brain and cables:** is the Brain held firmly? Is every motor cable clicked in?"
+      - "**Program:** is your best speed number downloaded? Run the program and tap the sticks to check."
+      - "**People:** who drives? Who spots? Who keeps score and time?"
+    test:
+      - Battery, wheels, Brain and cables are checked
+      - The right program is on the Brain
+      - The setup is the best one from our log
+    fields: ["Final wheels", "Final Brain position", "Final speed number", "Official driver"]
+    ask: Why is it a bad idea to try a brand new change right before an official run?
+
+  - part: "Part 2: The official runs"
+    title: Official runs
+    say: |
+      This is it. Your teacher calls each team to the bridge and is the judge. Stay calm and drive your plan.
+      Smooth and slow scores more than fast and wild. When other teams drive, watch how their bots handle the
+      bridge, and cheer for a good run.
+    do:
+      - When your team is called, put your bot where your teacher shows you. The spotter gets ready.
+      - Drive your run. The judge calls out which parts you completed.
+      - "Add up your points for the run with the scoring guide: front wheels on the ramp **5**, reached the top **10**, crossed the beams **15**, down the far side on its wheels **10**."
+      - "If you made a full crossing, write down your time. The fastest crossing of the day earns **10** more points."
+      - "**Write your score down.** Tell your teacher, who enters it on the class page. The class display shows the standings."
+    tip: "**Good sport rule:** the judge's call is final. Thank your spotter. Help the next team get set up."
+    test:
+      - We made our official runs
+      - We wrote down our score
+      - We told our teacher our score
+    fields: ["Official run 1 points", "Official run 2 points", "Crossing time (seconds)", "Score we reported"]
+    ask: Compare your first practice run with your best official run. What made the difference?
+
+quiz:
+  - question: Your bot slips on the ramp. What should your team do next?
+    choices: ["Change the wheels, move the Brain and change the speed all at once", "Change one thing, test again, and write down what happened", "Keep driving the same way and hope", "Start over with a different chassis"]
+    answer: 1
+    why: Engineers change one thing at a time and test. Then they know what caused the result.
+  - question: A bot gets its front wheels on the ramp, reaches the top, and then falls off the beams. How many points is that run?
+    choices: ["5", "10", "15", "30"]
+    answer: 2
+    why: Front wheels on the ramp is 5 and reached the top is 10. That makes 15. It did not cross the beams, so it does not get those 15 points.
+  - question: Why does your team keep a test log?
+    choices: ["To make the runs take longer", "So you can see which changes really helped", "Because the Brain needs it to run", "To hide mistakes from other teams"]
+    answer: 1
+    why: A log lets you compare runs. Without it, you are guessing about what worked.
+  - question: A wheel keeps dropping off a beam near the middle of the bridge. Which change fits that problem best?
+    choices: ["A smaller speed number, and lining up before the beams", "A higher Brain position", "Taking the tires off", "Driving at full speed to get it over with"]
+    answer: 0
+    why: Dropping off a beam is a control problem. Going slower and lining up first gives the driver time to stay straight.
+  - question: You try a change and your bot does worse. What does a good engineer do?
+    choices: ["Give up", "Undo the change, write down what happened, and try a different idea", "Keep the change anyway", "Erase it from the log"]
+    answer: 1
+    why: A change that does not work still teaches you something. Undo it, log it, and go around the loop again.
+
+ship:
+  turn_in: code
+  note: Your slow mode driving program from the simulator drill is turned in with your test log and your score.
+  extensions:
+    - title: Pit display
+      level: Easier
+      goal: Show your team name and your speed number on the Brain screen, so the pit crew can check that the right program is running.
+      where: Under the `int speed` line, above the loop.
+      code: |
+        Brain.Screen.print("Team Bolt");
+        Brain.Screen.newLine();
+        Brain.Screen.print("Speed: %d", speed);
+      hints:
+        - "The `%d` is a blank. It is filled with the number in `speed`."
+        - "These lines are above the loop, so they run one time at the start."
+    - title: Straight-line stick
+      level: Medium
+      goal: On the beams you want to go perfectly straight. Make the left stick run BOTH motors at the same speed, and let the right stick steer just a little.
+      where: Replace the two `setVelocity` lines inside the loop.
+      code: |
+        int power = Controller.AxisA.position() * speed / 100;
+        int steer = Controller.AxisC.position() / 5;
+        LeftMotor.setVelocity(power + steer, percent);
+        RightMotor.setVelocity(power - steer, percent);
+      new: "1-4"
+      hints:
+        - "Both motors get the same `power`, so one thumb drives the bot straight."
+        - "`steer` is the right stick's left and right number divided by 5. It is small, so it only nudges the bot."
+        - "In the simulator, AxisC is the **left and right arrow** keys. Try it in the lane drill."
+    - title: Two gears
+      level: Challenge
+      goal: Use a button to switch gears. Hold the L Up button for a slow beam gear. Let go for a faster ramp gear.
+      where: Inside the loop, above the two `setVelocity` lines.
+      code: |
+        if (Controller.ButtonLUp.pressing()) {
+          speed = 30;
+        } else {
+          speed = 70;
+        }
+      hints:
+        - "`if` asks a question. If the button is pressed, the first set of braces runs. If not, the `else` braces run."
+        - "There is no `int` in front of `speed` here. The box already exists. You are putting a new number in it."
+        - "In the simulator, L Up is the **Q** key. You will learn much more about `if` in Claws and Arms."
+  reflect:
+    - Look at your test log. Which single change helped the most, and how do you know?
+    - If you had one more class period, what is the next thing you would test? Why that?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5): study, plan, the simulator drill and practice
+  runs. Day 2: 10-15 minutes of last practice, the pit check (step 6), the official runs (step 7), then the quiz
+  and Ship it. The bridge is the bottleneck. While one team is on it, the others do the simulator drill, change
+  their bot, update their log or download a new speed number. Post a turn order and give each practice turn about
+  2 minutes, including setting the bot down.
+
+  **Set out.** The bridge, with a tape **start mark** and a tape **finish mark** on the floor at each end. The
+  chassis with charged batteries and paired Controllers. Wheel and tire bins. USB cables for speed changes. A
+  timer for you and one per team. If you built test ramps for Tune Your Bot, leave them out as a second practice
+  station.
+
+  **The lesson leaves these to you. Tell the class at the start (step 1 says "your teacher will show you"):**
+  - where the bot starts and which direction it crosses;
+  - how many official runs each team gets. Two runs with the **best one counting** works well with a full class
+    and is what the fields in step 7 assume;
+  - when the clock starts and stops for "fastest crossing". A simple rule: start when the front wheels cross the
+    start tape, stop when all wheels are on the floor past the finish tape. Only full crossings get a time;
+  - whether a driver may back up and try again within a run, and a time limit per run (60-90 seconds is plenty);
+  - what "reached the top" and "crossed the beams" mean on your bridge, for example all wheels on the top
+    section, and all wheels past the end of the beams.
+
+  **Scoring.** The guide is the one on the site (rules.ARENA_EVENTS): front wheels on the ramp 5, reached the top
+  10, crossed the beams 15, down the far side on its wheels 10, fastest crossing of the day 10. The lesson treats
+  these as adding up (a full crossing is 40, and 50 with the fastest time). "On its wheels" means it did not
+  roll over or get carried down. Teams write their score in step 7 and tell you; you type it on the class page
+  and the class display ranks them. Award the fastest-crossing 10 points after the last team has run, then
+  correct that one team's score. With several sections in a day, decide whether "of the day" means per section
+  (simplest, and what the class page ranks) or across all sections.
+
+  **Running it fairly.** You are the judge and your call is final; say so before the first run. Draw the running
+  order at random. Every team gets the same number of runs and the same time limit. No practice on the bridge
+  once official runs begin. The spotter may catch a falling bot but may not steady or push it: a touched bot
+  keeps the points it had earned up to that moment and the run ends. Teams that are waiting watch and keep score
+  along with you, which keeps them busy and honest.
+
+  **Teams and chassis.** If more than one team shares a chassis across sections, the "final setup" fields in
+  steps 2 and 6 are what lets a team rebuild its setup quickly. Allow 5 minutes at the start of Day 2 for that.
+
+  **Check on a real robot** (before the first class, with each of the four chassis):
+  - that each chassis **can** cross with some combination of wheels, Brain position and speed. If one of the four
+    cannot fit the beams at all, tell the teams that chose it and let them change the wheels' spacing or borrow
+    another chassis;
+  - how the wheel spacing of each chassis lines up with the two beams (step 1 has students check this);
+  - which `speed` numbers are too low to climb (motors stall) and whether a 1st gen motor recovers if a bot sits
+    stalled on the ramp for a few seconds. Tell teams to let go of the sticks if the bot hums and does not move;
+  - that the bridge does not shift when a bot climbs it. Tape or weigh it down if it does;
+  - how far a bot falls if it leaves the beams, and whether a spotter can catch it safely. Put a mat or foam
+    under the bridge if not.
+
+  **Common trouble.** The wrong program on the Brain after a speed change (the pit check catches this). Teams
+  changing two things at once: ask "which change was that?" and send them back to the log. A driver who rushes
+  the top: coach "stop, line up, then go". A battery that sags after many climbs; keep charged spares if you
+  have them. The simulator check in step 3 needs slow mode on **both** motors and a run with no wall touches.
+
+  **Safety.** One bot on the bridge at a time. A spotter at the bridge for every run. Catch the frame, never the
+  wheels. Stop the sticks the moment a bot starts to fall. Everyone else stays behind a tape line.
+
+  **Check for understanding.** Ask any team to show its log and say: "What was the problem, what one thing did
+  you change, and what happened?"
+standards:
+  - code: 6-8.CS.a.5
+    how: Teams design, tune and demonstrate a robot that crosses a steep two-beam bridge, with a driver, a spotter and a recorder.
+  - code: 6-8.CT.d.6
+    how: Teams run practice attempts, change one thing at a time, log each result and use the log to choose a final setup.
+  - code: 6-8.CT.b.3
+    how: Teams break the bridge into four parts (ramp up, top, beams, ramp down) and plan a solution for each part.
+  - code: 6-8.CT.d.4
+    how: Students add a speed variable and scaling expressions to their loop program, and tune the number for the bridge.
+  - code: 6-8.CS.a.7
+    how: Teams use a pit check to find battery, cable, wheel and wrong-program problems before an official run.

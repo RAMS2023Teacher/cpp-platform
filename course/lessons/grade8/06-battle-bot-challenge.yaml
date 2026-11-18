@@ -1,15 +1,15 @@
 id: battle-bot-challenge
 title: Battle Bot Challenge
-tagline: Inspect, practice, improve, and compete in robot sumo
-minutes: 90          # one or two class periods: Part 1 gets ready, Part 2 is the tournament
+tagline: The first arena challenge of the Pro Season. Inspect, practice, improve, compete
+minutes: 90          # one or two class periods: Part 1 gets ready, Part 2 is the arena challenge
 
 mission:
   big_question: "How do engineers make a robot better between one match and the next?"
   goal: |
-    It's tournament day. Your battle bot meets other robots in the ring, and **you** are the driver.
-    Winning teams don't just show up. They **inspect** their robot, **practice**, **change one thing**, and
-    **test again**. Today you'll pass tech inspection, warm up, keep an engineering log, and play your matches
-    like good sports.
+    Today is the first **Circuit City Arena** challenge of the Pro Season: sumo. Your battle bot meets other
+    robots in the ring, and **you** are the driver. Winning teams **inspect** their robot, **practice**,
+    **change one thing**, and **test again**. You'll pass tech inspection, keep an engineering log, play your
+    matches like good sports, and add up your **arena score** for the standings.
   picture:
     type: flow
     loop: true
@@ -23,20 +23,20 @@ mission:
     - Your team and your battle bot
     - Your Controller, paired with your Brain
     - Charged batteries for the robot and the Controller
-    - The ring, taped on the floor
+    - The ring and its two pillars
     - A ruler and a timer
   learn:
     - "how a **tech inspection** catches problems before a match"
     - "how to **test, change one thing, and test again**"
     - "how gears, traction and center of gravity decide a real match"
-  talk: Your robot loses its first round. What are two helpful things your team could do in the next two minutes? What is one thing that would not help?
+  talk: Your robot loses its first match. What are two helpful things your team could do in the next two minutes? What is one thing that would not help?
 
 build:
   - part: "Part 1: Get ready"
     title: Tech inspection
     say: |
       Every robot competition starts with a **tech inspection**. It keeps matches fair and safe, and it
-      catches small problems before they cost you a round. Go down the list as a team. Fix anything that fails
+      catches small problems before they cost you a match. Go down the list as a team. Fix anything that fails
       before you move on.
     do:
       - "**Size:** measure your robot. It must fit inside your teacher's size limit."
@@ -120,10 +120,10 @@ build:
       anything bend or fall off?
     do:
       - Find another team that is ready. Take turns in the practice ring, or push your textbook stack if the ring is busy.
-      - Play one round. Start only when the referee says "3, 2, 1, go".
-      - Right after the round, tell each other what you saw. Write it down before you forget.
+      - Play one practice match. Start only when the referee says "3, 2, 1, go".
+      - Right after the match, tell each other what you saw. Write it down before you forget.
     test:
-      - We played a practice round or did a timed push
+      - We played a practice match or did a timed push
       - The pit crew watched for slipping, tipping and loose parts
     fields: ["What worked", "What went wrong"]
     ask: What is the ONE problem that hurt your robot the most in practice?
@@ -139,7 +139,7 @@ build:
       - "Robot tipped? Move heavy parts lower, or make the mechanism shorter."
       - "Something bent or fell off? Add a pin or a brace."
       - "Driver trouble? Practice with slow mode, or switch drivers."
-      - Make your one change. Test it with a push against the textbooks or another practice round.
+      - Make your one change. Test it with a push against the textbooks or another practice match.
     tip: "**Watch out:** measure the robot again after any change. It still has to fit the size limit."
     test:
       - We changed ONE thing
@@ -148,24 +148,25 @@ build:
     fields: ["The problem", "The ONE thing we changed", "Test result after the change"]
     ask: Did the change fix the problem? How do you know?
 
-  - part: "Part 2: The tournament"
+  - part: "Part 2: The arena challenge"
     title: Rules and good sports
     say: |
       Your teacher will put the match list on the board. Before the first match, everyone agrees on the
       rules and on how to treat each other. A team that wins rudely has not really won.
     do:
-      - "**Rules check:** two robots start inside the ring. You lose a round if your robot leaves the ring or doesn't move for 10 seconds. A match is the best of 3 rounds."
+      - "**How to win:** push the other bot out of the ring, **or** knock down its pillar. If time runs out first, the match is a tie."
+      - "**Scoring:** each match won **10**. Each match tied **5**. Won by knocking down the pillar **5** more. Mechanism worked in a match **5**."
       - "**Allowed:** pushing. **Not allowed:** damaging the other robot or lifting it off the ground."
+      - "**The ring, the pillars and the match time:** your teacher will show you."
       - "**The referee's call is final.** Only drivers touch controllers. Nobody touches a robot until the referee says \"stop\"."
-      - "**Before each match:** say \"good luck\". **After:** say \"good match\", win or lose."
-      - "**Stay behind the tape** around the ring unless you are placing or picking up your robot."
+      - "**Before each match:** say \"good luck\". **After:** say \"good match\", win or lose. Stay behind the line unless you are placing your robot."
     test:
-      - Our team can say the two ways to lose a round
+      - Our team can say the two ways to win a match
       - We know only the driver touches the controller during a match
       - We agreed to say good luck and good match
-    ask: What does a good teammate say to a driver who just lost a round?
+    ask: What does a good teammate say to a driver who just lost a match?
 
-  - part: "Part 2: The tournament"
+  - part: "Part 2: The arena challenge"
     title: Match time
     say: |
       When your team is called, bring your robot and Controller to the ring. Put the robot down where the
@@ -174,17 +175,17 @@ build:
     do:
       - Find your matches on the board. When you are not playing, watch the other robots. You can learn from every match.
       - Play your matches. Switch drivers between matches if your team wants to.
-      - "For each match, write who you played and the score in rounds, like **W 2-1** or **L 0-2**."
+      - "For each match, write who you played and the result: **W** (win), **T** (tie) or **L** (loss). Add **P** if you won by the pillar."
       - Pick up your robot only after the referee says "stop". Stop the program first.
     stuck:
       - "**The robot won't move at the start?** Check that the program is running and the Controller is on."
-      - "**It died in the middle of a round?** Check the battery and the motor cables before the next round."
+      - "**It died in the middle of a match?** Check the battery and the motor cables before the next match."
     test:
       - We played all our matches
       - We wrote down every result
-    fields: ["Match 1: other team and score", "Match 2: other team and score", "Match 3: other team and score", "Wins and losses"]
+    fields: ["Match 1: other team and result", "Match 2: other team and result", "Match 3: other team and result", "Wins, ties and losses"]
 
-  - part: "Part 2: The tournament"
+  - part: "Part 2: The arena challenge"
     title: Between matches
     say: |
       The time between matches is short, and it matters. Do a quick check first: battery, cables, loose
@@ -200,17 +201,36 @@ build:
     fields: ["What we saw in our last match", "Our change or plan for the next one"]
     ask: Did your change or plan work in the next match? What is your evidence?
 
-  - part: "Part 2: The tournament"
+  - part: "Part 2: The arena challenge"
+    title: Add up your arena score
+    say: |
+      Every Circuit City Arena challenge has a **scoring guide**. Use it to add up your team's points from
+      your match results. Your teacher types each score into the site. Then the **Circuit City Arena
+      standings** on the class display show where every team placed. Be honest: the referee saw the matches too.
+    do:
+      - "**Each match won:** 10 points."
+      - "**Each match tied:** 5 points."
+      - "**Won by knocking down the pillar:** 5 points."
+      - "**Mechanism worked in a match:** 5 points. Your wedge, pusher or arm did its job."
+      - Add them up. Write the total clearly and give it to your teacher to enter.
+    test:
+      - We added up our points with the scoring guide
+      - We gave our score to our teacher
+    fields: ["Points for wins and ties", "Pillar points", "Mechanism points", "Our arena score"]
+    ask: Where did most of your points come from? What would have earned your team 5 more?
+
+  - part: "Part 2: The arena challenge"
     title: Debrief
     say: |
       The matches are over. Now think like an engineer about **why** robots won. It was not luck. It was
-      **gears** (pushing power or speed), **traction** (grip on the floor), **center of gravity** (staying
-      upright), a strong frame, and a calm driver.
+      the **chassis** each team chose, **traction** (grip on the floor), **center of gravity** (staying
+      upright), an add-on that held together, and a calm driver.
     do:
       - Think of the robot that was hardest to beat. Talk about what made it so good.
-      - Think of a round your robot lost. Was it traction, tipping, power, something breaking, or driving?
+      - Think of a match your robot lost. Was it traction, tipping, power, something breaking, or driving?
       - Shake hands with a team you played and tell them one thing you liked about their robot.
       - Show your teacher your robot and your engineering log.
+      - Ask your teacher if your add-on stays on. If not, take it off and sort the parts back into the bins.
     test:
       - We talked about why the best robot was hard to beat
       - We told another team one thing we liked about their robot
@@ -219,7 +239,7 @@ build:
     ask: Pick traction, center of gravity or gears. Explain how it helped or hurt a robot in a match you saw today.
 
 quiz:
-  - question: Your robot lost a practice round. Your team changes the wedge, moves the battery and switches drivers, all at once. The robot does better. What is the problem?
+  - question: Your robot lost a practice match. Your team changes the wedge, moves the battery and switches drivers, all at once. The robot does better. What is the problem?
     choices: ["Nothing, because better is better", "You can't tell which change helped", "Three changes are against the rules", "The robot is now too heavy"]
     answer: 1
     why: Change one thing and test again. Then you know exactly what made the difference.
@@ -235,14 +255,14 @@ quiz:
     choices: ["Spins in place", "Drives straight forward", "Turns left", "Nothing"]
     answer: 1
     why: Both variables read AxisA, the left stick. Both motors get 100, so the robot drives straight and the right stick does nothing.
-  - question: Which of these is part of a tech inspection?
-    choices: ["Checking the size, batteries, cables and code before a match", "Taking the other team's robot apart", "Picking the winner before the match", "Painting the robot"]
-    answer: 0
-    why: Inspection makes sure every robot is legal, safe and ready, so matches are fair and nothing fails for a silly reason.
+  - question: A team wins 2 matches, one of them by knocking down the pillar, and ties 1. Their wedge worked. What is their arena score?
+    choices: ["25", "30", "35", "40"]
+    answer: 2
+    why: Two wins are 20, the tie is 5, the pillar win adds 5, and the mechanism adds 5. That makes 35.
 
 ship:
   turn_in: show
-  note: Show your teacher your battle bot and your engineering log. Your match results are turned in with your answers.
+  note: Show your teacher your battle bot and your engineering log. Your match results and arena score are turned in with your answers.
   extensions:
     - title: Robot name card
       level: Easier
@@ -255,32 +275,43 @@ ship:
       goal: Watch a match you are not in. Write down each robot's mechanism and why the winner won, using traction, center of gravity or gears.
       hints:
         - "Watch the wheels. Did they slip?"
-        - "Watch the moment the round was decided. What happened just before it?"
+        - "Watch the moment the match was decided. What happened just before it?"
     - title: Version 2 plan
       level: Challenge
       goal: Sketch version 2 of your battle bot. Label three changes and the reason for each, using what you saw in your matches.
       hints:
         - "Every change needs evidence, like \"we tipped twice, so the battery moves down\"."
-        - "Would you trade speed for pushing power with different gears? Why or why not?"
+        - "Would you pick a different chassis or different wheels next time? Why or why not?"
   reflect:
     - What was the most useful change your team made today, and what was your evidence that it worked?
     - How was your team a good sport today? Give one example.
 
 teacher_notes: |
   **Pacing.** Two periods works best. Day 1: Mission and Part 1 (inspection, the simulator warm-up, practice
-  matches and one pit stop). Day 2: Part 2 (the tournament and debrief), then the quiz and Ship it. For one
-  period, do inspection and the pit stop quickly, skip the practice match, and run a short bracket.
+  matches and one pit stop). Day 2: Part 2 (the matches, scoring and debrief), then the quiz and Ship it. For one
+  period, do inspection and the pit stop quickly, skip the practice match, and give each team two matches.
 
-  **Before class.** Tape the ring on a smooth floor (about 4 feet across works for two IQ robots) with a second
-  line a step back for spectators. Tape a practice ring too if you have room. Charge every battery and have spares.
-  Post the size limit and the rules. Draw the match list on the board: a **round robin** in groups of 3 or 4 teams
-  gives every team at least 2 or 3 matches; the group winners can then play a short **bracket**. Students record
-  their own results in the Match time step.
+  **Before class.** Set up the ring and the two pillars, with a line a step back for spectators. The lesson does
+  not state a ring size, pillar position or match time: students are told "your teacher will show you", so show
+  them before the first match. Charge every battery and have spares. Post the size limit and the rules. Draw the
+  match list on the board: a **round robin** in groups of 3 or 4 teams gives every team 2 or 3 matches. Give every
+  team the **same number of matches**, because the arena score adds up over matches. The Match time step has
+  room for three results.
 
-  **Running matches.** One referee (you or a student) counts "3, 2, 1, go", watches the line and counts out loud
-  when a robot stops moving. Decide ahead what "leaves the ring" means (for example, any wheel fully outside the
-  tape) and say it before the first match. Give each round a time limit, such as 60 seconds; if nobody is out, the
-  robot nearer the center wins the round. Teams waiting for a match can be timers, scorekeepers or scouts.
+  **Scoring (Circuit City Arena).** The lesson states the scoring guide as it is on the site: each match won 10,
+  each match tied 5, won by knocking down the pillar 5, mechanism worked in a match 5. Teams add up their own
+  score in the "Add up your arena score" step and hand it to you. You type the scores on the class page, and the
+  site ranks them and updates the standings on the class display. Decide and announce: whether the mechanism
+  points count once for the event or once per match (the guide does not say; once is simpler), and what counts
+  as "worked" (for example, the wedge got under the other bot, or the arm touched the pillar).
+
+  **Running matches.** One referee (you or a student) counts "3, 2, 1, go", watches the line and the pillars, and
+  keeps the time. Decide ahead what "out of the ring" means (for example, any wheel fully outside the tape) and
+  say it before the first match. Give each match a time limit; if nobody has won when it ends, it is a tie.
+  Teams waiting for a match can be timers, scorekeepers or scouts.
+
+  **Check on a real robot:** that a robot can knock a pillar down without leaving the ring itself, and that a
+  pillar does not fall just from robots bumping the floor nearby.
 
   **Common trouble.** Crossed controllers: label each Controller and Brain with the team number, and turn on only
   the two robots in the ring if links get confused. Dead batteries mid-match. Robots that grew past the size limit
@@ -288,7 +319,7 @@ teacher_notes: |
 
   **Safety.** Everyone except the two drivers stays behind the spectator line. Nobody reaches into the ring until
   the referee says "stop" and both programs are stopped. Robots are carried with two hands, never by the
-  mechanism. No sharp, loose or spinning attachments. Stop a round at once if a robot is being damaged, a part
+  mechanism. No sharp, loose or spinning attachments. Stop a match at once if a robot is being damaged, a part
   breaks off, or a robot leaves the ring toward people's feet.
 
   **Sportsmanship.** Give a "good sport" shout-out or the Teacher's Pick badge to a team that helped another team

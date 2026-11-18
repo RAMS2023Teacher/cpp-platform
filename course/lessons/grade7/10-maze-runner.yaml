@@ -1,0 +1,505 @@
+id: maze-runner
+title: Maze Runner
+tagline: The season finale. No driver. Your code runs the maze.
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 on the real maze
+
+mission:
+  big_question: "How do you get a robot through a maze when nobody can steer it?"
+  goal: |
+    This is the last Circuit City Arena challenge of your Rookie Season: **Maze Runner**.
+    Nobody drives. Your **program** takes the robot through the maze.
+    There is an **easy course** and a **hard course**.
+    First you plan and practice in the simulator. Then you measure the real maze, write the moves, test, fix, and make your official runs.
+  picture:
+    type: flow
+    steps:
+      - {icon: "📝", label: "Plan the path", color: "#f5a623"}
+      - {icon: "📏", label: "Measure", color: "#9b51e0"}
+      - {icon: "⌨️", label: "Code the moves", color: "#2f6bff"}
+      - {icon: "🔁", label: "Run, fix one number, run again", color: "#33c95a"}
+    loop: true
+    caption: Plan, measure, code, debug. Then go around again.
+  you_need:
+    - A partner
+    - Your chassis, with the Drivetrain set up
+    - A USB cable for the Brain
+    - Paper and a pencil
+    - A tape measure
+    - Your numbers from Robot, Drive Yourself
+  learn:
+    - "a **plan** on paper comes before any code"
+    - "a maze is one long **sequence** of drive and turn moves"
+    - "**debugging** means: run, find the first mistake, change one number, run again"
+    - "real distances must be **measured**, not guessed"
+  talk: You must walk through a dark room full of chairs. Would you rather have a map with distances on it, or just start walking? Why?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: Plan on paper first
+    say: |
+      A maze program is a long **sequence**. If you just start typing, it is easy to get lost.
+      So make a **plan** first: a list of moves on paper.
+      Each grid square on the field is **12 inches**. Count squares to find each distance.
+      The blue tile is a **checkpoint**. A checkpoint is a spot the robot must pass on the way.
+    do:
+      - "On paper, sketch the maze: two walls, the blue checkpoint and the green goal."
+      - "Draw a path from the robot to the goal. Keep it in the **middle** of each gap."
+      - "Next to each part of the path, write the move, like **forward 48** or **right 90**."
+      - "Now type only the **first two** moves from your list. Press **Run**. The robot should reach the blue checkpoint."
+    code: |
+      int main() {
+        Drivetrain.driveFor(forward, 48, inches);
+        Drivetrain.turnFor(right, 90, degrees);
+      }
+    what: "These two moves take the robot up the left side and point it across the top. Your paper list has the rest of the path."
+    stuck:
+      - "**Missed the checkpoint?** Count the squares from the robot up to the blue tile. Each square is 12 inches."
+      - "**An error about units?** `driveFor` needs `inches`. `turnFor` needs `degrees`."
+    sim:
+      starter: |
+        int main() {
+          // TODO: type the first move from your paper plan
+          // TODO: type the second move from your paper plan
+        }
+      field:
+        start: {x: 12, y: 60, heading: 0}
+        walls: [{x: 22, y: 24, w: 4, h: 48}, {x: 60, y: 0, w: 4, h: 48}]
+        tiles: [{x: 7, y: 7, w: 10, h: 10, color: blue}]
+        goal: {x: 84, y: 60, r: 7}
+      checks:
+        - {type: visitedTiles, message: "The robot reaches the blue checkpoint"}
+        - {type: noCollision, message: "It never touches a wall"}
+        - {type: code, pattern: "turnFor\\s*\\(", message: "My program has a turn"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 48, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+        }
+    test:
+      - I drew the maze and my path on paper
+      - I wrote a list of moves next to the path
+    ask: How many moves are on your paper list? How many of them are turns?
+
+  - part: "Part 1: In the simulator"
+    title: Run the easy maze
+    say: |
+      Now finish the job. Your first two moves are still in the editor.
+      Add the rest of your list, **one move per line**, in order.
+      There are two checkpoints now. The robot must cross both and stop in the green goal.
+    do:
+      - Type the rest of your moves under the first two.
+      - "Press **Run**. Watch the whole path."
+      - "If it bumps a wall, look for the **first** move that went wrong. Fix that one number. Run again."
+    tip: "**Watch out:** the last turn in this maze is a **left** turn. Trace your path with a finger to check each turn."
+    stuck:
+      - "**Hit the second wall?** Drive across only 3 squares, then turn right and go down."
+      - "**Hit the bottom of the field?** Going down is 4 squares, the same as going up."
+      - "**Drove away from the goal?** Check your last turn. Is it `left` or `right`?"
+    sim:
+      carry: true
+      starter: |
+        int main() {
+          Drivetrain.driveFor(forward, 48, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          // TODO: add the rest of the moves from your paper plan
+        }
+      field:
+        start: {x: 12, y: 60, heading: 0}
+        walls: [{x: 22, y: 24, w: 4, h: 48}, {x: 60, y: 0, w: 4, h: 48}]
+        tiles:
+          - {x: 7, y: 7, w: 10, h: 10, color: blue}
+          - {x: 43, y: 55, w: 10, h: 10, color: blue}
+        goal: {x: 84, y: 60, r: 7}
+      checks:
+        - {type: visitedTiles, message: "The robot crosses both blue checkpoints"}
+        - {type: goal, message: "It stops inside the green goal"}
+        - {type: noCollision, message: "It never touches a wall"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 48, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 36, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 48, inches);
+          Drivetrain.turnFor(left, 90, degrees);
+          Drivetrain.driveFor(forward, 36, inches);
+        }
+    ask: Did your paper plan work the first time? If not, which move did you fix?
+
+  - part: "Part 1: In the simulator"
+    title: Debug like a pro
+    say: |
+      A **bug** is a mistake in a program. Finding and fixing bugs is called **debugging**.
+      Here is the strategy the pros use. **Run** it. **Watch** where it first goes wrong.
+      **Change one number.** **Run** it again.
+      Another team wrote this maze program. It has **two wrong numbers**. The moves and the order are right.
+    do:
+      - "Press **Run**. Watch for the **first** place the robot goes wrong."
+      - "Find the line for that move. Count grid squares to get the right number. Change only that number."
+      - "Press **Run** again. Now find the second bug the same way."
+    tip: "**Watch out:** do not fix a later move first. An early mistake puts the robot in the wrong place for every move after it."
+    stuck:
+      - "**Bug 1:** the first drive is too short. The robot should go 5 and a half squares to the left. Half a square is 6 inches."
+      - "**Bug 2:** the drive up stops too soon. The robot must get above the wall before it turns."
+      - "**Still bumping?** Each square is 12 inches. Three and a half squares is 42."
+    sim:
+      starter: |
+        int main() {
+          // TODO: two numbers in this program are wrong.
+          // Run it, find the first mistake, and change one number at a time.
+          Drivetrain.turnFor(left, 90, degrees);
+          Drivetrain.driveFor(forward, 46, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 24, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 60, inches);
+        }
+      field:
+        start: {x: 84, y: 60, heading: 0}
+        walls: [{x: 30, y: 34, w: 66, h: 4}]
+        goal: {x: 78, y: 18, r: 7}
+      checks:
+        - {type: goal, message: "The robot stops inside the green goal"}
+        - {type: noCollision, message: "It never touches a wall"}
+      solution: |
+        int main() {
+          Drivetrain.turnFor(left, 90, degrees);
+          Drivetrain.driveFor(forward, 66, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 42, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 60, inches);
+        }
+    ask: Why is it smart to change only one number before you run the program again?
+
+  - part: "Part 1: In the simulator"
+    title: Run the hard maze
+    say: |
+      The hard maze has **four turns**, and the middle hallway is tight.
+      The robot has only a few inches to spare on each side, so it must stay in the **middle**.
+      The robot starts facing **right**. Use everything you know: plan on paper, type the moves, then debug one number at a time.
+    do:
+      - "On paper, draw the maze and a path through both gaps. Write the list of moves."
+      - "Count grid squares for each distance. Some distances end in a half square (6 inches)."
+      - Type your moves. The first two are shown.
+      - "Press **Run**. Debug: find the first mistake, change one number, run again."
+    code: |
+      int main() {
+        Drivetrain.driveFor(forward, 66, inches);
+        Drivetrain.turnFor(right, 90, degrees);
+        // keep going: 7 more moves
+      }
+    stuck:
+      - "**Scraped a wall in the middle hallway?** After the first turn, drive down only 2 squares."
+      - "**Missed the second gap?** Drive left along the hallway for 5 squares before you turn."
+      - "**Turned into a wall?** The turns in order are right, right, left, left."
+      - "**Lost track?** Put a comment like `// along the hallway` above each move."
+    sim:
+      starter: |
+        int main() {
+          // The robot starts facing right.
+          // TODO: drive along the top to the first gap
+          // TODO: turn and drive down into the middle hallway
+          // TODO: turn and drive along the hallway to the second gap
+          // TODO: turn and drive down to the bottom
+          // TODO: turn and drive to the green goal
+        }
+      field:
+        start: {x: 12, y: 12, heading: 90}
+        walls: [{x: 0, y: 24, w: 60, h: 4}, {x: 36, y: 44, w: 60, h: 4}]
+        tiles:
+          - {x: 73, y: 31, w: 10, h: 10, color: blue}
+          - {x: 13, y: 31, w: 10, h: 10, color: blue}
+        goal: {x: 78, y: 60, r: 7}
+      checks:
+        - {type: visitedTiles, message: "The robot crosses both blue checkpoints"}
+        - {type: goal, message: "It stops inside the green goal"}
+        - {type: noCollision, message: "It never touches a wall"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 66, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 24, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 60, inches);
+          Drivetrain.turnFor(left, 90, degrees);
+          Drivetrain.driveFor(forward, 24, inches);
+          Drivetrain.turnFor(left, 90, degrees);
+          Drivetrain.driveFor(forward, 60, inches);
+        }
+    ask: How many runs did the hard maze take you? What was the trickiest move to get right?
+
+  - part: "Part 2: On the real maze"
+    title: Know the rules
+    say: |
+      Now for the real thing. The maze is in the arena. Your teacher will show you the **easy course**, the **hard course**, the start box and the **checkpoints** on each one.
+      Nobody touches the robot after it starts.
+      You do not have to finish to score. Every checkpoint is worth points.
+    do:
+      - "Read the scoring guide with your partner:"
+      - "**Easy course: each checkpoint** = 5 points"
+      - "**Easy course finished** = 10 points"
+      - "**Hard course: each checkpoint** = 10 points"
+      - "**Hard course finished** = 20 points"
+      - "**No wall touches** = 10 points"
+      - "Listen as your teacher explains how many official runs you get and how the no wall touches points are given."
+      - "Decide with your partner: which course will you work on first?"
+    tip: "**Watch out:** a clean run on the easy course beats a crash on the hard course. Most teams should get the easy course working first."
+    test:
+      - We read the scoring guide
+      - We know where the start, the checkpoints and the finish are on each course
+      - We chose which course to work on first
+    ask: Which course will your team start with? What is your reason?
+
+  - part: "Part 2: On the real maze"
+    title: Measure the real maze
+    say: |
+      The real maze has no grid squares to count. So you **measure** it with a tape measure.
+      Measure where the **middle of the robot** will travel, not along the walls.
+      Share the maze. Other teams need to measure too, so be quick and take turns.
+    do:
+      - "On paper, sketch the course you chose. Mark the start, each checkpoint and the finish."
+      - "Draw your path down the **middle** of each hallway."
+      - "Measure each straight part of the path in inches. Write the number on your sketch."
+      - "Write your list of moves, like **forward 20**, **right 90**, **forward 14**."
+      - "Look at your numbers from Robot, Drive Yourself. If your robot drove short or turned too little, write that at the top of your plan."
+    tip: "**Watch out:** the robot turns around its middle. Measure to the spot where the middle of the robot should be when it turns."
+    test:
+      - We sketched the course with its checkpoints
+      - We measured each straight part with a tape measure
+      - We wrote a list of moves with real numbers
+    fields: ["Course we measured (easy or hard)", "Number of moves in our plan", "Longest straight part (in)"]
+
+  - part: "Part 2: On the real maze"
+    title: Write the real program
+    say: |
+      Turn your list into code. The simulator field for this step is **empty**. It does not know your teacher's maze.
+      It can still help: it catches typing mistakes before you go to the robot.
+      One new line makes the robot more exact. `Drivetrain.setDriveVelocity(40, percent);` slows the driving down.
+      **Velocity** means speed. Slow robots slip less.
+    do:
+      - "Leave the `setDriveVelocity` line at the top. Under it, type your moves from your plan, in order."
+      - "Press **Run**. Fix any red error messages. The robot may bump the edge of the empty field. That is fine here."
+      - "Press **Copy for VEXcode**, then **Copy code**."
+      - "In VEXcode, open your project from Robot, Drive Yourself, the one with the **Drivetrain** in Devices."
+      - "Select from `int main() {` to the bottom of the file and paste. Keep the folded device block at the top."
+      - Save the project with your team name and the word Maze.
+    code: |
+      int main() {
+        Drivetrain.setDriveVelocity(40, percent);
+        Drivetrain.driveFor(forward, 20, inches);
+        Drivetrain.turnFor(right, 90, degrees);
+        Drivetrain.driveFor(forward, 14, inches);
+      }
+    new: "2"
+    what: "`setDriveVelocity(40, percent)` makes every drive after it run at 40 percent speed. The numbers 20 and 14 are only examples. Use your own measurements."
+    picture: {type: shot, name: vx-paste, caption: "Keep the folded device block. Paste over int main() and everything below it."}
+    stuck:
+      - "**No Drivetrain project?** Start a new C++ project and set up the Drivetrain in Devices, as you did last time."
+      - "**Lots of errors after pasting?** You pasted over the folded device block. Press Ctrl + Z, then paste lower down."
+    sim:
+      starter: |
+        int main() {
+          Drivetrain.setDriveVelocity(40, percent);
+          // TODO: type the moves from your real maze plan, one per line
+
+        }
+      field: {start: {x: 48, y: 48, heading: 0}}
+      checks:
+        - {type: code, pattern: "setDriveVelocity\\s*\\(", message: "My program sets a slow drive velocity"}
+        - {type: code, pattern: "driveFor[\\s\\S]*turnFor[\\s\\S]*driveFor", message: "It has a drive, a turn, and another drive"}
+        - {type: drove, inches: 12, message: "The program runs with no errors"}
+      solution: |
+        int main() {
+          Drivetrain.setDriveVelocity(40, percent);
+          Drivetrain.driveFor(forward, 20, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 14, inches);
+        }
+    test:
+      - My program is pasted into VEXcode under the device block
+      - I saved the project
+
+  - part: "Part 2: On the real maze"
+    title: Test and fix
+    say: |
+      Your first run will almost never be perfect. That is normal. Real robots drift.
+      Use the debugging strategy from the simulator: **run, watch, change one number, run again**.
+      Always fix the **first** thing that goes wrong. Later moves often fix themselves once the early ones are right.
+    wiring:
+      - "Turn on the Brain and plug in the USB cable. Wait for VEXcode to show the Brain is connected."
+    do:
+      - "Click **Download**. Unplug the cable. Wait for your turn on the maze."
+      - "Set the robot in the start box the **same way every time**. Your teacher will show you how to line it up."
+      - "Start the program. **Hands off.** Watch where the robot first goes wrong."
+      - "**Drove too short or too far?** Change that `driveFor` number a little."
+      - "**Turned too little or too much?** Change that `90` a little, like 85 or 95."
+      - "Download again and get back in line. Change **one number** each time."
+    stuck:
+      - "**A different result every run?** Check how you place the robot at the start. A small twist at the start becomes a big miss at the end."
+      - "**The robot spins or wanders at the start?** If you have a Gyro, keep the robot still for the first few seconds."
+      - "**Getting worse?** The battery may be low. Ask your teacher for a fresh one."
+    test:
+      - We changed one number at a time and tested after each change
+      - Our robot gets farther through the maze than it did on its first run
+    fields: ["Test runs we made", "Farthest checkpoint reached", "Number we changed the most"]
+    ask: What was the first thing that went wrong on your first real run? What did you change to fix it?
+
+  - part: "Part 2: On the real maze"
+    title: Official runs
+    say: |
+      Time for your official runs. Your teacher calls each team to the maze.
+      Once the program starts, nobody touches the robot. The class watches the walls and the checkpoints.
+      Cheer for every team. Getting a robot through a maze by code alone is hard.
+    do:
+      - "When your team is called, set the robot in the start box and start the program. **Hands off.**"
+      - "Count the checkpoints your robot passed. Did it finish? Did it touch a wall?"
+      - "Add up your points with the scoring guide: easy checkpoints 5 each, easy finished 10, hard checkpoints 10 each, hard finished 20, no wall touches 10."
+      - "**Write your score down.** Tell your teacher. Your teacher enters it on the site, and the class display shows the standings."
+      - "Before you ship, go back to **Write the real program** and type your final numbers into the editor, so you turn in the program that really ran."
+    test:
+      - Our robot made its official run with nobody touching it
+      - We wrote down our score
+      - Our teacher has our score
+    fields: ["Easy course points", "Hard course points", "No wall touches points", "Total score"]
+    ask: What is one thing you would change if you had one more run?
+
+  - part: "Part 2: On the real maze"
+    title: Look back at your season
+    say: |
+      That was the last challenge of your **Rookie Season**. Think about where you started.
+      You picked a chassis. You made the Brain play a song. You learned to drive, tuned your wheels and weight, and crossed the Impossible Bridge.
+      You built a claw or an arm, crashed castles and fought in the sumo ring.
+      Today your robot drove a maze **by itself**, with code you wrote.
+    do:
+      - Put the parts you borrowed back in the right bins.
+      - "Return your chassis the way your teacher asks. Plug the battery in to charge."
+      - Talk with your partner about your favorite challenge of the season.
+    test:
+      - Our parts are back in their bins and the battery is charging
+      - We talked about our favorite challenge
+    ask: Which arena challenge was your favorite this season, and why? What can you do now that you could not do in week one?
+
+quiz:
+  - question: What should you do before you type a maze program?
+    choices: ["Type moves quickly and hope", "Plan the path on paper as a list of moves", "Ask another team for their numbers", "Set the speed to 100 percent"]
+    answer: 1
+    why: A plan on paper shows every move and distance before you code. It is faster than guessing.
+  - question: Your robot hits a wall on its third move. The first two moves looked right. What do you do?
+    choices: ["Change every number in the program", "Start the whole program over", "Fix the number in the third move, then run again", "Fix the last move first"]
+    answer: 2
+    why: Find the first move that goes wrong and change that one number. Then run again to see if it helped.
+  - question: "Where does the robot end up?\n\n`Drivetrain.driveFor(forward, 24, inches);`\n\n`Drivetrain.turnFor(left, 90, degrees);`\n\n`Drivetrain.driveFor(forward, 12, inches);`"
+    choices: ["24 inches ahead of the start and 12 inches to the left", "36 inches straight ahead", "12 inches ahead and 24 inches to the right", "Back where it started"]
+    answer: 0
+    why: It drives 24 inches ahead, turns left, then drives 12 inches. So it ends 24 ahead and 12 to the left.
+  - question: How do you find the distances for the real maze?
+    choices: ["Guess, then guess again", "Use the same numbers as the simulator maze", "Measure the path with a tape measure", "Count the walls"]
+    answer: 2
+    why: The real maze is not the simulator maze. You have to measure where the middle of the robot will travel.
+  - question: "Why add `Drivetrain.setDriveVelocity(40, percent);` for the real maze?"
+    choices: ["A slower robot slips less, so it is more exact", "It makes the turns bigger", "It charges the battery", "The program will not run without it"]
+    answer: 0
+    why: Slow driving means less wheel slip, so the robot ends closer to where the code says.
+
+ship:
+  turn_in: code
+  note: Your maze program from the "Write the real program" step is turned in. Make sure it has your final numbers.
+  extensions:
+    - title: Victory beep
+      level: Easier
+      goal: Make the Brain play a few notes and show a message when the robot reaches the end of the maze.
+      where: At the very end of `int main()`, after your last move.
+      code: |
+        Brain.Screen.print("Maze done!");
+        Brain.playNote(2, 0, 300);
+        Brain.playNote(2, 2, 300);
+        Brain.playNote(2, 4, 600);
+      hints:
+        - "You used `Brain.playNote` in Brain Song. The numbers are octave, note and time in milliseconds."
+        - "These lines run only after the last move is finished."
+    - title: There and back again
+      level: Medium
+      goal: In the simulator, run the easy maze to the goal, turn around, and drive all the way back to the start.
+      where: Go back to **Run the easy maze** and add moves after your last one.
+      hints:
+        - "`Drivetrain.turnFor(right, 180, degrees);` turns the robot all the way around."
+        - "On the way back the moves come in the opposite order."
+        - "Each right turn becomes a left turn on the way back, and each left becomes a right."
+    - title: One number to fix them all
+      level: Challenge
+      goal: Put your turn amount in a variable, so you can fix every turn in the real maze by changing one line.
+      where: At the top of `int main()` in your real maze program.
+      code: |
+        int corner = 93;
+        Drivetrain.setDriveVelocity(40, percent);
+        Drivetrain.driveFor(forward, 20, inches);
+        Drivetrain.turnFor(right, corner, degrees);
+      new: "1, 4"
+      hints:
+        - "You made a variable called `speed` in Tune Your Bot. This one works the same way."
+        - "Use the name `corner` in every `turnFor` line in place of the number."
+        - "If every turn is a little short, make `corner` a little bigger."
+  reflect:
+    - How did planning on paper help you, or how would it have helped?
+    - What was the hardest bug you fixed today, and how did you find it?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-4) in the simulator. Ask to see a paper plan before a
+  pair types the easy maze. At the end of Day 1, show the real maze and read the scoring guide (step 5) so teams can
+  think about it overnight. Day 2: measure, code, test and official runs (steps 6-9), then the look back (step 10),
+  the quiz and Ship it. If your class is large, Day 2 is tight. See "If time is short" below.
+
+  **Set out.** The maze with the easy and hard courses, a marked start box on each, and the checkpoints marked (tape
+  on the floor or numbered cards on the walls). Tape measures (at least one for every two teams), scrap paper, pencils,
+  charged batteries and spares, USB cables. Teams need their numbers from Robot, Drive Yourself.
+
+  **Decide before class and tell the students** (the lesson says "your teacher will show you"):
+  - Where the start box, the checkpoints and the finish are on each course, and how many checkpoints each course has.
+  - How to line the robot up in the start box (for example, back bumper against a wall or a tape line).
+    A repeatable start is the biggest factor in a repeatable run.
+  - How many official runs each team gets, and whether the best run or the last run counts.
+  - Whether a team may score on both courses, and whether "No wall touches" (10) is given once or once per course.
+    The scoring guide on the site lists it once.
+  - What counts as a wall touch (any contact is the simplest rule).
+
+  **Running it fairly with a whole class.** The maze is the bottleneck. Give each team timed test slots (about 2
+  minutes: place, run, watch, leave) and keep a line order on the board. Teams fix their one number at their seat while
+  others test. Let teams measure the course in groups of two or three teams at a time before any testing starts.
+  For official runs, call teams in a fixed order, give everyone the same number of runs, and have two students act as
+  judges, one counting checkpoints and one watching for wall touches. Have each team write its score on its plan sheet,
+  then type the scores on the class page.
+
+  **If time is short.** Have every team do the easy course only, and offer the hard course to teams that finish early.
+  Step 10 (the look back) can be done as a whole-class talk in the last five minutes.
+
+  **Common trouble.** Measuring along a wall and not down the middle of the hallway. Placing the robot differently each
+  run. Changing several numbers between runs. Fixing a late move while an early move is still wrong. The old
+  `LeftMotor`/`RightMotor` project opened by mistake (the code will not build: open the Drivetrain project from last
+  lesson). A low battery late in the period: swap it and expect the numbers to shift a little.
+
+  **Check on a real robot:**
+  - Run each chassis type through the easy course yourself before class. If one chassis cannot make the turns in the
+    hallways (the 4WD turns in more space), widen the hallways or let that team start from a different angle.
+  - The Drivetrain setup for the 4WD and the 3WD Side Crawler, as flagged in Robot, Drive Yourself.
+  - With a Gyro, the robot must sit still for the first few seconds of the program. Without one, turns will drift more
+    over a long maze, so those teams will lean on the checkpoint points.
+  - That 40 percent drive velocity suits your floor. On a slick floor, 30 may be better.
+
+  **The simulator step in Part 2** has an empty field on purpose. It only checks that the program has moves and runs
+  with no errors. The robot may bump the field edge, which is fine. Students are asked to type their final numbers back
+  into that step before shipping, so the turned-in code matches what ran. Not every team will remember.
+
+  **The class display.** After the official runs, show the standings and the season standings. This is the last
+  event of the Rookie Season, so leave a few minutes for prizes and the look back.
+standards:
+  - code: 6-8.CT.b.3
+    how: Students break the maze into straight parts and turns, and plan a move for each part on paper.
+  - code: 6-8.CT.d.3
+    how: Students write programs that take the robot through an easy maze, a hard maze and the real arena maze.
+  - code: 6-8.CT.d.5
+    how: Students trace their list of moves on paper before running, and trace a three-move program in the quiz.
+  - code: 6-8.CT.d.6
+    how: Students debug by running, finding the first mistake, changing one number and running again, in the simulator and on the real maze.
+  - code: 6-8.CS.a.5
+    how: Pairs set up and demonstrate a robot that completes the maze task with no driver.

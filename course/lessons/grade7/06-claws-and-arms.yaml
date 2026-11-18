@@ -1,0 +1,650 @@
+id: claws-and-arms
+title: Claws and Arms
+tagline: Give your robot a tool, and code buttons to run it
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 at the bench
+
+mission:
+  big_question: "How can one button press make a robot grab, lift or let go?"
+  goal: |
+    So far your robot can only drive. Today it gets a **tool**. You'll learn the four kinds of add-on in the
+    bins, then write `if / else` code so controller **buttons** run a motor while you keep driving. You'll
+    practice in the simulator. Then you'll put one add-on on your real chassis and test it.
+  picture: {type: vex, names: [claw, plowbot], caption: "A claw grabs one thing. A plow pushes many things."}
+  you_need:
+    - Your team and your chassis
+    - Your Controller and a USB cable
+    - One add-on from the bins (claw, arm, pusher or wedge)
+    - One more Smart Motor and cable, if your add-on moves
+    - A block to pick up or push
+  learn:
+    - "a **manipulator** is the part of a robot that moves other things"
+    - "`if / else` lets the program **choose** what to do"
+    - "a button gives `true` while you hold it and `false` when you let go"
+  talk: You have to move a pile of 20 small blocks across the room. Then you have to carry one egg. Would you use the same tool for both jobs? Why or why not?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: Meet the manipulators
+    say: |
+      A **manipulator** is a part that lets a robot move **other things**. The bins have four kinds.
+      A **claw** opens and closes to grab one thing. An **arm** lifts up and down. A **pusher** (or plow) is a
+      wide flat front that shoves things along the floor. A **wedge** is a low ramp that slides under things.
+      Claws and arms need a **motor**. Pushers and wedges do not.
+    do:
+      - Read the four cards in the picture with your partner.
+      - "Talk about each job: carry one block home, clear ten blocks off a table, knock over a tall tower."
+      - Pick the best tool for each job. There can be more than one good answer.
+    picture:
+      type: compare
+      items:
+        - {icon: "🦀", title: "Claw", text: "Grabs and carries one thing. Needs a motor and a careful driver."}
+        - {icon: "🦾", title: "Arm", text: "Lifts things up, or reaches high. Needs a motor."}
+        - {icon: "🚜", title: "Pusher", text: "Shoves many things at once. No motor. It cannot pull things back."}
+        - {icon: "📐", title: "Wedge", text: "Slides under things and tips them. No motor. Very hard to break."}
+    test:
+      - We read all four cards
+      - We picked a tool for each of the three jobs
+    fields: ["Carry one block home", "Clear ten blocks", "Knock over a tall tower"]
+    ask: Which tools need a motor, and which do not? What is one good thing about a tool with no motor?
+
+  - part: "Part 1: In the simulator"
+    title: A button makes a choice
+    say: |
+      Your driving loop from Driver's Ed is in the editor. Now add a button. A button is a yes or no question:
+      "Is it pressed?" The answer is `true` or `false`. An **if statement** uses the answer to **choose**.
+      When the answer is `true`, the `if` block runs. When it is `false`, the `else` block runs.
+    do:
+      - Type the highlighted lines inside the loop, under the driving lines.
+      - "Press **Run**. Hold the **E** key. That is the **R Up** button. Watch the gray arm at the front of the robot."
+      - Let go of E. Then drive a little with **W** and the **up arrow**.
+    code: |
+      int main() {
+        while (true) {
+          LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+          RightMotor.setVelocity(Controller.AxisD.position(), percent);
+          LeftMotor.spin(forward);
+          RightMotor.spin(forward);
+
+          if (Controller.ButtonRUp.pressing()) {
+            ArmMotor.spin(forward);
+          } else {
+            ArmMotor.stop();
+          }
+
+          wait(20, msec);
+        }
+      }
+    new: "8-12"
+    what: "The loop asks the question again and again, very fast. While you hold R Up, the arm motor spins. When you let go, the `else` block stops it."
+    tip: "**Watch out:** the test goes inside `( )`. Each block goes inside its own `{ }`. The word `else` comes right after a `}`."
+    stuck:
+      - "**An error near else?** Check that the `if` block ends with `}` before the word `else`."
+      - "**An error about pressing?** It needs empty parentheses: `pressing()`."
+      - "**ArmMotor was not declared?** Check the capital letters: `ArmMotor`."
+    sim:
+      drive: true
+      pilot: [[0, {RUp: 1}], [1, {A: 60, D: 60}], [2, {}], [2.5, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            // TODO: if R Up is pressed, spin ArmMotor forward
+            // TODO: else, stop ArmMotor
+
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 52, heading: 0}}
+      checks:
+        - {type: code, pattern: "if\\s*\\(\\s*Controller\\.ButtonRUp\\.pressing\\s*\\(\\s*\\)\\s*\\)\\s*\\{\\s*ArmMotor\\.spin\\s*\\(\\s*forward", message: "R Up spins the arm motor forward"}
+        - {type: code, pattern: "else\\s*\\{\\s*ArmMotor\\.stop\\s*\\(\\s*\\)", message: "With no button pressed, the arm motor stops"}
+        - {type: drove, inches: 5, message: "The robot still drives"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else {
+              ArmMotor.stop();
+            }
+
+            wait(20, msec);
+          }
+        }
+    ask: What would happen if you left out the else block? Think about what the arm does after you let go.
+
+  - part: "Part 1: In the simulator"
+    title: Up and down
+    say: |
+      Your arm can go up, but it cannot come back down. You need a **second question**. `else if` asks another
+      question when the first answer was `false`. Now there are three blocks: up, down and stop. Only **one**
+      of them runs each time around the loop.
+    do:
+      - Change your `if / else` to match the highlighted lines.
+      - "Press **Run**. Hold **E** (R Up). The arm goes out. Hold **C** (R Down). The arm comes back."
+      - Drive a little too, so you know the sticks still work.
+    code: |
+      int main() {
+        while (true) {
+          LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+          RightMotor.setVelocity(Controller.AxisD.position(), percent);
+          LeftMotor.spin(forward);
+          RightMotor.spin(forward);
+
+          if (Controller.ButtonRUp.pressing()) {
+            ArmMotor.spin(forward);
+          } else if (Controller.ButtonRDown.pressing()) {
+            ArmMotor.spin(reverse);
+          } else {
+            ArmMotor.stop();
+          }
+
+          wait(20, msec);
+        }
+      }
+    new: "10-11"
+    what: "The program checks R Up first. If it is not pressed, it checks R Down. If neither is pressed, the last `else` stops the motor."
+    stuck:
+      - "**An error near else if?** It is two words, `else if`, and it comes right after a `}`."
+      - "**The arm only goes one way?** One line must say `forward` and the other `reverse`."
+    sim:
+      drive: true
+      pilot: [[0, {RUp: 1}], [1, {RDown: 1}], [2, {A: 60, D: 60}], [3, {}], [3.5, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            // TODO: else if R Down is pressed, spin ArmMotor in reverse
+            } else {
+              ArmMotor.stop();
+            }
+
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 52, heading: 0}}
+      checks:
+        - {type: code, pattern: "if\\s*\\(\\s*Controller\\.ButtonRUp\\.pressing\\s*\\(\\s*\\)\\s*\\)\\s*\\{\\s*ArmMotor\\.spin\\s*\\(\\s*forward", message: "R Up spins the arm motor forward"}
+        - {type: code, pattern: "else\\s+if\\s*\\(\\s*Controller\\.ButtonRDown\\.pressing\\s*\\(\\s*\\)\\s*\\)\\s*\\{\\s*ArmMotor\\.spin\\s*\\(\\s*reverse", message: "R Down spins it in reverse"}
+        - {type: code, pattern: "else\\s*\\{\\s*ArmMotor\\.stop\\s*\\(\\s*\\)", message: "With no button pressed, the arm motor stops"}
+        - {type: drove, inches: 5, message: "The robot still drives"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            wait(20, msec);
+          }
+        }
+    ask: A driver holds R Up and R Down at the same time. Which block runs? How do you know?
+
+  - part: "Part 1: In the simulator"
+    title: Grab and bring it home
+    say: |
+      Now the claw. A claw only needs a small move: close or open. `spinFor` turns a motor a set amount and
+      then stops by itself, so the claw does not need an `else`. `forward` **closes** the claw on a cube in
+      front of it. `reverse` **opens** it. Your job: grab the blue cube and bring it back to the blue home square.
+    do:
+      - Add the highlighted lines under the arm block.
+      - "Press **Run**. Drive up to the cube with **W** and the **up arrow**. Stop when the claw touches it."
+      - "Tap **Q** (L Up) to close the claw."
+      - "Back up into the blue square with **S** and the **down arrow**. Tap **Z** (L Down) to let go."
+    code: |
+      int main() {
+        while (true) {
+          LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+          RightMotor.setVelocity(Controller.AxisD.position(), percent);
+          LeftMotor.spin(forward);
+          RightMotor.spin(forward);
+
+          if (Controller.ButtonRUp.pressing()) {
+            ArmMotor.spin(forward);
+          } else if (Controller.ButtonRDown.pressing()) {
+            ArmMotor.spin(reverse);
+          } else {
+            ArmMotor.stop();
+          }
+
+          if (Controller.ButtonLUp.pressing()) {
+            ClawMotor.spinFor(forward, 90, degrees);
+          } else if (Controller.ButtonLDown.pressing()) {
+            ClawMotor.spinFor(reverse, 90, degrees);
+          }
+
+          wait(20, msec);
+        }
+      }
+    new: "16-20"
+    what: "L Up closes the claw a quarter turn (90 degrees). L Down opens it. With no button pressed, nothing happens to the claw, so it keeps holding the cube."
+    tip: "**Watch out:** `spinFor` needs units. Write `degrees` after the number."
+    stuck:
+      - "**The claw closed on nothing?** You were too far away. Open it, drive until the claw touches the cube, and close it again."
+      - "**The cube is still not home?** The whole cube must be inside the blue square, and the claw must be open."
+      - "**An error about units?** Each `spinFor` needs three things: the direction, the number, and `degrees`."
+    sim:
+      drive: true
+      pilot: [[0, {A: 100, D: 100}], [1.2, {}], [1.4, {LUp: 1}], [2.0, {A: -100, D: -100}], [3.6, {}], [3.8, {LDown: 1}], [4.4, {}], [4.9, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            // TODO: if L Up is pressed, close the claw: spin ClawMotor forward for 90 degrees
+            // TODO: else if L Down is pressed, open the claw: spin ClawMotor in reverse for 90 degrees
+
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 48, y: 54, heading: 0}
+        cubes: [{x: 48, y: 28, color: blue}]
+        zones: [{x: 36, y: 46, w: 24, h: 22, color: blue}]
+      checks:
+        - {type: code, pattern: "if\\s*\\(\\s*Controller\\.ButtonLUp\\.pressing\\s*\\(\\s*\\)\\s*\\)\\s*\\{\\s*ClawMotor\\.spinFor\\s*\\(\\s*forward", message: "L Up closes the claw"}
+        - {type: code, pattern: "else\\s+if\\s*\\(\\s*Controller\\.ButtonLDown\\.pressing\\s*\\(\\s*\\)\\s*\\)\\s*\\{\\s*ClawMotor\\.spinFor\\s*\\(\\s*reverse", message: "L Down opens the claw"}
+        - {type: cubesInZones, message: "The blue cube is home, and the claw let go"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            if (Controller.ButtonLUp.pressing()) {
+              ClawMotor.spinFor(forward, 90, degrees);
+            } else if (Controller.ButtonLDown.pressing()) {
+              ClawMotor.spinFor(reverse, 90, degrees);
+            }
+
+            wait(20, msec);
+          }
+        }
+    ask: The arm block ends with an else that stops the motor. The claw block has no else. Why does the claw not need one?
+
+  - part: "Part 1: In the simulator"
+    title: Delivery run
+    say: |
+      No new code. This step is **driver practice**. There are two cubes now, and the second one is off to
+      the side, so you have to turn. Bring **both** cubes into the blue home square. A claw can only hold
+      one cube at a time, so you will make two trips.
+    do:
+      - Press **Run**. Bring the first cube home the same way as before, and let go.
+      - "To turn right in place, hold **W** and the **down arrow** together. Then drive to the second cube."
+      - Grab it, back up into the blue square, and let go.
+      - Take turns. The partner who is not driving calls out "grab" and "drop".
+    stuck:
+      - "**The robot will not turn?** For a turn in place, one stick goes up and the other goes down."
+      - "**You knocked a cube out of the square?** Grab it again and bring it back. Drive slowly near home."
+      - "**The test will not tick?** Check that the claw is open and both cubes are fully inside the square."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [1.2, {}], [1.4, {LUp: 1}], [2.0, {A: -100, D: -100}], [3.6, {}], [3.8, {LDown: 1}], [4.4, {A: -100, D: -100}], [4.7, {}], [4.9, {A: 50, D: -50}], [5.685, {}], [5.9, {A: 100, D: 100}], [6.9, {}], [7.1, {LUp: 1}], [7.7, {A: -100, D: -100}], [8.7, {}], [8.9, {LDown: 1}], [9.5, {}], [10, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            if (Controller.ButtonLUp.pressing()) {
+              ClawMotor.spinFor(forward, 90, degrees);
+            } else if (Controller.ButtonLDown.pressing()) {
+              ClawMotor.spinFor(reverse, 90, degrees);
+            }
+
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 48, y: 54, heading: 0}
+        cubes: [{x: 48, y: 28, color: blue}, {x: 76, y: 62, color: blue}]
+        zones: [{x: 34, y: 44, w: 28, h: 26, color: blue}]
+      checks:
+        - {type: cubesInZones, message: "Both cubes are home, and the claw let go"}
+        - {type: code, pattern: "ClawMotor\\.spinFor", message: "My program runs the claw"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            if (Controller.ButtonLUp.pressing()) {
+              ClawMotor.spinFor(forward, 90, degrees);
+            } else if (Controller.ButtonLDown.pressing()) {
+              ClawMotor.spinFor(reverse, 90, degrees);
+            }
+
+            wait(20, msec);
+          }
+        }
+    ask: What was the hardest part of driving with a claw? What would you tell a new driver to do?
+
+  - part: "Part 2: At the bench"
+    title: Pick your add-on
+    say: |
+      Now the real robot. Next lesson is **Castle Crasher**: you knock down block towers and bring blocks of
+      your color home. Choose **one** add-on from the bins for that job. Every choice is a **trade-off**.
+      That means you get one good thing and give up another.
+    do:
+      - Go to the add-on bins with your team. Look at the claws, arms, pushers and wedges.
+      - Hold each one up to the front of your chassis. Does it fit? Is there a place to attach it?
+      - Choose one add-on. Take it, and take a Smart Motor and cable too if it needs them.
+      - Tell your teacher what you chose.
+    picture: {type: vex, names: [claw, plowbot], caption: "The add-ons in your bins may look different. Your teacher will show you."}
+    tip: "**Watch out:** take one add-on only. A robot with too many parts is heavy, slow and hard to fix."
+    test:
+      - We looked at every kind of add-on
+      - We chose ONE add-on for our chassis
+      - Our teacher knows what we chose
+    fields: ["Our chassis", "Our add-on", "Does it need a motor?"]
+    ask: What is your add-on good at? What is one thing it cannot do?
+
+  - part: "Part 2: At the bench"
+    title: Attach it and plug it in
+    say: |
+      Put the add-on on the **front** of your chassis. A part held by **one** pin can spin around. Use at
+      least **two** pins so it stays straight. If your add-on has a motor, the motor needs a cable to a
+      **Smart Port** on the Brain. Smart Ports are the numbered sockets.
+    wiring:
+      - "Arm teams: plug the arm's motor into **Port 10**."
+      - "Claw teams: plug the claw's motor into **Port 11**."
+      - "If your teacher gives you a different port, use that one and write it down."
+      - "Push each cable in until it clicks. Tuck it in so it cannot catch on a wheel."
+    do:
+      - Attach your add-on with at least two pins.
+      - "Wiggle test: hold the add-on and shake it gently. If it moves, add a pin."
+      - Roll the robot by hand. Make sure the wheels still turn and nothing drags on the floor.
+    stuck:
+      - "**No place to attach it?** Ask your teacher. Do not take your chassis apart."
+      - "**The pusher or wedge drags on the floor?** Move it up by one hole."
+      - "**The cable is too short?** Get a longer one from the bin."
+    test:
+      - Our add-on passed the wiggle test
+      - The wheels still turn freely
+      - The motor cable clicked in (if we have a motor)
+    fields: ["Our motor's port number (or none)"]
+
+  - part: "Part 2: At the bench"
+    title: Tell VEXcode about it
+    say: |
+      VEXcode only knows about parts you list in **Devices**. Open your project from Driver's Ed. It already
+      has LeftMotor, RightMotor and the Controller. Add your new motor with the **exact** name your code
+      uses. Then move your program over and download it.
+    do:
+      - "In VEXcode IQ, open **Devices**. Click **Add a device**, then **Motor**. Pick the port your cable is in."
+      - "Name it **ArmMotor** if it runs an arm. Name it **ClawMotor** if it runs a claw. Click **Done**."
+      - Your program is in the editor below. Press **Copy for VEXcode**, then **Copy code**.
+      - "In VEXcode, select from `int main() {` to the bottom of the file. Paste. Then **delete the block for a motor your robot does not have**."
+      - Save. Plug in the USB cable, click **Download**, then unplug.
+    picture: {type: shot, name: vx-devices, caption: "Add your new motor in Devices and give it the right name"}
+    tip: "**Pusher and wedge teams:** you have no new motor. Delete both button blocks in VEXcode and keep the driving lines. Your full program stays here in the simulator."
+    stuck:
+      - "**ClawMotor was not declared?** The name in Devices must match exactly, with the same capital letters. Or you kept a block for a motor you do not have."
+      - "**Lots of errors after pasting?** You pasted over the folded device block at the top. Press Ctrl + Z and paste lower."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [1, {RUp: 1}], [2, {}], [2.5, {}]]
+      starter: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            if (Controller.ButtonLUp.pressing()) {
+              ClawMotor.spinFor(forward, 90, degrees);
+            } else if (Controller.ButtonLDown.pressing()) {
+              ClawMotor.spinFor(reverse, 90, degrees);
+            }
+
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 56, heading: 0}}
+      checks:
+        - {type: code, pattern: "ArmMotor\\.stop", message: "My program has the arm buttons"}
+        - {type: code, pattern: "ClawMotor\\.spinFor", message: "My program has the claw buttons"}
+        - {type: drove, inches: 5, message: "It still drives in the simulator"}
+      solution: |
+        int main() {
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+
+            if (Controller.ButtonRUp.pressing()) {
+              ArmMotor.spin(forward);
+            } else if (Controller.ButtonRDown.pressing()) {
+              ArmMotor.spin(reverse);
+            } else {
+              ArmMotor.stop();
+            }
+
+            if (Controller.ButtonLUp.pressing()) {
+              ClawMotor.spinFor(forward, 90, degrees);
+            } else if (Controller.ButtonLDown.pressing()) {
+              ClawMotor.spinFor(reverse, 90, degrees);
+            }
+
+            wait(20, msec);
+          }
+        }
+    test:
+      - Devices shows our new motor with the right name (or we have no new motor)
+      - Our program is downloaded to the Brain
+      - The real robot still drives with the sticks
+
+  - part: "Part 2: At the bench"
+    title: Test it and fix one thing
+    say: |
+      Find out if your add-on does its job. Engineers **test**, **change one thing**, and **test again**.
+      If you change two things at once, you cannot tell which one helped.
+    do:
+      - Put a block on the floor about three big steps from a tape line. The tape line is "home".
+      - "Claw and arm teams: pick up or hook the block and bring it home. Pusher and wedge teams: push the block home."
+      - Try it 3 times. Count how many times the block got home.
+      - "Choose **one** thing to fix. Ideas: the height of the add-on, a loose pin, or which way the motor turns."
+      - Try 3 more times and count again.
+    tip: "**Safety:** keep fingers, hair and sleeves away from the claw, the arm and the wheels while the program runs. If a motor hums but does not move, let go of the button."
+    stuck:
+      - "**The claw opens when you press L Up?** Swap `forward` and `reverse` in the claw lines, then download again."
+      - "**The arm goes down when you press R Up?** Swap `forward` and `reverse` in the arm lines."
+      - "**The claw will not hold the block?** Change the 90 to a bigger number, like 120, and test again."
+      - "**Nothing moves?** Check the cable at both ends, and check the port number in Devices."
+    test:
+      - We tested our add-on 3 times
+      - We changed ONE thing
+      - We tested 3 more times
+    fields: ["Blocks home before (out of 3)", "The one thing we changed", "Blocks home after (out of 3)"]
+    ask: Did your change help? How do you know?
+
+quiz:
+  - question: What is a manipulator?
+    choices: ["The part of a robot that moves other things", "The battery", "The program on the Brain", "The wheel that steers"]
+    answer: 0
+    why: Claws, arms, pushers and wedges are all manipulators. They let the robot grab, lift, push or tip things.
+  - question: Your job is to shove a big pile of blocks off the field as fast as you can. Which add-on fits best?
+    choices: ["A claw", "A pusher", "A Touch LED", "A longer cable"]
+    answer: 1
+    why: A pusher moves many things at once. A claw only holds one thing at a time.
+  - question: "The driver is holding **no buttons**. What does the arm motor do?\n\n`if (Controller.ButtonRUp.pressing()) {`\n\n`  ArmMotor.spin(forward);`\n\n`} else {`\n\n`  ArmMotor.stop();`\n\n`}`"
+    choices: ["Spins forward", "Spins in reverse", "Stops", "The program ends"]
+    answer: 2
+    why: The button is not pressed, so the test is false. The `else` block runs and stops the motor.
+  - question: "What does `Controller.ButtonLUp.pressing()` give while you hold the L Up button?"
+    choices: ["The number 100", "true", "false", "The word forward"]
+    answer: 1
+    why: A button gives `true` while it is held and `false` when it is not.
+  - question: Your code says ClawMotor, but VEXcode says "ClawMotor was not declared". What should you check first?
+    choices: ["The battery", "The wheels", "The motor's name in the Devices window", "The color of the claw"]
+    answer: 2
+    why: The name in Devices must match the name in your code exactly, with the same capital letters.
+
+ship:
+  turn_in: code
+  note: Your program from the last simulator step is turned in with your answers and your test results.
+  extensions:
+    - title: Tool name on the screen
+      level: Easier
+      goal: Show your team name and your add-on on the Brain screen when the program starts.
+      where: At the top of `int main()`, above `while (true)`.
+      code: |
+        Brain.Screen.print("Team Bolt");
+        Brain.Screen.newLine();
+        Brain.Screen.print("Tool: claw");
+      hints:
+        - "This goes **before** the loop, so it prints only once."
+        - "Change the words inside the quotation marks to your own."
+    - title: Gentle arm
+      level: Medium
+      goal: Make the arm move slowly, so it does not slam up and down.
+      where: At the top of `int main()`, above `while (true)`.
+      code: |
+        ArmMotor.setVelocity(30, percent);
+      hints:
+        - "30 percent is slow. Try 50. Which number is easiest to control?"
+        - "You can do the same for the claw with `ClawMotor.setVelocity(30, percent);`"
+    - title: Grab beep
+      level: Challenge
+      goal: Make the Brain play one note when the claw closes and a different note when it opens.
+      where: Inside the two claw blocks, under each `spinFor` line.
+      hints:
+        - "You used `Brain.playNote(1, 0, 200);` in Brain Song. The numbers are the octave, the note and the time in milliseconds."
+        - "Put a high note in the L Up block and a low note in the L Down block."
+        - "Keep the notes short. The robot cannot read the sticks while a note plays."
+  reflect:
+    - Which add-on did your team choose, and what trade-off did you make?
+    - Explain in your own words what `else` does in your arm code.
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (five steps, all in the simulator). Fast finishers repeat
+  the Delivery run with the other partner driving, or start an extension. Day 2: Part 2 at the bench (pick,
+  attach, Devices and download, test), then the quiz and Ship it. Attaching and downloading are the slow steps.
+
+  **Before class.** Set out the add-on bins so teams can see every kind: claws, arms, pushers and wedges, with
+  a Smart Motor and a cable for each claw and arm. Decide whether add-ons are **pre-built modules** that pin on
+  (best for time) or small kits. This lesson assumes they pin on to the front of every chassis with two or more
+  pins. Try each add-on on each of the four chassis first, and tell the class about any pair that does not fit.
+  Set out blocks for testing and put a tape "home" line on the floor for each group. Charge batteries.
+
+  **Ports.** The lesson uses **Port 10 for ArmMotor** and **Port 11 for ClawMotor**. If your chassis already use
+  those ports, give the class other numbers. The port in Devices must match the cable.
+
+  **The code.** The simulator program has both an arm block and a claw block so every student learns
+  `if / else if / else`. On the real robot, teams delete the block for a motor they do not have (step 8).
+  Pusher and wedge teams delete both and keep only the driving lines. Their turned-in code is still the full
+  simulator program.
+
+  **Check on a real robot:** `ClawMotor.spinFor(forward, 90, degrees)` waits until the motor has turned the
+  whole 90 degrees. If the claw closes on a block before that, the motor may stall and the program may wait
+  there. While it waits, the drive motors keep their last speed and the sticks do nothing. Test this with your
+  claws. Fixes: lower the 90 until the claw just grips, or add `ClawMotor.setTimeout(1, seconds);` above
+  `while (true)` on the real robot (the simulator does not know `setTimeout` for the claw, so add it in VEXcode
+  only).
+
+  **Check on a real robot:** which way is "close"? In the simulator `forward` closes the claw. On a real claw
+  it depends on how the motor is mounted. Teams swap `forward` and `reverse`, or you tick **Reverse** for the
+  motor in Devices. The same goes for the arm going up.
+
+  **Check on a real robot:** an arm run with `spin` and `stop` may sag when the button is released. If it
+  does, add `ArmMotor.setStopping(hold);` above the loop. Also check that holding the arm button at the end of
+  its travel does not strain the motor. Tell students to let go when the arm stops moving.
+
+  **Common trouble.** A missing `}` before `else`. `pressing` without `()`. `spinFor` without `degrees`. A motor
+  named `Motor10` in Devices instead of `ArmMotor`. Pasting over the folded device block. Cables that reach
+  the wheels. In the simulator, students close the claw too early: the claw must be touching the cube.
+
+  **Safety.** Fingers, hair and sleeves stay away from claws, arms and wheels while a program runs. Robots are
+  tested on the floor, not on a table edge.
+
+  **Check for understanding.** Ask a pair to read their arm block aloud as "if... otherwise if... otherwise".
+standards:
+  - code: 6-8.CS.a.4
+    how: Students use controller buttons as inputs and a third motor as an actuator, linked by the Brain's program.
+  - code: 6-8.CS.a.5
+    how: Teams choose an add-on, attach it to their chassis and show that it can move a block home.
+  - code: 6-8.CT.b.1
+    how: Students combine the forever loop with if / else if / else so buttons run an arm and a claw while driving.
+  - code: 6-8.CT.b.2
+    how: Students predict which block runs for different button presses, in the steps and in the quiz.
+  - code: 6-8.CT.d.6
+    how: Teams test their add-on three times, change one thing, and test again, recording both results.
+  - code: 6-8.CS.a.7
+    how: Students diagnose port, cable and device-name problems when adding a motor in VEXcode's Devices window.

@@ -6,9 +6,10 @@ minutes: 80          # about two class periods: Part 1 builds and counts, Part 2
 mission:
   big_question: "Why can't a robot be as fast AND as strong as possible?"
   goal: |
-    A robot moves because **motors** turn **gears** and wheels. Today there is no code. You open up the idea of a
-    Smart Motor, build a **gear tester**, turn it by hand and **count**. You'll find the rule every robot builder
-    uses: gears can give you **speed** or **strength**, never both. Then you'll pick the gearing for a pushing battle bot.
+    Welcome to the **Pro Season** in **Circuit City Arena**. This term your team tunes a robot, codes it and
+    competes in scored challenges. Parts come from the **bins** and go back there. Today there is no code. You
+    build a small **gear tester**, turn it by hand and **count**. You'll find the rule every robot builder uses:
+    gears give you **speed** or **strength**, never both.
   picture:
     type: compare
     items:
@@ -17,7 +18,7 @@ mission:
     caption: The same two gears. Which one you turn changes everything.
   you_need:
     - A partner or a team of three
-    - 1 Smart Motor and 1 Smart Cable
+    - "From the bins: 1 Smart Motor and 1 Smart Cable"
     - "Gears: one 12-tooth and one 36-tooth"
     - 2 shafts, 4 rubber shaft collars and a long beam or plate
     - A marker or small stickers, string, and a small weight
@@ -30,22 +31,22 @@ mission:
 
 build:
   - part: "Part 1: Motor and gears"
-    title: A motor is a circuit too
+    title: Inside a Smart Motor
     say: |
-      In Light It Up, electricity went around a loop and an LED did the work. A **Smart Motor** is the same idea
-      with a bigger job. Inside the case are three things: an **electric motor** that spins, **gears** that slow
+      A robot moves because **motors** turn gears and wheels. A VEX IQ **Smart Motor** is more than a motor.
+      Inside the case are three things: an **electric motor** that spins, **gears** that slow
       it down and make it stronger, and a **sensor** that counts how far it has turned.
       The **Smart Cable** carries **power** to the motor and **data** back to the Brain.
     picture: {type: vex, names: [smartmotor], caption: "A Smart Motor. The square hole is where a shaft goes in. The Smart Cable clicks into its socket."}
     do:
-      - Pick up your Smart Motor. Find the **square hole** that turns and the **socket** for the cable.
+      - Fetch your parts from the bins. Pick up your Smart Motor. Find the **square hole** that turns and the **socket** for the cable.
       - Push a Smart Cable into the socket until it **clicks**. To take it out, press the tab and pull.
       - Push a shaft into the square hole and turn it slowly with your fingers. Feel the gears inside push back.
     test:
       - I found the square hole and the cable socket
       - I clicked a Smart Cable in and took it out again
       - I turned the motor by hand with a shaft
-    ask: In Light It Up the output was an LED. What is the output here? What does the Smart Cable carry that your jumper wires did not?
+    ask: The Smart Cable carries two things. What are they, and which way does each one go? Why would a robot want to know how far a motor has turned?
 
   - part: "Part 1: Motor and gears"
     title: Square shafts, round holes
@@ -186,18 +187,18 @@ build:
   - part: "Part 2: Speed or strength"
     title: Gear up for battle
     say: |
-      In a few lessons you'll build a **battle bot**. Its job is to **push** another robot out of a ring.
-      Your team has to choose how the motors drive the wheels: geared for speed, geared for torque, or straight
+      In a few lessons your team enters the **Battle Bot Challenge**. Your robot's job is to **push** another robot out of a ring.
+      Think about how the motors should drive the wheels: geared for speed, geared for torque, or straight
       from the motor with no extra gears. There is no perfect answer. Every choice gives something up.
     do:
       - As a team, pick the gearing you would want for a pushing robot.
       - Set up your gear tester to show that choice.
       - "Show your teacher: turn it, say which gear is driving, and give its **gear ratio**."
-      - Take your tester apart and sort the parts back into the kit.
+      - Take your tester apart and sort every part back into its bin.
     test:
       - Our tester shows the gearing we chose
       - We told our teacher the driving gear, the ratio and what we give up
-      - Our parts are sorted back into the kit
+      - Every part is back in its bin
     fields: ["Our choice", "Its gear ratio", "What we give up"]
     ask: A battle bot geared for torque pushes hard but moves slowly. Describe one moment in a match when being slow could lose it for you.
 
@@ -258,9 +259,11 @@ ship:
 teacher_notes: |
   **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5): the Smart Motor, shafts, building the tester and both
   counting tests. Day 2: Part 2 (steps 6-9): gear ratio, the torque test, the trade and the team's choice, then the quiz.
-  Leave the testers built between days if you can.
+  The room is shared, so plan for testers to come apart at the end of Day 1 unless you have a shelf for them.
+  The tester takes about five minutes to rebuild on Day 2.
 
-  **Before class.** Bag one set per team: 1 Smart Motor, 1 Smart Cable, a 12-tooth and a 36-tooth gear, 2 shafts
+  **Before class.** This is the first lesson of the course and assumes nothing from before. Show the class where
+  the bins are and how parts go back. Bag one set per team, or let teams fetch from the bins: 1 Smart Motor, 1 Smart Cable, a 12-tooth and a 36-tooth gear, 2 shafts
   (long enough to hold while turning), 4 rubber shaft collars, one long beam or plate, about 50 cm of string and a
   small weight (a few wheels in a bag, or a full pencil case). **Build one tester yourself first.** With VEX IQ gears
   a 12-tooth and a 36-tooth gear should mesh with one empty hole between the shafts; check this with your own parts.
@@ -280,7 +283,7 @@ teacher_notes: |
   screen, which makes the turn-counting sensor visible.
 
   **Looking ahead.** There is no single right answer in step 9. A torque-geared bot pushes hard but is slow to get
-  position. Pushing force is also limited by how well the wheels grip the floor, which teams meet in Build the Drive Base.
+  position. Pushing force is also limited by how well the wheels grip the floor, which teams meet in the next lesson, Pick Your Chassis.
 standards:
   - code: 6-8.CS.a.4
     how: Students identify the parts of a Smart Motor (motor, gears, turn-counting sensor) and how its cable carries power and data to and from the Brain.

@@ -1,15 +1,15 @@
 id: feel-the-wall
 title: Feel the Wall
-tagline: Give your robot its first sense, so it knows when it bumps into something
-minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 on the real robot
+tagline: Give your robot its first sense, then send it through the maze with no driver
+minutes: 120         # about three class periods: Part 1 in the simulator, Part 2 on the real robot, Part 3 the arena challenge
 
 mission:
   big_question: "How can a robot know it has hit something?"
   goal: |
-    Last lesson your robot followed a plan, but it was blind. Today it gets its first **sensor**:
-    a **Bumper Switch**. It is a switch, like the button in Light It Up.
+    In Drive by Code your robot followed a plan, but it was blind. Now it gets its first **sensor**:
+    a **Bumper Switch**. It is a switch, like a button on the controller.
     Your program reads it with `if / else` and shows what it feels on a **Touch LED**.
-    You'll finish with a bounce bot that finds its own way around the field.
+    Then you enter the arena challenge **Maze Runner Pro**: the robot finds the maze walls by itself. No driver.
   picture:
     type: flow
     loop: true
@@ -17,14 +17,14 @@ mission:
       - {icon: "🧱", label: "Sense: is the bumper pressed?", color: "#f5a623"}
       - {icon: "🤔", label: "Decide: if / else", color: "#2f6bff"}
       - {icon: "🚦", label: "Act: motors and the Touch LED", color: "#33c95a"}
-    caption: Input, decide, output. The same loop as Light It Up, now on wheels.
+    caption: Sense, decide, act. Every robot that reacts to the world runs this loop.
   you_need:
     - A partner
-    - Your robot from Drive by Code
-    - A Bumper Switch and a Touch LED
-    - Two Smart Cables
+    - Your chassis, with the Gyro Sensor from Drive by Code
+    - "From the bins: a Bumper Switch, a Touch LED and two Smart Cables"
     - A USB cable for the Brain
     - A wall, a box or a big book to bump into
+    - The maze (your teacher will show you)
   learn:
     - "a **sensor** is an input: it tells the Brain about the world"
     - "the Bumper Switch is a switch: pressed is `true`, not pressed is `false`"
@@ -36,8 +36,8 @@ build:
   - part: "Part 1: In the simulator"
     title: A switch you can read
     say: |
-      In Light It Up, pressing a button **closed a circuit**. The Bumper Switch is the same kind of part.
-      Pushed in, the circuit is closed, and `Bumper.pressing()` is `true`. Let go, and it is `false`.
+      A **switch** is a part with two states: pressed or not. The Bumper Switch is a switch on the robot's nose.
+      Pushed in, `Bumper.pressing()` is `true`. Let go, and it is `false`.
       In Battle Bot Design, `if / else` read a controller button. A sensor is read the same way.
       The `if` sits inside `while (true)`, so the Brain checks it over and over.
     do:
@@ -248,7 +248,7 @@ build:
       - Push each cable in until it clicks. Tuck the cables away from the wheels.
       - Push the robot gently into a wall by hand. Check the bumper's button gets pushed in before any other part touches.
     picture: {type: vex, names: [bumper, touchled], caption: "The Bumper Switch (input) and the Touch LED (output)"}
-    tip: "**Watch out:** if a battle bot wedge or plow sticks out past the bumper, the bumper never gets pressed. Take it off or move the bumper forward."
+    tip: "**Watch out:** if a battle bot wedge or pusher sticks out past the bumper, the bumper never gets pressed. Take it off or move the bumper forward."
     test:
       - The Bumper Switch is at the front and plugged into Port 8
       - The Touch LED is plugged into Port 2
@@ -351,15 +351,145 @@ build:
     fields: ["Bumps in one minute", "Best back-up distance (in)", "Best turn (degrees)"]
     ask: Which back-up distance and turn amount worked best in your space? What went wrong with the ones that did not?
 
+  - part: "Part 3: Arena challenge: Maze Runner Pro"
+    title: Count the bumps
+    say: |
+      A bounce bot always turns right. A maze needs left turns too. So give the robot a memory: a variable
+      that **counts the bumps**. After each bump, a second `if / else` picks the turn. Here the maze needs
+      right, right, **left**. The bumper finds every wall, so you never measure how long a hallway is.
+    do:
+      - "Trace the maze with a finger first. At which bump must the robot turn left?"
+      - "Add the highlighted `if / else` in place of the single turn line."
+      - "Press **Run**. The robot should reach the green goal. Stop the program when it gets there."
+    code: |
+      int main() {
+        int bumps = 0;
+        while (true) {
+          if (Bumper.pressing()) {
+            bumps = bumps + 1;
+            TouchLED.setColor(red);
+            Drivetrain.driveFor(reverse, 6, inches);
+            if (bumps == 3) {
+              Drivetrain.turnFor(left, 90, degrees);
+            } else {
+              Drivetrain.turnFor(right, 90, degrees);
+            }
+          } else {
+            Drivetrain.drive(forward);
+            TouchLED.setColor(green);
+          }
+          wait(20, msec);
+        }
+      }
+    new: "8-12"
+    what: "`bumps` starts at 0 and goes up by 1 at every wall. `bumps == 3` asks: is this the third bump? If so, turn left. For any other bump, turn right. An `if` inside another `if` is called **nested**."
+    tip: "**Watch out:** `==` asks a question. A single `=` would change the variable."
+    stuck:
+      - "**It turns the wrong way at the bottom?** Check the number in `bumps == 3`, and that `left` is in the `if` branch."
+      - "**bumps never goes up?** `int bumps = 0;` must be **above** `while (true)`, not inside it."
+    sim:
+      starter: |
+        int main() {
+          int bumps = 0;
+          while (true) {
+            if (Bumper.pressing()) {
+              bumps = bumps + 1;
+              TouchLED.setColor(red);
+              Drivetrain.driveFor(reverse, 6, inches);
+              // TODO: if this is bump number 3, turn LEFT 90 degrees
+              // TODO: else, turn right 90 degrees
+              Drivetrain.turnFor(right, 90, degrees);
+            } else {
+              Drivetrain.drive(forward);
+              TouchLED.setColor(green);
+            }
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 12, y: 60, heading: 0}
+        walls: [{x: 20, y: 24, w: 4, h: 48}, {x: 44, y: 0, w: 4, h: 48}]
+        goal: {x: 84, y: 60, r: 8}
+      checks:
+        - {type: reachGoal, message: "The robot gets through the maze to the green goal"}
+        - {type: code, pattern: "if\\s*\\(\\s*bumps\\s*==\\s*\\d+", message: "The bump count picks the turn"}
+        - {type: code, pattern: "if\\s*\\(\\s*!?\\s*Bumper\\.pressing\\s*\\(\\s*\\)", message: "The bumper finds the walls"}
+      solution: |
+        int main() {
+          int bumps = 0;
+          while (true) {
+            if (Bumper.pressing()) {
+              bumps = bumps + 1;
+              TouchLED.setColor(red);
+              Drivetrain.driveFor(reverse, 6, inches);
+              if (bumps == 3) {
+                Drivetrain.turnFor(left, 90, degrees);
+              } else {
+                Drivetrain.turnFor(right, 90, degrees);
+              }
+            } else {
+              Drivetrain.drive(forward);
+              TouchLED.setColor(green);
+            }
+            wait(20, msec);
+          }
+        }
+    ask: Your program has no hallway lengths in it. What would you have to change if every hallway were twice as long?
+
+  - part: "Part 3: Arena challenge: Maze Runner Pro"
+    title: Plan your maze run
+    say: |
+      **Maze Runner Pro** is a Circuit City Arena challenge. Your robot must get through the real maze by
+      code, finding the walls with its Bumper Switch. **No driver.** You may remember a maze from last year.
+      That one used measured moves. This one uses a sensor. Your teacher will show you the maze, the start
+      and the **checkpoints** (marked spots along the way).
+    do:
+      - "**Scoring:** each checkpoint **10** points. Finished the maze **20**. Used the sensor, not just measured moves **10**."
+      - "Walk the maze with your partner. At each wall the robot will bump, write **L** or **R** for the turn."
+      - "Change your program to match. Use `else if` for more left turns, like `else if (bumps == 5)`."
+      - "Download it. Test one hallway at a time: does bump 1 turn the right way? Then bump 2?"
+      - "Tune the back-up distance so the robot ends up in the middle of the next hallway."
+    tip: "**Watch out:** a robot that hits a wall at an angle may miss the bumper. Start it straight, and let each bump square it up."
+    stuck:
+      - "**It turns too early or too late?** Change the back-up distance, not the turn."
+      - "**It turns the wrong way at one wall?** Count the bumps out loud as it runs. Is that bump number in your code?"
+      - "**The turns drift?** Wait for the Gyro at the start, and keep the robot still while it gets ready."
+    test:
+      - We wrote the turn for every bump in the maze
+      - Our program uses the bump count to pick each turn
+      - The robot passed at least the first checkpoint in practice
+    fields: ["Our turns in order (L or R)", "Back-up distance (in)"]
+    ask: The scoring gives 10 points for using the sensor. What can a sensor run do that a measured run cannot?
+
+  - part: "Part 3: Arena challenge: Maze Runner Pro"
+    title: Run the maze
+    say: |
+      Time for your official run. Put the robot on the start, start the program and step back.
+      Hands off until it stops or your teacher ends the run. Checkpoints count even if the robot does not
+      finish. Write down your score. Your teacher enters it on the site, and it goes on the
+      **Circuit City Arena standings**.
+    do:
+      - "When your team is called, set the robot on the start. Start the program. Hands off."
+      - "Count the checkpoints the robot passes: **10** points each."
+      - "**Finished the maze:** 20 points."
+      - "**Used the sensor, not just measured moves:** 10 points. Show your teacher the bumper in your code."
+      - "Add up your score, write it down and give it to your teacher to enter."
+    test:
+      - We made our official run with no driver
+      - We added up our score with the scoring guide
+      - We gave our score to our teacher
+    fields: ["Checkpoints passed", "Finished the maze (yes or no)", "Sensor points (10 or 0)", "Our arena score"]
+    ask: Where did your robot do best in the maze, and where did it lose points? What would you change first?
+
 quiz:
   - question: "The bumper is pushed in against a wall. What does `Bumper.pressing()` give?"
     choices: ["`true`", "`false`", "The distance to the wall", "The color of the wall"]
     answer: 0
     why: A pushed-in bumper is a closed switch. pressing() is true while it is held in, and false when it is let go.
-  - question: Which part from Light It Up works most like the Bumper Switch?
-    choices: ["The LED", "The resistor", "The button", "The battery"]
+  - question: Which everyday thing works most like the Bumper Switch?
+    choices: ["A light bulb", "A speaker", "A doorbell button", "A battery"]
     answer: 2
-    why: Both are switches. Pressing one closes a circuit, and the computer reads that as an input.
+    why: Both are switches with two states, pressed or not. The computer reads that as an input.
   - question: "The bumper is **not** pressed. What does this print?\n\n`if (Bumper.pressing()) {`\n\n`  Brain.Screen.print(\"Ouch\");`\n\n`} else {`\n\n`  Brain.Screen.print(\"Clear\");`\n\n`}`\n\n`Brain.Screen.print(\"!\");`"
     choices: ["Ouch!", "Clear!", "OuchClear!", "Clear"]
     answer: 1
@@ -374,7 +504,7 @@ quiz:
     why: An output is something the Brain controls. The Brain tells the Touch LED which color to show. The bumper is an input.
 
 ship:
-  note: Your bounce bot from the last simulator step is turned in with your answers.
+  note: Your maze program from the last simulator step is turned in with your answers and your arena score.
   extensions:
     - title: Warning light
       level: Easier
@@ -416,16 +546,34 @@ ship:
       hints:
         - "`while (true)` never ends. A loop can test something else: `while (bumps < 5)` keeps going only while the count is under 5."
         - "Statements after the loop's closing `}` run when the loop ends. Put `Drivetrain.stop();` and `TouchLED.setColor(blue);` there."
-        - "You will use loops like this with a sensor in the next lesson."
+        - "You will use loops like this with a sensor in See It Coming."
   reflect:
-    - How is the Bumper Switch like the button in Light It Up? How is what you did with it different?
+    - How is the Bumper Switch like a button on the controller? How is what you did with it different?
     - The bumper only works when the robot touches something. Name one job where that is a problem.
 
 teacher_notes: |
-  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-3) in the simulator, then step 4 (mounting and wiring) if
-  there is time. Day 2: steps 4-7 with the real robots, then the quiz and Ship it.
+  **Pacing (three periods).** Day 1: Mission and Part 1 (steps 1-3) in the simulator, then step 4 (mounting and wiring) if
+  there is time. Day 2: steps 4-7 with the real robots, then step 8 (the maze in the simulator). Day 3: steps 9-10,
+  the Maze Runner Pro arena challenge, then the quiz and Ship it. Short on time? Drop bumper tag from step 7.
 
-  **Before class.** Charge batteries. Each team needs a Bumper Switch, a Touch LED and two Smart Cables. Set up places to
+  **Maze Runner Pro (Circuit City Arena).** Set up the maze and mark the start, the finish and the checkpoints
+  before Day 3. The lesson gives no maze dimensions or checkpoint count: students are told "your teacher will
+  show you". The scoring guide in the lesson is the one on the site: each checkpoint 10, finished the maze 20,
+  used the sensor (not just measured moves) 10. Teams write their score in step 10 and hand it to you; you type
+  the scores on the class page and the site updates the standings on the class display. Decide and announce: how
+  many official runs each team gets (best run counts is kindest), a time limit for a run, and whether a team may
+  restart. Give the sensor points if the bumper decides when the robot turns, even if the robot does not finish.
+  A maze of right-angle turns with walls at the end of each hallway suits this program best: the robot drives
+  until it bumps, backs up and turns.
+
+  **Check on a real robot:**
+  - That the maze walls are heavy and tall enough to press the Bumper Switch and not slide.
+  - That hallways are wide enough for the widest chassis (the 4WD) to back up and turn.
+  - That a 6 inch back-up leaves the robot near the middle of the next hallway. If not, give teams a starting number.
+  - That 90 degree turns are accurate on each chassis with the Gyro. If they drift, let teams tune the turn number.
+
+  **Before class.** Charge batteries. Each team fetches a Bumper Switch, a Touch LED and two Smart Cables from the bins.
+  On shared robots, decide whether the sensors stay on between classes. If not, allow five minutes to refit them. Set up places to
   bump into: the field walls, heavy boxes, or books on edge. Light boxes get pushed along instead of pressing the bumper.
   Pool noodles are good taggers. Mark off a floor area for each team with tape or boxes.
 
@@ -434,7 +582,7 @@ teacher_notes: |
   while the robot's front is touching a wall. Touching a wall is the whole idea here, so no step asks for "no collisions".
 
   **Common trouble.** The device names in VEXcode don't match the code (`Bumper8` or `TouchLED2` instead of `Bumper` and
-  `TouchLED`). A battle bot wedge sticks out past the bumper. The robot meets a wall at an angle, so a corner touches
+  `TouchLED`). A wedge or pusher left on from the Battle Bot Challenge sticks out past the bumper. The robot meets a wall at an angle, so a corner touches
   and the bumper doesn't: a beam across the bumper's button makes a wider target. `if (Bumper.pressing)` with no
   parentheses. The `if / else` typed below the loop instead of inside it.
 
@@ -442,7 +590,7 @@ teacher_notes: |
   Tap the "robot" on the shoulder for a bump. Do they take the right branch each lap?
 
   **The class display.** The bumper only knows about a wall after the crash. Ask what kind of sensor would be better.
-  That is the next lesson.
+  That is See It Coming.
 standards:
   - code: 6-8.CS.a.4
     how: Students name the Bumper Switch as a sensor (input) and the Touch LED and motors as outputs, and wire both to the Brain.
@@ -454,3 +602,5 @@ standards:
     how: Students predict when the light will change before running, and trace an if / else in the quiz.
   - code: 6-8.CS.a.7
     how: Students test the sensor by hand and diagnose port, cable and device-name problems on the real robot.
+  - code: 6-8.CT.d.3
+    how: Teams write and tune a program that takes the robot through a real maze with no driver, using a bump counter to choose each turn.

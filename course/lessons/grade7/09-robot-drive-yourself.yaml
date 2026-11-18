@@ -1,0 +1,485 @@
+id: robot-drive-yourself
+title: Robot, Drive Yourself
+tagline: Put the controller down. Your program does the driving now.
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 on the real robot
+
+mission:
+  big_question: "Can a robot drive the right path with nobody holding the controller?"
+  goal: |
+    All season **you** drove your robot with the joysticks. Today the **program** drives.
+    You will write exact moves, like "forward 12 inches" and "turn right". The robot does them in order.
+    First you test in the **simulator**. Then your real chassis drives by itself, and you **measure** how close it gets.
+  picture:
+    type: flow
+    steps:
+      - {icon: "⬆️", label: "Drive a set distance", color: "#2f6bff"}
+      - {icon: "↪️", label: "Turn a set amount", color: "#9b51e0"}
+      - {icon: "🔢", label: "Put moves in order", color: "#11b39e"}
+      - {icon: "📏", label: "Measure and fix", color: "#33c95a"}
+    caption: A path is a list of exact moves, done in order.
+  you_need:
+    - A partner
+    - Your chassis
+    - A USB cable for the Brain
+    - A tape measure or ruler
+    - Masking tape and a pencil
+  learn:
+    - "`driveFor` drives an exact distance, and `turnFor` turns an exact amount"
+    - "a **sequence** is a list of moves done in order"
+    - "a **for loop** repeats moves, so you type them once"
+    - "real robots are never perfect, so engineers **measure** and adjust"
+  talk: Your partner closes their eyes. You must get them to the door using only words. What do you have to tell them? What could go wrong?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: Drive an exact distance
+    say: |
+      **Autonomous** means the robot drives itself. There is no driver and no controller.
+      So the program must say **exactly** what to do. Your first move is `Drivetrain.driveFor`.
+      It needs three things inside the parentheses: which way, how far, and the **units**.
+      Units tell what the number measures. Here the units are inches.
+    do:
+      - Type the highlighted line under the `// TODO` comment.
+      - Press **Run**. The robot drives 12 inches and stops. That is one grid square. It is not far enough.
+      - Count the grid squares from the robot to the green goal. Each square is **12 inches**.
+      - Change the `12` to the right number. Press **Run** again.
+    code: |
+      int main() {
+        Drivetrain.driveFor(forward, 12, inches);
+      }
+    new: "2"
+    what: "`driveFor(forward, 12, inches)` drives forward 12 inches, then stops by itself. Change the number and the robot drives a different distance."
+    tip: "**Watch out:** the units are part of the move. `Drivetrain.driveFor(forward, 12);` is an error."
+    stuck:
+      - "**An error about a semicolon?** The line must end with `;`."
+      - "**Drivetrain was not declared?** Check the capital D. It is `Drivetrain`, one word."
+      - "**Stopped short?** The goal is 3 squares away. What is 3 times 12?"
+    sim:
+      starter: |
+        int main() {
+          // TODO: drive forward to the green goal
+
+        }
+      field: {start: {x: 48, y: 60, heading: 0}, goal: {x: 48, y: 24, r: 6}}
+      checks:
+        - {type: code, pattern: "driveFor\\s*\\(\\s*forward\\s*,\\s*\\d+\\s*,\\s*inches", message: "My program uses driveFor with inches"}
+        - {type: goal, message: "The robot stops inside the green goal"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 36, inches);
+        }
+    ask: What number got the robot into the goal? How did you work it out?
+
+  - part: "Part 1: In the simulator"
+    title: Turn a corner
+    say: |
+      The goal is not straight ahead this time. The robot needs a new move: `Drivetrain.turnFor`.
+      It spins the robot **in place**. It also needs three things: which way, how much, and the units.
+      Turns are measured in **degrees**. A square corner is **90 degrees**.
+      Drive, turn, drive makes a path shaped like the letter **L**.
+    do:
+      - Type the three highlighted moves.
+      - "Before you press Run, **predict**: where will the robot stop?"
+      - Press **Run**. If it misses the goal, count the squares again and fix the last number.
+    code: |
+      int main() {
+        Drivetrain.driveFor(forward, 36, inches);
+        Drivetrain.turnFor(right, 90, degrees);
+        Drivetrain.driveFor(forward, 24, inches);
+      }
+    new: "2-4"
+    what: "The robot drives up 36 inches. Then it turns right to make a square corner. Then it drives again. The last number here is too small. You fix it."
+    stuck:
+      - "**Turned the wrong way?** Pretend you are sitting on the robot. `right` is the robot's right."
+      - "**An error about units?** `turnFor` needs `degrees`. `driveFor` needs `inches`."
+      - "**Stopped short?** After the turn, the goal is 4 squares away."
+    sim:
+      starter: |
+        int main() {
+          // TODO: drive forward 36 inches
+          // TODO: turn right 90 degrees
+          // TODO: drive forward to the green goal
+        }
+      field: {start: {x: 24, y: 60, heading: 0}, goal: {x: 72, y: 24, r: 6}}
+      checks:
+        - {type: code, pattern: "turnFor\\s*\\(\\s*right\\s*,\\s*90\\s*,\\s*degrees", message: "My program turns right 90 degrees"}
+        - {type: goal, message: "The robot stops inside the green goal"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 36, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 48, inches);
+        }
+    ask: Does the robot move forward while it turns? Watch closely and say what you see.
+
+  - part: "Part 1: In the simulator"
+    title: Order matters
+    say: |
+      Moves in a row are called a **sequence**. The robot does the top move first, then the next one, then the next.
+      It never skips ahead. It does not know if the order is silly.
+      This program has the **right moves** in the **wrong order**. There is a big wall on the field now.
+    do:
+      - Press **Run** and watch. The robot turns first and drives into the wall.
+      - Trace the path with your finger. Which move should come first?
+      - Put the three lines in the right order. Do not change any numbers.
+      - Press **Run** again.
+    tip: "**Watch out:** to move a line, select it, press **Ctrl + X** to cut it, click where it belongs, and press **Ctrl + V** to paste."
+    stuck:
+      - "**Still hits the wall?** The robot must drive up **before** it turns."
+      - "**Missed the goal?** The short drive (42) goes first. The long drive (66) goes last."
+    sim:
+      starter: |
+        int main() {
+          // TODO: these moves are in the wrong order. Fix the order.
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 66, inches);
+          Drivetrain.driveFor(forward, 42, inches);
+        }
+      field:
+        start: {x: 18, y: 60, heading: 0}
+        walls: [{x: 30, y: 30, w: 42, h: 42}]
+        goal: {x: 84, y: 18, r: 7}
+      checks:
+        - {type: goal, message: "The robot stops inside the green goal"}
+        - {type: noCollision, message: "It never touches a wall"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 42, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 66, inches);
+        }
+    ask: The moves were the same both times. Why did the robot end up in a different place?
+
+  - part: "Part 1: In the simulator"
+    title: Drive a square
+    say: |
+      A square is the same two moves, four times: drive a side, turn a corner.
+      You could type them four times. But you met a better tool in Brain Song: the **for loop**.
+      A for loop repeats the lines inside its `{ }`.
+      Read `for (int i = 0; i < 4; i++)` like this: count from 0, keep going while the count is less than 4, add 1 each lap. That is **4 laps**.
+    do:
+      - Type the highlighted loop.
+      - "**Predict** first: where will the robot be when the program ends?"
+      - Press **Run**. The robot should cross all three blue tiles and end back in the goal.
+    code: |
+      int main() {
+        for (int i = 0; i < 4; i++) {
+          Drivetrain.driveFor(forward, 30, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+        }
+      }
+    new: "2-5"
+    what: "The loop runs the two moves 4 times. Four sides and four corners bring the robot back to where it started, facing the same way."
+    tip: "**Watch out:** inside `for ( )` the parts are split by **semicolons**, not commas. The `for` line itself does not end with a semicolon."
+    stuck:
+      - "**Only one side?** Both moves must be between the loop's `{` and `}`."
+      - "**An error on the for line?** Copy it exactly: `for (int i = 0; i < 4; i++) {`"
+      - "**Missed a tile?** Each side is 30 inches, and every turn is `right`."
+    sim:
+      starter: |
+        int main() {
+          // TODO: write a for loop that runs 4 times
+          // TODO: inside the loop, drive forward 30 inches
+          // TODO: inside the loop, turn right 90 degrees
+        }
+      field:
+        start: {x: 36, y: 54, heading: 0}
+        tiles:
+          - {x: 31, y: 19, w: 10, h: 10, color: blue}
+          - {x: 61, y: 19, w: 10, h: 10, color: blue}
+          - {x: 61, y: 49, w: 10, h: 10, color: blue}
+        goal: {x: 36, y: 54, r: 6}
+      checks:
+        - {type: code, pattern: "for\\s*\\(", message: "My program uses a for loop"}
+        - {type: code, pattern: "^(?![\\s\\S]*driveFor[\\s\\S]*driveFor)", message: "Only one driveFor line. The loop repeats it."}
+        - {type: visitedTiles, message: "The robot crosses all three blue tiles"}
+        - {type: goal, message: "It ends back in the green goal"}
+      solution: |
+        int main() {
+          for (int i = 0; i < 4; i++) {
+            Drivetrain.driveFor(forward, 30, inches);
+            Drivetrain.turnFor(right, 90, degrees);
+          }
+        }
+    ask: Change the 4 to 2 and run it. Where does the robot stop? Change it back to 4 after.
+
+  - part: "Part 1: In the simulator"
+    title: Around the wall
+    say: |
+      Now put it all together. The goal is on the far side of a wall.
+      The robot must go **around** the wall and never bump it.
+      Good programmers **plan first**. Write the moves on paper as a short list, like "forward 48, right 90".
+      Then type the list as code.
+    do:
+      - "On paper, sketch the field. Draw a path that goes **over the top** of the wall and down to the goal."
+      - "Next to each part of the path, write the move. Count grid squares for each distance (12 inches each)."
+      - Type your moves, one per line. The first two are shown.
+      - "Press **Run**. If it bumps, find the **first** move that went wrong. Fix only that one."
+    code: |
+      int main() {
+        Drivetrain.driveFor(forward, 48, inches);
+        Drivetrain.turnFor(right, 90, degrees);
+        // keep going: forward, turn, forward
+      }
+    stuck:
+      - "**Hit the wall on the way across?** Drive up 48 inches first, so the robot is above the wall."
+      - "**Bumped the wall on the way down?** Drive across 5 squares before you turn."
+      - "**Lost track?** Put a comment like `// across the top` above each move."
+    sim:
+      starter: |
+        int main() {
+          // TODO: drive up, past the top of the wall
+          // TODO: turn right
+          // TODO: drive across the top
+          // TODO: turn right again
+          // TODO: drive down to the green goal
+        }
+      field:
+        start: {x: 12, y: 60, heading: 0}
+        walls: [{x: 40, y: 24, w: 8, h: 48}]
+        goal: {x: 72, y: 60, r: 7}
+      checks:
+        - {type: reachGoal, message: "The robot reaches the green goal"}
+        - {type: noCollision, message: "It never touches a wall"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 48, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 60, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 48, inches);
+        }
+    ask: Did your paper plan work the first time? If not, which move did you change, and why?
+
+  - part: "Part 2: On the real robot"
+    title: Set up the Drivetrain
+    say: |
+      Your driving projects used two separate motors, `LeftMotor` and `RightMotor`, so each joystick could run one.
+      To drive by code, you set up a **Drivetrain** instead. A Drivetrain is both drive motors working as a team.
+      It understands inches and degrees.
+      Some chassis also have a **Gyro Sensor**. A Gyro feels how far the robot has turned.
+    wiring:
+      - "Find the cables from your drive motors to the Brain. Read the **port number** next to each plug."
+      - "The left motor should be in **Port 1** and the right motor in **Port 6**. If yours are different, write the numbers down."
+      - "Look for a Gyro Sensor on your chassis. If there is one, write down its port. Your teacher will show you what a Gyro looks like."
+    do:
+      - "Open VEXcode IQ. Click **File → New Text Project** and choose **C++**. Your old projects stay saved."
+      - "Open **Devices**. Next to **IQ Robot Brain**, choose **1st gen**."
+      - "Click **Add a device** and choose **Drivetrain 2-motor**. Set the left and right motor ports to match your robot."
+      - "If your chassis has a Gyro, choose **Gyro** and its port. If not, choose no Gyro."
+      - "Leave the name as **Drivetrain** and click **Done**. Do **not** add `LeftMotor` or `RightMotor` this time."
+    picture: {type: shot, name: vx-devices, caption: "In the Devices window, click Add a device and choose the Drivetrain."}
+    tip: "**Watch out:** the 4WD and 3WD Side Crawler may need a different Drivetrain choice. Ask your teacher before you pick."
+    test:
+      - I started a new C++ project and chose the 1st gen Brain
+      - Devices shows a Drivetrain with my left and right motor ports
+      - I chose Gyro or no Gyro to match my chassis
+    fields: ["My chassis", "Left motor port", "Right motor port", "Gyro port (or none)"]
+
+  - part: "Part 2: On the real robot"
+    title: Write a test program
+    say: |
+      Before a long path, engineers run a short **test program**. It checks the two basic moves.
+      Yours drives 12 inches, waits, turns right, and drives 12 inches more.
+      The `wait` line makes the robot sit still for 5 seconds. That gives you time to mark where it stopped.
+    do:
+      - Type the four moves under the `// TODO` comments.
+      - Press **Run**. The robot should end in the green goal.
+      - "Press **Copy for VEXcode**, then **Copy code**."
+      - "In VEXcode, select from `int main() {` down to the bottom of the file. Paste with **Ctrl + V**. Keep the folded device block at the top."
+      - Save the project with your team name and the word Test.
+    code: |
+      int main() {
+        Drivetrain.driveFor(forward, 12, inches);
+        wait(5, seconds);
+        Drivetrain.turnFor(right, 90, degrees);
+        Drivetrain.driveFor(forward, 12, inches);
+      }
+    new: "2-5"
+    what: "`wait(5, seconds)` pauses the program for 5 seconds. The robot does nothing, then goes on to the next move."
+    picture: {type: shot, name: vx-paste, caption: "Keep the folded device block. Paste over int main() and everything below it."}
+    stuck:
+      - "**Lots of errors after pasting?** You pasted over the folded device block. Press Ctrl + Z, then paste lower down."
+    sim:
+      starter: |
+        int main() {
+          // TODO: drive forward 12 inches
+          // TODO: wait 5 seconds
+          // TODO: turn right 90 degrees
+          // TODO: drive forward 12 inches
+        }
+      field: {start: {x: 36, y: 48, heading: 0}, goal: {x: 48, y: 36, r: 5}}
+      checks:
+        - {type: code, pattern: "driveFor\\s*\\(\\s*forward\\s*,\\s*12\\s*,\\s*inches", message: "My program drives forward 12 inches"}
+        - {type: code, pattern: "wait\\s*\\(\\s*5\\s*,\\s*seconds", message: "It waits 5 seconds after the first drive"}
+        - {type: goal, message: "The robot ends in the green goal"}
+      solution: |
+        int main() {
+          Drivetrain.driveFor(forward, 12, inches);
+          wait(5, seconds);
+          Drivetrain.turnFor(right, 90, degrees);
+          Drivetrain.driveFor(forward, 12, inches);
+        }
+    test:
+      - My program is pasted into VEXcode under the device block
+      - I saved the project
+
+  - part: "Part 2: On the real robot"
+    title: Does 12 inches go 12 inches?
+    say: |
+      In the simulator, 12 inches is always 12 inches. Is that true on the floor?
+      Do not guess. **Measure.** Engineers run a test more than once, because one run can be a fluke.
+      A fluke is a result that happens by luck.
+    wiring:
+      - "Turn on the Brain. Plug the USB cable into the **Brain** and the **Chromebook**."
+      - "Wait for the **Brain** icon in VEXcode to show it is connected."
+    do:
+      - Click **Download**. When it finishes, unplug the cable.
+      - "Put a strip of tape on the floor as a **start line**. Set the front of the robot on the line."
+      - "Start the program on the Brain. **Hands off.** Keep the robot still until it moves by itself."
+      - "When it stops for 5 seconds, mark the floor at the front of the robot with a pencil or tape."
+      - Measure from the start line to your mark. Write it down. Do 3 runs.
+      - "Watch the turn too. Is it a square corner?"
+    stuck:
+      - "**The robot spins in a circle or drives backward?** The motor ports in Devices do not match the cables. Fix them in Devices."
+      - "**The turn never ends, or the robot wanders?** If you have a Gyro, check its cable and its port in Devices. Then start again and do not touch the robot."
+      - "**VEXcode can't find the Brain?** Check the Brain is on. Try the other end of the cable. Close other VEXcode tabs."
+    test:
+      - The real robot drove, waited, turned and drove again by itself
+      - I measured the first drive 3 times
+    fields: ["Run 1 (in)", "Run 2 (in)", "Run 3 (in)", "Turn: too little, right, or too much?"]
+    ask: The code says 12 inches. What did your robot really do? Were your three runs the same?
+
+  - part: "Part 2: On the real robot"
+    title: Fix it with numbers
+    say: |
+      Real robots **drift**. That means they end up a little off from the plan. Here is why.
+      **Wheels slip** on the floor. A **low battery** makes the motors weaker.
+      And VEXcode guesses your **wheel size**. If you swapped wheels in Tune Your Bot, the guess may be wrong.
+      The fix is called **calibrating**: change a number, test, and measure again.
+    do:
+      - "**Drove too short?** Make the `12` in the first `driveFor` a little bigger. **Too far?** Make it smaller."
+      - "**Turned too little?** Make the `90` a little bigger, like 95. **Too much?** Make it smaller."
+      - "Change **one number at a time**. Download and run after each change."
+      - "Stop when the first drive is within half an inch of 12, or when time is up."
+      - "Write down the numbers that worked. You need them for the maze next time."
+    tip: "**Watch out:** if you change two numbers at once, you can't tell which one helped."
+    test:
+      - I changed one number at a time and tested after each change
+      - My robot's first drive is closer to 12 inches than it was at first
+    fields: ["Number that really drives 12 in", "Number that really turns a square corner", "My chassis and wheels"]
+    ask: "Which reason for drift fits your robot best: wheel slip, battery, or wheel size? What makes you think so?"
+
+quiz:
+  - question: "What does `Drivetrain.driveFor(forward, 12, inches);` do?"
+    choices: ["Drives forward for 12 seconds", "Drives forward 12 inches, then stops", "Drives forward forever", "Turns 12 degrees"]
+    answer: 1
+    why: driveFor drives the distance you give and then stops by itself. The units say the 12 means inches.
+  - question: "What does `Drivetrain.turnFor(right, 90, degrees);` do?"
+    choices: ["Drives 90 inches to the right", "Spins the robot in place to make a square corner to the right", "Turns the right motor off", "Turns right forever"]
+    answer: 1
+    why: turnFor spins the robot in place. 90 degrees is a square corner.
+  - question: "A robot faces a wall. The goal is to its right. The program says: drive forward 36, turn right, drive forward 36. The robot hits the wall. Why?"
+    choices: ["The numbers are too big to use", "The robot does the moves in order, and the first move drives into the wall", "The robot chose the wrong move", "Robots can't turn right"]
+    answer: 1
+    why: A sequence runs top to bottom. The robot does not think about the order. It just does the first move first.
+  - question: "How far does the robot drive in total?\n\n`for (int i = 0; i < 4; i++) {`\n\n`  Drivetrain.driveFor(forward, 10, inches);`\n\n`}`"
+    choices: ["10 inches", "14 inches", "40 inches", "4 inches"]
+    answer: 2
+    why: The loop runs 4 times. Each lap drives 10 inches. 4 times 10 is 40.
+  - question: Your code says 12 inches, but the real robot drives 11. What should you do?
+    choices: ["Decide the robot is broken", "Change the number a little, run it again, and measure", "Change every number in the program", "Push the robot the last inch by hand"]
+    answer: 1
+    why: Real robots drift. Change one number, test, and measure again. That is calibrating.
+
+ship:
+  turn_in: code
+  note: Your test program from the last simulator step is turned in with your answers.
+  extensions:
+    - title: There and back
+      level: Easier
+      goal: Drive forward 12 inches, wait one second, then drive backward to where you started.
+      where: Replace the moves in your test program.
+      code: |
+        Drivetrain.driveFor(forward, 12, inches);
+        wait(1, seconds);
+        Drivetrain.driveFor(reverse, 12, inches);
+      new: "2-3"
+      hints:
+        - "`reverse` is the opposite of `forward`."
+        - "On the real robot, does it come back to the start line?"
+    - title: Square on the floor
+      level: Medium
+      goal: Make your real robot drive a small square, 12 inches on each side, and end where it started.
+      where: Replace the moves in your test program with a for loop.
+      code: |
+        for (int i = 0; i < 4; i++) {
+          Drivetrain.driveFor(forward, 12, inches);
+          Drivetrain.turnFor(right, 90, degrees);
+        }
+      hints:
+        - "Use the numbers you found when you calibrated, not 12 and 90."
+        - "Put a tape X on the floor at the start. How far from the X does the robot end?"
+    - title: Zigzag stairs
+      level: Challenge
+      goal: Drive a staircase path with three steps. Each step is forward, turn right, forward, turn left.
+      where: A new program in the simulator. Use a for loop.
+      hints:
+        - "One step is four moves. Put all four inside the loop."
+        - "`left` is the opposite of `right`."
+        - "Keep each drive short, like 12 inches, so the robot stays on the field."
+  reflect:
+    - What was different between the simulator and your real robot?
+    - Why does the order of the moves matter to a robot?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5) in the simulator. Hand out scrap paper for the
+  "Around the wall" plan and ask to see the list of moves before a pair types. Fast finishers start an extension.
+  Day 2: Part 2 with the real robots (steps 6-9), then the quiz and Ship it.
+
+  **Set out.** Charged batteries, one USB cable per team, tape measures or rulers, masking tape and pencils. Each team
+  needs about 3 feet of clear, smooth floor (carpet makes the drift worse). Teams use their own chassis as it is now.
+  Claws, arms and pushers from earlier weeks can stay on if nothing drags on the floor.
+
+  **Before Day 2: check each chassis type once yourself.** The lesson tells students to read the ports off their own
+  robot, and says ports 1 (left) and 6 (right) are the usual ones. If your chassis are wired differently, tell the class
+  the ports up front.
+
+  **Check on a real robot:**
+  - Which Drivetrain choice each chassis needs in the 1st gen Devices window. The lesson says "Drivetrain 2-motor".
+    If the 4WD has four motors it needs the 4-motor Drivetrain. The 3WD Side Crawler may not work as a Drivetrain at
+    all, depending on how its third wheel is driven. Decide before class and tell those teams what to pick.
+  - Whether your chassis have a Gyro Sensor, and on which port. Without a Gyro, VEXcode works out turns from the wheel
+    settings, so turns are usually less exact. That is fine here: it gives teams more to calibrate.
+  - With a Gyro, the robot must sit still for the first few seconds of the program while the Gyro gets ready.
+    If a team's robot wanders or spins, this is the first thing to check.
+  - The exact names in the Drivetrain setup screen (wheel size, gear ratio). The lesson only says "VEXcode guesses your
+    wheel size". If teams swapped wheels in Tune Your Bot, you can show them the wheel size setting as a second fix,
+    or just let them fix it by changing the number in the code.
+  - That `forward` really drives the robot forward on each chassis. If a chassis drives backward, a motor needs to be
+    reversed in Devices, or the left and right ports are swapped.
+
+  **Common trouble.** `LeftMotor`/`RightMotor` still in Devices along with the Drivetrain (a new project avoids this).
+  Pasting over the folded device block. A semicolon after the `for (...)` line, so the loop body runs once. Teams
+  measuring from the back of the robot on one run and the front on the next: have them always measure at the front.
+  Teams changing several numbers at once.
+
+  **Keep the numbers.** The last step asks teams to write down the numbers that really give 12 inches and a square
+  corner. They need them for Maze Runner next week. Remind them, or collect the numbers on the board by chassis type.
+
+  **Check for understanding.** Ask a pair to read a program aloud as "first... then... then..." and point on the field
+  to where the robot will be after each move.
+
+  **The class display.** Come back to the big question at the end of Day 2: yes, a robot can drive with no driver,
+  but only as well as its numbers. That sets up the maze.
+standards:
+  - code: 6-8.CT.d.3
+    how: Students write programs that drive the robot to a goal, including a path around a wall.
+  - code: 6-8.CT.b.1
+    how: Students use a for loop to repeat the drive and turn moves that make a square.
+  - code: 6-8.CT.d.5
+    how: Students predict where the robot will stop before running, and trace sequences and a loop in the quiz.
+  - code: 6-8.CT.d.6
+    how: Students measure the real robot's error, change one number at a time and retest.
+  - code: 6-8.CT.e.2
+    how: Students test moves in a simulator, then compare the simulator's result with measurements of the real robot.

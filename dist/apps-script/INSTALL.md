@@ -10,16 +10,16 @@ so the two can't share a project. The old project and its spreadsheet can stay a
 ## 1. Make the project (your teacher account)
 
 1. Go to <https://script.google.com/home/projects/create> in Chrome, signed in to your school account.
-2. Rename it **RoboCode Academy 12** (click "Untitled project").
+2. Rename it **RoboCode Academy** (click "Untitled project").
 3. Add one **Script** file for each row below. Click **+** next to "Files", choose **Script**, and type the name
    exactly (Apps Script adds `.gs`). Open the file from this folder, select all, copy, and paste it in.
    `Code.gs` already exists: replace what's in it.
 
 | File | Add it as | Size |
 |---|---|---|
-| `Assets.gs` | Script (+ → Script), name it `Assets` | 221 KB |
-| `Code.gs` | Script (+ → Script), name it `Code` | 95 KB |
-| `Data.gs` | Script (+ → Script), name it `Data` | 361 KB |
+| `Assets.gs` | Script (+ → Script), name it `Assets` | 225 KB |
+| `Code.gs` | Script (+ → Script), name it `Code` | 103 KB |
+| `Data.gs` | Script (+ → Script), name it `Data` | 682 KB |
 
 4. Press **Ctrl+S**. There are no HTML files in this project.
 
@@ -49,7 +49,7 @@ so the two can't share a project. The old project and its spreadsheet can stay a
 ```
 
 2. Open `Code.gs`, choose **setup** in the function menu at the top, and press **Run**. Allow access when Google
-   asks ("Advanced → Go to RoboCode Academy 12" if it warns you). It makes the **RoboCode Academy data** folder in
+   asks ("Advanced → Go to RoboCode Academy" if it warns you). It makes the **RoboCode Academy data** folder in
    your Drive.
 
 ## 3. Deploy

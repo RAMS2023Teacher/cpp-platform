@@ -1,295 +1,309 @@
 id: pick-your-chassis
-title: Build the Drive Base
-tagline: Build the robot you'll drive, code and battle with all course
-minutes: 80          # about two class periods: Part 1 frame, motors and wheels; Part 2 Brain, ports and testing
+title: Pick Your Chassis
+tagline: Choose one of four ready-built robots, learn why it works, and make your first change
+minutes: 80          # about two class periods: Part 1 compare and choose; Part 2 ports, one modification, a fair test
 
 mission:
-  big_question: "What makes a robot strong enough to trust?"
+  big_question: "Which robot would you pick, and what do you give up?"
   goal: |
-    Today your team builds the **BaseBot** drive base from the VEX IQ build instructions. It is the robot you'll
-    use for the rest of the course, so it has to be built **right**. You'll learn why joints need two pins,
-    work in **roles**, pass three **checkpoints**, plug the motors into the correct **Smart Ports**, and drive it.
-  picture: {type: vex, names: [basebot], caption: "The finished BaseBot: a frame, two motors, wheels, and the Brain on top."}
+    In Circuit City Arena you do not build a robot from loose parts. You pick one of four ready-built
+    **chassis** (a robot's frame, motors and wheels) and change it to fit the job. Today you compare all four,
+    choose one with your partner, find its **Smart Ports**, make one small change and run a **fair test** to
+    see what the change did.
+  picture:
+    type: compare
+    items:
+      - {icon: "🚗", title: "2WD Standard", text: "two drive wheels and a caster: quick turns, a good all-rounder"}
+      - {icon: "🏎️", title: "2WD Lite", text: "smaller and lighter: fast and nimble, easy to push around"}
+      - {icon: "🦀", title: "3WD Side Crawler", text: "three wheels in a triangle: climbs well, turns differently"}
+      - {icon: "🚜", title: "4WD", text: "four driven wheels: the most grip and pushing power, slower to turn"}
+    caption: The four chassis. Every one is good at something and gives something up.
   you_need:
-    - A team of two or three
-    - A VEX IQ kit (1st generation) with a charged battery
-    - The BaseBot build instructions (paper or on a screen)
-    - 2 Smart Motors, the Brain and Smart Cables
-    - A Gyro Sensor, if your kit has one
+    - A partner
+    - The four chassis to look at, then the one you choose
+    - A controller paired with your chassis (ask your teacher)
+    - "From the bins: a second set of wheels"
+    - Tape and a timer (a phone or the classroom clock)
   learn:
-    - "**two pins** stop a joint from swinging, and **bracing** stops a frame from leaning"
-    - "how a team builds with **roles** and **checkpoints**"
-    - "the Brain only knows a motor by its **Smart Port**"
-    - "how to **inspect** a robot before you trust it"
-  talk: Think of something you built that wobbled or fell apart, like a shelf, a tent or a tower of blocks. What made it weak? What would have fixed it?
+    - "a **drive train** is the motors, gears and wheels that move a robot"
+    - "**bracing** makes a frame rigid (hard to bend)"
+    - "the Brain knows a motor only by its **Smart Port**"
+    - "a **fair test** changes one thing and keeps the rest the same"
+  talk: Think about a sports car, a pickup truck and a tractor. What is each one best at? What does each one give up to be good at it?
 
 build:
-  - part: "Part 1: Frame, motors and wheels"
-    title: Know your parts
+  - part: "Part 1: Compare and choose"
+    title: Four chassis, four trade-offs
     say: |
-      VEX IQ parts all fit one grid. The distance from one hole to the next is called the **pitch**, and it is
-      always the same. A **beam** is named by its holes: a **1x8** beam is 1 hole wide and 8 holes long.
-      A **2x12** beam is 2 wide and 12 long. The build instructions name every part this way, so
-      counting holes is how you find the right one.
-    picture: {type: vex, names: [beams, beamlengths], caption: "Beams and plates are named by their holes: width x length."}
+      A **chassis** is the base of a robot: the frame, the motors and the wheels. The lab has four kinds,
+      already built. None of them is the best. Each one makes a **trade-off**: it gets better at one thing by
+      giving up another. You met this idea with gears: speed or strength, never both.
+      Good engineers pick the trade-off that fits the job.
     do:
-      - Open your kit. Find one beam and count its holes. Say its name, such as "1x8".
-      - Open the build instructions to the first page. Find the list of parts for step 1.
-      - Find each part for step 1 in the kit and lay it on the table.
-    tip: "**Watch out:** a 1x8 and a 1x10 beam look almost the same. Count the holes every time, or line the beam up against the life-size picture in the instructions if there is one."
+      - Go and look at all four chassis. Do not switch them on yet.
+      - Pick each one up with two hands. Feel which is heaviest and which is lightest.
+      - Count the wheels on each one. Look at how far apart they are.
+      - Put each chassis back where you found it.
     test:
-      - I can name a beam by counting its holes
-      - The parts for step 1 are on the table
-    ask: Why do you think every VEX IQ part uses the same distance between holes?
+      - I looked at all four chassis
+      - I know which is the heaviest and which is the lightest
+    fields: ["Heaviest chassis", "Lightest chassis"]
+    ask: Just from looking and lifting, which chassis do you think would win a pushing match? Which would win a race? Say why.
 
-  - part: "Part 1: Frame, motors and wheels"
-    title: One pin swings, two pins hold
+  - part: "Part 1: Compare and choose"
+    title: Which wheels are driven?
     say: |
-      A **pin** snaps two parts together. But one pin is also a **hinge**: the parts can swing around it.
-      A second pin stops the swing. Four beams pinned into a rectangle can still lean over into a slanted shape.
-      A **brace**, such as a diagonal beam that makes a **triangle** or a corner connector, locks it. Triangles don't lean.
-    picture: {type: vex, names: [pins, connectors], caption: "Pins join parts flat together. Corner connectors join them at an angle."}
+      The **drive train** is everything that makes the robot move: motors, gears and wheels. A **driven wheel**
+      is turned by a motor. A **free wheel**, such as a caster, just rolls along. **2WD** means two driven
+      wheels. **4WD** means four. Only driven wheels can push, so the number of them matters.
+    picture: {type: vex, names: [smartmotor], caption: "Follow each Smart Motor to the wheel, or wheels, it turns."}
     do:
-      - Join two beams with **one** pin. Try to swing them like scissors.
-      - Add a **second** pin. Try to swing them again.
-      - Push a pin in until you feel it **click**. A pin that is only halfway in will work loose later.
+      - Lift a chassis off the table. Turn each wheel slowly by hand.
+      - A **driven** wheel pushes back, because you are turning the motor's gears. A **free** wheel spins easily.
+      - Follow each driven wheel back to its Smart Motor. Is there a shaft, a gear or a chain in between?
+      - Do this for all four chassis and write down how many driven wheels each one has.
+    tip: "**Watch out:** turn the wheels gently. Forcing a motor round fast by hand can damage its gears."
     test:
-      - With one pin, my two beams swing
-      - With two pins, my two beams are stiff
-    ask: Look at the frame in the build instructions. Find one joint that uses two or more pins. What would happen to the robot if it had only one?
+      - I found the driven wheels on every chassis
+      - I traced one driven wheel back to its motor
+    fields: ["2WD Standard: driven wheels", "2WD Lite: driven wheels", "3WD Side Crawler: driven wheels", "4WD: driven wheels"]
+    ask: On one chassis, describe the path from a motor to the floor. Which parts does the turning pass through?
 
-  - part: "Part 1: Frame, motors and wheels"
-    title: Pick your roles
+  - part: "Part 1: Compare and choose"
+    title: Turning, grip and weight
     say: |
-      Good teams don't all grab parts at once. Each person has a **role**, and the roles **swap at every checkpoint**
-      so everyone builds. With two people, the Builder's partner is both Parts Manager and Inspector.
+      **Grip** (also called traction) is how well a wheel holds the floor. A motor's torque is wasted if the
+      wheel slips. More driven wheels and more **weight** on them give more grip, so the robot pushes harder.
+      But grip also fights **turning**, and weight is slow to get moving. Wheel size trades too, like a gear
+      ratio: a **bigger** wheel goes farther each turn, so it is faster but pushes less.
     picture:
       type: compare
       items:
-        - {icon: "🔧", title: "Builder", text: "puts the parts together, one step at a time"}
-        - {icon: "🧰", title: "Parts Manager", text: "reads the step, finds the parts, counts the holes"}
-        - {icon: "🔍", title: "Inspector", text: "checks each step against the picture before the next one starts"}
+        - {icon: "💪", title: "More grip and weight", text: "pushes hard, holds its ground, turns and starts slowly"}
+        - {icon: "💨", title: "Less grip and weight", text: "quick to start and turn, easy to push around"}
     do:
-      - Decide who starts in each role.
-      - Agree on one rule now. The Builder does not start the next step until the Inspector says "checked".
+      - Put a chassis on the floor, switched off. Push it gently **sideways** with one finger. Does it slide or hold?
+      - Try the same push on a different chassis. Compare.
+      - Look at the tires on each chassis. Are they rubber, or do they have small rollers around the edge?
     test:
-      - Everyone on my team has a role
-      - We know when we will swap
-    fields: ["Builder", "Parts Manager", "Inspector"]
-    ask: Why is it faster in the end to have someone check every step, even though it feels slower right now?
+      - I compared the sideways push on two chassis
+      - I can say one thing grip helps and one thing it hurts
+    ask: A chassis that is hard to push sideways is also harder to turn. Why do you think those two go together?
 
-  - part: "Part 1: Frame, motors and wheels"
-    title: "Checkpoint 1: the frame"
+  - part: "Part 1: Compare and choose"
+    title: Why it does not fall apart
     say: |
-      Start building. Follow the build instructions **one step at a time**, in order.
-      The first steps make the **frame** (also called the chassis). Everything else hangs on it, so it must be
-      flat, square and stiff. When the frame is done, stop for Checkpoint 1.
-    picture: {type: vex, names: [basebotbuild], caption: "The frame carries everything: motors, wheels, the Brain and the battery."}
+      A good chassis is **rigid**: it does not bend or lean when pushed. Two things make it rigid.
+      A joint held by **one pin** can swing like a hinge, so strong joints use **two or more**. A rectangle
+      of beams can still lean over, so builders add **bracing**: an extra beam or a corner connector that
+      locks the shape. A brace that makes a triangle is the strongest, because triangles do not lean.
+    picture: {type: vex, names: [pins, connectors], caption: "Pins join parts flat together. Corner connectors lock them at an angle."}
     do:
-      - Build the frame steps from the instructions.
-      - "**Inspector:** hold the frame by one corner and give it a gentle twist and shake."
-      - "**Inspector:** compare it with the picture in the instructions from the top and from the side."
-      - Fix anything that fails, then swap roles.
-    stuck:
-      - "**A pin won't go in?** Check you have the right hole. Don't force it. Line the holes up first."
-      - "**The frame doesn't match the picture?** Count holes from the end of the beam. A part is usually one hole off."
-      - "**Need to pull a pin out?** Push it from the back with a spare shaft or beam, not your teeth."
+      - Hold a chassis by two corners and twist it **gently**. It should hardly move.
+      - Find one joint with two or more pins. Find one brace. Point them out to your partner.
+      - Look for a pin that sticks out halfway. Push it in until it clicks.
     test:
-      - The frame matches the picture, hole for hole
-      - Every pin is pushed in until it clicked
-      - The frame does not bend or lean when twisted gently
-    ask: The Inspector twisted the frame. What was that test looking for?
+      - I found a joint with two or more pins
+      - I found a part that braces the frame
+      - The chassis did not bend when I twisted it gently
+    fields: ["Where the bracing is"]
+    ask: Imagine someone took the brace you found off the chassis. What would happen in a pushing match?
 
-  - part: "Part 1: Frame, motors and wheels"
-    title: "Checkpoint 2: motors and wheels"
+  - part: "Part 1: Compare and choose"
+    title: Choose your chassis
     say: |
-      Next come the **Smart Motors**, the **shafts** and the **wheels**. Remember Motors and Gears: a square shaft
-      **grips** a square hole and **spins** in a round one. The wheels touch the floor, so their **grip** is what
-      turns motor power into movement. A wheel that slips wastes it.
+      Now choose. The first arena challenge of the season is the **Battle Bot Challenge**, a pushing match in
+      a ring. Later challenges need careful turns and exact driving by code. No chassis is best at all of it,
+      so decide what matters most to you and be ready to say what you give up. You can change your choice
+      later in the season if your teacher agrees.
     do:
-      - Build the motor and wheel steps from the instructions.
-      - "**Inspector:** lift the robot and spin each wheel by hand. It should turn smoothly, with a little push back from the motor."
-      - "**Inspector:** put the robot on the table. All the wheels should touch. Push it gently forward and back."
-      - Feel the tires. Are they rubber, or do they have small rollers around the edge? Tell your team what you notice.
-      - Fix anything that fails, then swap roles.
-    stuck:
-      - "**A wheel is very stiff?** Something is rubbing. Look for a wheel or collar pressed tight against a beam."
-      - "**A wheel wobbles or slides off?** The shaft is not all the way in, or a shaft collar is missing."
-      - "**A wheel spins but the motor doesn't feel connected?** The shaft is not in the motor's square hole."
+      - Talk it over with your partner. Each of you names a first choice and gives a reason.
+      - Agree on one chassis. If you cannot agree, list what each choice is good at and compare the lists.
+      - Tell your teacher your choice. They will tell you which robot is yours to use.
     test:
-      - Both motors are fixed to the frame and do not wiggle
-      - Every wheel turns smoothly and does not rub
-      - All the wheels touch the table at the same time
-    ask: A rubber tire grips the floor well. When would lots of grip help a robot? Can you think of a time it might get in the way?
+      - My partner and I agreed on one chassis
+      - We can give a reason that uses the words grip, weight or turning
+    fields: ["Our chassis", "Our main reason", "What we give up"]
+    ask: Another team picked a different chassis from you. What will their robot do better than yours?
 
-  - part: "Part 2: Brain, ports and testing"
-    title: "Checkpoint 3: Brain and battery"
+  - part: "Part 2: Ports, a change and a fair test"
+    title: Find the Smart Ports
     say: |
-      The **Brain** is the robot's computer. The **battery** is its power, the first thing every circuit needs.
-      Together they are also the heaviest parts, so where they sit matters. The instructions put them low
-      and near the middle so the robot does not tip.
-    do:
-      - Build the steps that mount the Brain onto the frame.
-      - Slide the battery into the Brain until it **clicks**.
-      - "**Inspector:** check the screen and buttons face up and are easy to reach, and the ports are not blocked."
-      - "**Inspector:** hold the robot and tilt it gently in every direction. Nothing should slide or rattle."
-      - Fix anything that fails, then swap roles.
-    stuck:
-      - "**The battery won't click in?** Check it is the right way round and slide it in straight."
-      - "**The Brain rocks on the frame?** A pin under it is missing or not pushed in."
-    test:
-      - The Brain is pinned to the frame and does not rock
-      - The battery is clicked in
-      - I can reach the screen, the buttons and the ports
-    ask: Why do the instructions put the heavy Brain and battery low and near the middle, not high up or hanging off one end?
-
-  - part: "Part 2: Brain, ports and testing"
-    title: Plug into Smart Ports
-    say: |
-      The Brain has 12 numbered **Smart Ports**. Each one is a socket for one Smart Cable, and each cable makes a
-      circuit that carries power and data, like in Light It Up. The Brain cannot see your robot.
-      It only knows "the motor on Port 1". So every team uses the **same ports**, and code written for one
-      robot works on all of them.
+      The Brain has 12 numbered **Smart Ports**. Each is a socket for one Smart Cable. The Brain cannot see
+      the robot. It only knows "the motor on Port 1". All course, your code will use the same names:
+      **LeftMotor** on **Port 1**, **RightMotor** on **Port 6**, and the **Gyro** sensor on **Port 4**.
+      If every robot matches, the same code works on all of them.
     wiring:
-      - "Find the small numbers printed next to the ports on the Brain."
-      - "Plug the **left** motor into **Port 1**. Left means the robot's left, when you stand behind it."
-      - "Plug the **right** motor into **Port 6**."
-      - "If you have a **Gyro Sensor**, attach it where the instructions show and plug it into **Port 4**."
-      - "Push each plug in until it **clicks**. Tuck loose cable away from the wheels."
-    tip: "**Watch out:** left and right are easy to mix up when the robot faces you. Stand **behind** the robot, the way a driver sits in a car."
-    stuck:
-      - "**A cable won't reach?** Swap it for a longer one. Don't stretch it."
-      - "**A plug falls out?** It did not click. Push until you hear it."
+      - "Stand **behind** the robot, like a driver in a car. The motor on your left is the **left** motor."
+      - "Follow the cable from the left motor to the Brain. Read the small number printed next to the port."
+      - "Do the same for the right motor, and for any other motor or sensor on the chassis."
+      - "A motor that is not on Port 1 (left) or Port 6 (right)? Tell your teacher before you move any cable."
+      - "Push each plug until it **clicks**. Tuck loose cable away from the wheels."
+    tip: "**Watch out:** left and right swap when the robot faces you. Always check from behind it."
     test:
-      - The left motor is in Port 1
-      - The right motor is in Port 6
-      - Every plug clicked, and no cable can touch a wheel
+      - I found the port for every motor on my chassis
+      - Every plug is clicked in and no cable can touch a wheel
+    fields: ["LeftMotor port", "RightMotor port", "Other devices and their ports"]
     ask: Two teams swap the cables in Ports 1 and 6 by mistake. Their code says "turn left". What do you think the robot does, and why?
 
-  - part: "Part 2: Brain, ports and testing"
-    title: Smoke test
+  - part: "Part 2: Ports, a change and a fair test"
+    title: Measure it first
     say: |
-      Engineers call the first power-up a **smoke test**: switch it on and see that nothing goes wrong.
-      The Brain comes with a built-in program called **Driver Control**. It lets the **controller** drive the motors
-      with no code at all. You will write your own driving code in Take the Wheel.
+      Before you change a robot, measure it. That first measurement is your **baseline**: the number you
+      compare with later. The Brain has a built-in program called **Driver Control** that lets the controller
+      drive the motors with no code. Use it to time your chassis over a short course. One run can be lucky,
+      so do **three** and keep the **middle** time.
     do:
-      - Ask your teacher how to **pair the controller** with your Brain.
-      - Put the robot on the floor with clear space around it. Turn on the Brain.
-      - Find **Driver Control** in the Brain's list of programs and start it.
-      - Push the joysticks **gently**. Try forward, backward, and a turn each way.
-      - Swap drivers so everyone on the team has a turn.
+      - Mark a start line and a finish line on the floor with tape, about 6 feet apart.
+      - Ask your teacher how to pair the controller. Turn on the Brain and start **Driver Control**.
+      - Drive from the start line to the finish line as fast as you can keep it straight. Your partner times it.
+      - Do three runs with the **same driver**. Write all three, then the middle one.
     stuck:
-      - "**Nothing moves?** Check the battery is clicked in, the Brain is on, and the controller is paired."
-      - "**Only one side moves?** A cable is loose, or a motor is in the wrong port. Check Ports 1 and 6."
-      - "**It drives the wrong way or spins on the spot?** The two motor cables are probably swapped."
-      - "**It drives, then a wheel drops off?** Back to Checkpoint 2."
+      - "**Nothing moves?** Check the battery is clicked in, the Brain is on and the controller is paired."
+      - "**Only one side moves?** A cable is loose or in the wrong port."
+      - "**It curves to one side?** Look for a wheel that rubs on the frame."
     test:
-      - Both sides of the robot drive forward and backward
-      - The robot can turn left and turn right
-      - Nothing came loose while driving
-    ask: The robot moved without any code from you. So where did its instructions come from?
+      - The chassis drives forward, backward and turns both ways
+      - We timed three runs with the same driver
+    fields: ["Run 1 (seconds)", "Run 2 (seconds)", "Run 3 (seconds)", "Middle time"]
+    ask: Why is the middle of three runs a better number to trust than just one run?
 
-  - part: "Part 2: Brain, ports and testing"
-    title: Final inspection
+  - part: "Part 2: Ports, a change and a fair test"
+    title: Change one thing
     say: |
-      Real robot teams pass an **inspection** before every match. Yours happens now.
-      The Inspector leads, and the whole team answers for the robot. Then show your teacher.
-      From today on, this robot is your team's responsibility.
-    picture: {type: vex, names: [basebot], caption: "Compare your robot with the finished BaseBot one last time."}
+      A **modification** is a change you make to the chassis. Make just **one**: swap the drive wheels for a
+      different kind from the bins, **or** move the Brain to a new spot. The Brain and battery are the
+      heaviest parts, so moving them moves the robot's weight. If you change two things at once, you cannot
+      tell which one made the difference.
+    picture: {type: vex, names: [omniwheel], caption: "Different wheels grip differently. This one has rollers, so it slides sideways easily."}
     do:
-      - "**Shake test:** hold the robot up and shake it gently. Nothing rattles, nothing falls off."
-      - "**Pin check:** look along every side. No pin is sticking out halfway."
-      - "**Wheel check:** every wheel turns smoothly, and all of them touch the floor."
-      - "**Port check:** left motor Port 1, right motor Port 6, Gyro Sensor Port 4 if you have one."
-      - "**Tidy check:** cables are clear of the wheels, the robot is switched off, and spare parts are back in the kit."
+      - Switch the robot off. Choose your one change with your partner.
+      - "**Predict** before you build: will the robot be faster, slower or the same over the course? Write it down."
+      - Make the change. Keep the old parts beside you so you can put them back.
+      - Check your work. Wheels turn freely, every pin clicked, the Brain does not rock, no cable is pulled tight.
+    stuck:
+      - "**A wheel will not come off?** Slide off the shaft collar first. Pull straight, do not twist."
+      - "**The new wheel rubs?** Add or remove a spacer so there is a small gap to the frame."
+      - "**The Brain will not fit the new spot?** Its cables must still reach. Pick a spot nearer the motors."
     test:
-      - Our robot passed the shake test and the pin check
-      - Our robot passed the wheel check and the port check
-      - Spare parts are sorted back into the kit
-      - We showed our teacher the robot driving
-    fields: ["Inspector", "One thing we had to fix"]
-    ask: What was the most important problem your Inspector caught? What would have happened later if nobody had caught it?
+      - We changed exactly one thing
+      - We wrote a prediction before testing
+      - Nothing is loose after the change
+    fields: ["What we changed", "Our prediction"]
+    ask: Why did you write the prediction before the test, and not after it?
+
+  - part: "Part 2: Ports, a change and a fair test"
+    title: The fair test
+    say: |
+      In a **fair test** you change one thing and keep everything else the same. Same course, same driver,
+      same battery, same three runs. Then the only reason for a different time is your modification.
+      A change that makes the robot slower is still a good result. You learned something true about your robot.
+    do:
+      - Run the same course three times with the same driver. Write the middle time.
+      - Compare it with your baseline. Was your prediction right?
+      - Decide with your partner whether to keep the change or put the old parts back.
+      - "**Inspect** the robot: shake it gently, check the ports, check that every wheel turns."
+      - Return spare parts to the right bins. Show your teacher your numbers and your robot driving.
+    test:
+      - We ran the same test before and after the change
+      - We compared the two middle times
+      - Spare parts are back in their bins
+      - We showed our teacher the robot and our results
+    fields: ["Middle time before", "Middle time after", "Keep it or undo it"]
+    ask: Was the change worth keeping? Use your two times as evidence. What else would you want to test before a pushing match?
 
 quiz:
-  - question: Two beams are joined with a single pin. What can they still do?
-    choices: ["Nothing. They are locked", "Swing around the pin like a hinge", "Slide apart", "Carry more weight"]
+  - question: What does "4WD" tell you about a chassis?
+    choices: ["It has four motors for arms", "Four of its wheels are driven by motors", "It weighs four pounds", "It can turn in four directions"]
     answer: 1
-    why: One pin is a pivot. A second pin stops the swing and makes the joint stiff.
-  - question: What does "1x8" mean on a VEX IQ beam?
-    choices: ["It weighs 8 grams", "It is 1 hole wide and 8 holes long", "It is 8 inches long", "It needs 8 pins"]
-    answer: 1
-    why: Beams are named by their holes, width by length. Counting holes is how you find the right part.
-  - question: Which Smart Ports does every team use for the drive motors?
-    choices: ["Left motor Port 1, right motor Port 6", "Left motor Port 6, right motor Port 1", "Both motors in Port 1", "Any ports that are free"]
+    why: WD stands for wheel drive. A driven wheel is turned by a motor, so it can push. A free wheel only rolls.
+  - question: Which trade-off does a heavy chassis with lots of grip make?
+    choices: ["It pushes hard but is slower to start and turn", "It is fast and also the strongest", "It turns quickly but cannot drive straight", "It has no trade-off"]
     answer: 0
-    why: The Brain only knows a motor by its port. If every robot uses Ports 1 and 6, the same code works on all of them.
-  - question: In the smoke test, only the left side of the robot drives. What should you check first?
-    choices: ["Rebuild the whole frame", "The right motor's cable and its port", "The color of the wheels", "Get a new controller"]
+    why: Grip and weight help a robot push and hold its ground. They also make it slower to turn and to get moving.
+  - question: Why do strong joints on a chassis use two or more pins?
+    choices: ["Pins are cheap", "One pin lets the parts swing like a hinge", "Two pins make the robot lighter", "The Brain counts the pins"]
     answer: 1
-    why: Start with the simplest cause. A cable that is loose or in the wrong port is the most common reason a motor does not run.
-  - question: Why does the Inspector check each step before the Builder goes on?
-    choices: ["To slow the team down", "A mistake found early is quick to fix, but a buried one means taking the robot apart", "Because the Builder is not allowed to look at the instructions", "So only one person does the work"]
+    why: A single pin is a pivot. A second pin stops the swing. Bracing does the same job for the whole frame.
+  - question: All course, which Smart Ports do the two drive motors use?
+    choices: ["LeftMotor on Port 1, RightMotor on Port 6", "LeftMotor on Port 6, RightMotor on Port 1", "Both on Port 4", "Any port that is free"]
+    answer: 0
+    why: The Brain knows a motor only by its port. If every robot uses Ports 1 and 6, the same code works on all of them.
+  - question: You swap the wheels AND move the Brain, then the robot is faster. What is wrong with this test?
+    choices: ["Nothing. Faster is better", "You cannot tell which change made it faster", "You should have used a different driver", "Robots cannot be tested"]
     answer: 1
-    why: A part that is one hole off in step 3 can stop step 12 from fitting. Catching it right away saves time.
+    why: A fair test changes one thing at a time. With two changes, you do not know which one caused the result.
 
 ship:
   turn_in: show
-  note: Show your teacher your finished drive base driving with the controller, and your inspection checklist.
+  note: Show your teacher your chassis driving, your port list and your before and after times.
   extensions:
-    - title: Name it
+    - title: Chassis card
       level: Easier
-      goal: Give your robot a name and a team label, so nobody mixes it up with another team's robot.
-      where: On the frame or the Brain, where the label can't touch a wheel or cover a port.
+      goal: Make a small card for your chassis. Sketch it from above, label the driven wheels, the Brain and the ports you found, and write one strength and one weakness.
+      where: On paper or an index card. Keep it with your team's notes.
       hints:
-        - "Masking tape and a marker work well and peel off cleanly."
-        - "Add your class period, so your teacher can find the robot's shelf."
-    - title: Driving test
+        - "Draw the robot's front at the top of the card."
+        - "Write LeftMotor and RightMotor next to the right wheels, with their port numbers."
+        - "A weakness is not a mistake. It is what your chassis gives up."
+    - title: Turning test
       level: Medium
-      goal: Mark a start line and a finish line with tape, about 6 feet apart. Each driver drives there and back three times. Time each run.
-      where: On the floor, with the Brain's Driver Control program.
+      goal: Run a second fair test, this time for turning. Time how long your robot takes to spin around five times on the spot, with and without your modification.
+      where: On the floor, with the Brain's Driver Control program. Put a tape mark under the robot to count the turns.
       hints:
-        - "Does the robot drift to one side on its own? Look for a wheel that rubs."
-        - "Compare drivers. Is the fastest run also the straightest?"
-    - title: Add a brace
+        - "Same driver, same floor, three runs each way. Keep the middle time."
+        - "Does the robot stay on its tape mark, or wander off it while it spins?"
+        - "Did the change that helped in a straight line also help in a turn?"
+    - title: Push test
       level: Challenge
-      goal: Find the place where your robot flexes the most when you twist it gently. Add one beam or connector to stiffen it, without blocking a wheel, a port or the battery.
-      where: Anywhere on the frame. Keep the motors on Ports 1 and 6.
+      goal: Design a fair test for pushing power. Your robot pushes a load, such as a box with books in it, across a tape line. Find the heaviest load it can move before the wheels slip.
+      where: On the floor. Add weight to the box a little at a time.
       hints:
-        - "Twist the robot gently and watch where the gaps open."
-        - "A diagonal beam makes a triangle, and triangles don't lean."
-        - "Make sure the battery can still slide out for charging."
+        - "Decide first what counts as a pass, such as moving the box a full foot."
+        - "Watch the wheels. Do they slip, or does the motor stall (stop turning)?"
+        - "If the wheels slip, what could you change: the wheels, or where the weight sits?"
   reflect:
-    - Which role did you like best, and what did your team do well as a team?
-    - The Brain only knows a motor by its port. Explain why putting a motor in the wrong port causes trouble.
+    - Which chassis did you pick, and what trade-off does it make? Use the words grip, weight or turning.
+    - What did your fair test show? How do you know the result came from your change and not from something else?
 
 teacher_notes: |
-  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5). Keep steps 1-3 to about 10 minutes so teams get
-  25-30 minutes on the frame, motors and wheels. Day 2: Part 2 (steps 6-9), the quiz and Ship it. A team that falls
-  behind on Day 1 can finish Checkpoint 2 at the start of Day 2; the smoke test takes only a few minutes per team.
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5). Steps 1-4 are stations: put one of each chassis
+  on a table and rotate pairs through, about 5 minutes per chassis. Day 2: Part 2 (steps 6-9), the quiz and Ship it.
+  The modification should take 10 minutes at most. Steer teams away from big rebuilds.
 
-  **Before class.** Charge every battery. Print the BaseBot build instructions for 1st generation kits, or put the
-  PDF where students can open it. Check that each kit has its two Smart Motors, wheels, Brain, cables and (if you
-  use it) a Gyro Sensor. Make sure radios are fitted in the Brains and controllers, and decide how you will pair them:
-  do it yourself before class, or show the class once at the start of Day 2. Label each kit and a shelf space per team.
+  **Before class.** Charge batteries. Set out one of each chassis as the display set. Decide how robots are shared:
+  which physical robot each pair uses in your section, and whether a modification stays on between classes or is
+  undone at the end of the period (step 9 asks teams to decide "keep it or undo it", so tell them your rule).
+  Put spare wheel sets in a labeled bin. Pair controllers, or be ready to show how.
 
-  **The checkpoints.** The three checkpoints follow the order of the build instructions: frame, then motors and
-  wheels, then Brain and battery. If your instructions use a different order, tell the class which pages belong to
-  which checkpoint. Initial each team's checkpoint as you walk around, or let Inspectors sign off and spot-check.
+  **Ports and device names.** The whole course assumes **LeftMotor on Port 1, RightMotor on Port 6, Gyro on Port 4**,
+  with the Drivetrain device built from those two motors. Students record what they find and are told to ask you
+  before moving a cable. It is worth setting every chassis to these ports before the lesson.
 
-  **Common trouble.** Beams one hole off (a 1x8 where a 1x10 belongs). Pins only half pushed in. Shafts not fully in the
-  motor. A wheel pressed against the frame so it rubs. Motor cables swapped between Ports 1 and 6. Cables hanging
-  into the wheels. A controller paired to a different team's Brain.
+  **Check on a real robot:**
+  - How many motors each chassis has. If the 4WD or the 3WD Side Crawler uses more than two motors, decide which
+    ports and device names the extra motors get, and tell the class. The later lessons' code uses two motors only.
+  - How many wheels are driven on the 3WD Side Crawler. Step 2 has students find out by turning the wheels.
+  - That the Brain's built-in Driver Control program drives each chassis sensibly, and which joystick does what.
+  - Which chassis let you move the Brain easily. If one does not, tell those teams to swap wheels instead.
+  - That the spare wheels fit the same shafts without rubbing.
 
-  **Things to check on your own kits.** The exact name and place of the Driver Control program on your Brains, which
-  joystick drives which motor in it, and what a robot with swapped motor cables does. Students are told to ask you
-  about pairing rather than follow written steps.
+  **Expected results.** Bigger wheels usually give a faster straight run. Wheels with rollers turn more easily and
+  are easier to push sideways. Moving the Brain rarely changes a straight-line time much, and "no difference" is a
+  fine result if the test was fair. Time differences under about half a second are within driver error; ask teams
+  whether their three runs agreed with each other before they trust a small difference.
 
-  **Check for understanding.** Ask a team: "Which port is your left motor in? What would the Brain do if you moved it?"
-  Ask an Inspector to show you one thing they caught.
+  **Common trouble.** Left and right mixed up when the robot faces the student. Changing two things at once.
+  A different driver for the second test. Shaft collars left off after a wheel swap. Parts not returned to bins.
+
+  **Check for understanding.** Ask a team: "What does your chassis give up?" and "What stayed the same in your
+  two tests?"
 standards:
   - code: 6-8.CS.a.5
-    how: Teams build a drive base together in roles and show it driving under controller control.
+    how: Pairs choose a chassis for a task, justify the choice, modify it and show it driving under controller control.
   - code: 6-8.CS.a.4
-    how: Students connect the robot's actuators (Smart Motors) and a sensor (Gyro) to its control system (the Brain) and explain why the port matters.
+    how: Students trace each actuator (Smart Motor) to the wheels it drives and to its Smart Port on the control system (the Brain), and explain why the port matters.
   - code: 6-8.CS.a.7
-    how: Students diagnose power, cable and port problems during the smoke test, and inspect the robot against a checklist.
+    how: Students inspect the chassis and diagnose power, cable and port problems when it does not drive as expected.
+  - code: 6-8.CT.d.6
+    how: Students measure a baseline, change one thing, test again the same way and decide from the numbers whether to keep the change.

@@ -1,0 +1,603 @@
+id: brain-song
+title: Brain Song
+tagline: Write your first C++ program and make the Brain play a tune
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 on the real Brain and the arena
+
+mission:
+  big_question: "How does a robot know which note comes next?"
+  goal: |
+    Today you write your **first C++ program**. It makes the Brain show a song title and play a tune.
+    You'll test it in the **simulator**, then download it to a **real Brain**. Then your team writes its
+    own song for the first arena challenge of the season: **Brain Song**.
+  picture:
+    type: flow
+    steps:
+      - {icon: "⌨️", label: "Write C++ here", color: "#2f6bff"}
+      - {icon: "🔊", label: "Hear it in the simulator", color: "#11b39e"}
+      - {icon: "📋", label: "Copy to VEXcode IQ", color: "#9b51e0"}
+      - {icon: "🎵", label: "Play it on the Brain", color: "#33c95a"}
+    caption: Every program in this course follows the same path.
+  you_need:
+    - A partner or team
+    - Headphones, or the volume turned down low (the simulator beeps)
+    - A Brain with a charged battery (your teacher will tell you which one to use)
+    - A USB cable for the Brain
+  learn:
+    - "a program starts at `int main()` and runs **top to bottom**"
+    - "every C++ **statement** ends with a semicolon `;`"
+    - "a **`for` loop** repeats lines so you don't type them again"
+    - "how to move code from the simulator to the real Brain"
+  talk: Sing "Happy Birthday" with the lines in the wrong order. Is it still the same song? Why does the order of notes matter?
+
+build:
+  - part: "Part 1: In the simulator"
+    title: Name that tune
+    say: |
+      A **program** is a list of instructions for a computer. A C++ program for the Brain starts at `int main()`.
+      The Brain runs the lines between `{` and `}`, **one at a time, top to bottom**. Each instruction is a
+      **statement**, and each statement ends with a **semicolon** `;`. Your first statement shows a song title.
+    do:
+      - Find the `// TODO` line in the editor. A line that starts with `//` is a **comment**, a note for people. The Brain skips it.
+      - Under it, type the highlighted line.
+      - Press **Run** and look at the Brain screen under the field.
+    code: |
+      int main() {
+        // TODO: print the song title on the Brain screen
+        Brain.Screen.print("Hot Cross Buns");
+      }
+    new: "3"
+    what: "`Brain.Screen.print` shows whatever is inside the quotation marks. The quotation marks tell C++ these are words to show, not code to run."
+    stuck:
+      - "**An error about a semicolon?** The line must end with `;`."
+      - "**An error about a quote?** The words need a `\"` before and after them."
+      - "**Brain was not declared?** C++ cares about capital letters. It's `Brain.Screen.print`, not `brain.screen.print`."
+    sim:
+      starter: |
+        int main() {
+          // TODO: print the song title on the Brain screen
+
+        }
+      field: {start: {x: 48, y: 50, heading: 0}}
+      checks:
+        - {type: output, pattern: "Hot Cross Buns", message: "The Brain screen says Hot Cross Buns"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+        }
+    ask: What do you think happens if you delete the semicolon? Try it, read the error, then put it back.
+
+  - part: "Part 1: In the simulator"
+    title: Play one note
+    say: |
+      `Brain.playNote` plays one note. It needs **three numbers** inside its parentheses, with commas between them:
+      the **octave** (how high: 1 is low, 3 is high), the **note** (0 to 6), and **how long** in milliseconds.
+      There are 1000 milliseconds in one second, so 400 is a bit less than half a second.
+    do:
+      - Turn your volume down low or put on headphones. The simulator beeps.
+      - Add the highlighted line under your print line.
+      - Press **Run** and listen.
+      - Change the middle number to `0`, then to `6`. Run it each time.
+    code: |
+      int main() {
+        Brain.Screen.print("Hot Cross Buns");
+        Brain.playNote(2, 2, 400);
+      }
+    new: "3"
+    what: |
+      The note numbers are the notes of a scale:
+
+      | Number | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+      |---|---|---|---|---|---|---|---|
+      | **Note** | C | D | E | F | G | A | B |
+
+      So `Brain.playNote(2, 2, 400);` plays an **E** in octave 2 for 400 milliseconds.
+    stuck:
+      - "**No sound?** Check the volume on your Chromebook and that the tab is not muted."
+      - "**An error?** Count the commas. There are two, with a number on each side."
+    sim:
+      starter: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          // TODO: play the note E (note 2) in octave 2 for 400 milliseconds
+
+        }
+      field: {start: {x: 48, y: 50, heading: 0}}
+      checks:
+        - {type: output, pattern: "Hot Cross Buns", message: "The Brain screen still shows the title"}
+        - {type: notes, count: 1, message: "The Brain plays a note"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          Brain.playNote(2, 2, 400);
+        }
+    ask: Change the first number to 1, then to 3. What does the octave number do to the sound?
+
+  - part: "Part 1: In the simulator"
+    title: Three notes and a rest
+    say: |
+      Statements run in **sequence**: the first note finishes before the second note starts.
+      "Hot Cross Buns" begins with three notes going down: **E, D, C**. Then the tune takes a breath.
+      A silent gap in music is called a **rest**. `wait(400, msec);` makes the Brain do nothing for 400 milliseconds.
+    do:
+      - Add the highlighted lines to finish the first phrase. (A **phrase** is a short piece of a tune.)
+      - "Before you press Run, **predict**: will the notes go up or down?"
+      - Press **Run**. You should hear "hot, cross, buns", then a rest.
+    code: |
+      int main() {
+        Brain.Screen.print("Hot Cross Buns");
+        Brain.playNote(2, 2, 400);
+        Brain.playNote(2, 1, 400);
+        Brain.playNote(2, 0, 400);
+        wait(400, msec);
+      }
+    new: "4-6"
+    what: "Three `playNote` statements play E, then D, then C. `wait(400, msec)` is the rest. `msec` is short for milliseconds."
+    tip: "**Watch out:** `wait` always needs units. Write `wait(400, msec);` or `wait(1, seconds);`."
+    sim:
+      starter: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          Brain.playNote(2, 2, 400);
+          // TODO: play D (note 1) for 400 milliseconds
+          // TODO: play C (note 0) for 400 milliseconds
+          // TODO: rest for 400 milliseconds
+        }
+      field: {start: {x: 48, y: 50, heading: 0}}
+      checks:
+        - {type: notes, count: 3, different: 3, message: "The Brain plays three different notes"}
+        - {type: code, pattern: "wait\\s*\\(\\s*\\d+\\s*,\\s*(msec|seconds)\\s*\\)", message: "My program has a rest"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          Brain.playNote(2, 2, 400);
+          Brain.playNote(2, 1, 400);
+          Brain.playNote(2, 0, 400);
+          wait(400, msec);
+        }
+    ask: Swap the D line and the C line and run it. What changed? What does that tell you about the order of statements?
+
+  - part: "Part 1: In the simulator"
+    title: Repeat with a loop
+    say: |
+      The song plays "hot cross buns" **twice**. You could type the same four lines again. Programmers don't.
+      A **`for` loop** repeats the lines inside its curly braces `{ }`. The number after `<` is **how many times**.
+      Here `i` is a counter: it starts at 0 and goes up by 1 on each trip around the loop.
+    do:
+      - Type the `for` line **above** your three notes.
+      - Type a closing `}` **after** the `wait` line.
+      - Press **Tab** in front of the four lines inside the loop, so you can see they belong to it.
+      - Press **Run**. You should hear the phrase two times.
+    code: |
+      int main() {
+        Brain.Screen.print("Hot Cross Buns");
+        for (int i = 0; i < 2; i++) {
+          Brain.playNote(2, 2, 400);
+          Brain.playNote(2, 1, 400);
+          Brain.playNote(2, 0, 400);
+          wait(400, msec);
+        }
+      }
+    new: "3, 8"
+    what: "The loop runs its four lines, then goes back to the top and runs them again. After 2 trips it stops, and the program carries on below the `}`."
+    tip: "**Watch out:** the `for` line has **no** semicolon at the end. It ends with `{`. Every `{` needs a matching `}`."
+    stuck:
+      - "**An error about `}`?** Count your curly braces. There should be two `{` and two `}`."
+      - "**It only plays once?** Check the number after `<`. It should be 2."
+      - "**It plays the title twice?** The print line must be above the `for` line, not inside the loop."
+    sim:
+      starter: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          // TODO: start a for loop here that repeats 2 times
+          Brain.playNote(2, 2, 400);
+          Brain.playNote(2, 1, 400);
+          Brain.playNote(2, 0, 400);
+          wait(400, msec);
+          // TODO: close the loop here with }
+        }
+      field: {start: {x: 48, y: 50, heading: 0}}
+      checks:
+        - {type: code, pattern: "for\\s*\\(", message: "My program uses a for loop"}
+        - {type: notes, count: 6, different: 3, message: "The Brain plays the phrase twice (6 notes)"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          for (int i = 0; i < 2; i++) {
+            Brain.playNote(2, 2, 400);
+            Brain.playNote(2, 1, 400);
+            Brain.playNote(2, 0, 400);
+            wait(400, msec);
+          }
+        }
+    ask: Change the 2 to a 4 and run it. How many notes did you hear? How did you work that out?
+
+  - part: "Part 1: In the simulator"
+    title: Finish the song
+    say: |
+      The middle of the song is quick: **four C notes, then four D notes** ("one a penny, two a penny").
+      Four of the same note is a perfect job for a loop. Then "hot cross buns" comes back one last time.
+      Each loop needs its own `{` and `}`.
+    do:
+      - Under your first loop, add a loop that plays **C** 4 times. Use 200 milliseconds so the notes are quick.
+      - Add a loop that plays **D** 4 times.
+      - Add the last phrase, E, D, C, with no loop.
+      - Press **Run** and listen to the whole song.
+    code: |
+      int main() {
+        Brain.Screen.print("Hot Cross Buns");
+        for (int i = 0; i < 2; i++) {
+          Brain.playNote(2, 2, 400);
+          Brain.playNote(2, 1, 400);
+          Brain.playNote(2, 0, 400);
+          wait(400, msec);
+        }
+        for (int i = 0; i < 4; i++) {
+          Brain.playNote(2, 0, 200);
+        }
+        for (int i = 0; i < 4; i++) {
+          Brain.playNote(2, 1, 200);
+        }
+        Brain.playNote(2, 2, 400);
+        Brain.playNote(2, 1, 400);
+        Brain.playNote(2, 0, 400);
+      }
+    new: "9-17"
+    what: "The whole song is 17 notes, but you only typed 11 `playNote` lines. The loops did the rest."
+    stuck:
+      - "**The song sounds wrong?** Read your code out loud as note names, top to bottom, and compare with the code above."
+      - "**An error about `}`?** Each `for` line needs its own closing `}`. You should have four `{` and four `}`."
+    sim:
+      starter: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          for (int i = 0; i < 2; i++) {
+            Brain.playNote(2, 2, 400);
+            Brain.playNote(2, 1, 400);
+            Brain.playNote(2, 0, 400);
+            wait(400, msec);
+          }
+          // TODO: a loop that plays C (note 0) 4 times, 200 milliseconds each
+
+          // TODO: a loop that plays D (note 1) 4 times, 200 milliseconds each
+
+          // TODO: play E, D, C one last time, 400 milliseconds each
+
+        }
+      field: {start: {x: 48, y: 50, heading: 0}}
+      checks:
+        - {type: output, pattern: "Hot Cross Buns", message: "The Brain screen shows the title"}
+        - {type: notes, count: 17, different: 3, message: "The Brain plays all 17 notes of the song"}
+        - {type: code, pattern: "for\\s*\\([\\s\\S]*for\\s*\\([\\s\\S]*for\\s*\\(", message: "My program uses three for loops"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          for (int i = 0; i < 2; i++) {
+            Brain.playNote(2, 2, 400);
+            Brain.playNote(2, 1, 400);
+            Brain.playNote(2, 0, 400);
+            wait(400, msec);
+          }
+          for (int i = 0; i < 4; i++) {
+            Brain.playNote(2, 0, 200);
+          }
+          for (int i = 0; i < 4; i++) {
+            Brain.playNote(2, 1, 200);
+          }
+          Brain.playNote(2, 2, 400);
+          Brain.playNote(2, 1, 400);
+          Brain.playNote(2, 0, 400);
+        }
+    ask: Without loops, how many playNote lines would this song need? Which way would be easier to change later, and why?
+
+  - part: "Part 2: On the real Brain"
+    title: Start a VEXcode IQ project
+    say: |
+      The simulator is for testing ideas fast. To run code on the **real** Brain you need **VEXcode IQ**, VEX's own app.
+      It opens in its own tab, so you can flip between it and this page. VEXcode needs to know which kind of
+      Brain you have. Ours is the **1st gen** Brain.
+    do:
+      - Click the green **Open VEXcode IQ** button on the right. On a Chromebook, press **Alt + [** in VEXcode and **Alt + ]** here to put them side by side.
+      - In VEXcode IQ, click **File → New Text Project**, then choose **C++**.
+      - Open **Devices**. Next to **IQ Robot Brain**, choose **1st gen**. Click **Done**.
+    picture: {type: shot, name: vx-brain, caption: "In Devices, choose the 1st gen Brain"}
+    tip: "**Good news:** today's program only uses the Brain, so you don't need to add any motors in Devices."
+    test:
+      - VEXcode IQ is open in its own tab
+      - I have a new C++ text project
+      - Devices shows the 1st gen Brain
+
+  - part: "Part 2: On the real Brain"
+    title: Paste your program
+    say: |
+      VEXcode's `main.cpp` starts with a folded line, `#pragma region VEXcode Generated Robot Configuration`.
+      That is VEXcode's own setup code. **Don't delete it.** Your program goes lower down, in place of `int main()`.
+    do:
+      - Your Hot Cross Buns program is in the editor below. Press **Copy for VEXcode**, then **Copy code**.
+      - In VEXcode, select from `int main() {` down to the very bottom of the file.
+      - Paste with **Ctrl + V**.
+    picture: {type: shot, name: vx-paste, caption: "Keep the folded setup block. Paste over int main() and everything below it."}
+    stuck:
+      - "**Lots of errors after pasting?** You probably pasted over the folded setup block. Press Ctrl + Z, then paste again over `int main()` and below only."
+      - "**The editor below is empty or wrong?** Go back to Finish the song, press Run, then come back."
+    sim:
+      carry: true
+      starter: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          for (int i = 0; i < 2; i++) {
+            Brain.playNote(2, 2, 400);
+            Brain.playNote(2, 1, 400);
+            Brain.playNote(2, 0, 400);
+            wait(400, msec);
+          }
+        }
+      field: {start: {x: 48, y: 50, heading: 0}}
+      checks:
+        - {type: notes, count: 6, different: 3, message: "It still plays in the simulator"}
+        - {type: code, pattern: "for\\s*\\(", message: "My program uses a for loop"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Hot Cross Buns");
+          for (int i = 0; i < 2; i++) {
+            Brain.playNote(2, 2, 400);
+            Brain.playNote(2, 1, 400);
+            Brain.playNote(2, 0, 400);
+            wait(400, msec);
+          }
+          for (int i = 0; i < 4; i++) {
+            Brain.playNote(2, 0, 200);
+          }
+          for (int i = 0; i < 4; i++) {
+            Brain.playNote(2, 1, 200);
+          }
+          Brain.playNote(2, 2, 400);
+          Brain.playNote(2, 1, 400);
+          Brain.playNote(2, 0, 400);
+        }
+    test:
+      - My program is pasted into VEXcode under the setup block
+
+  - part: "Part 2: On the real Brain"
+    title: Download and run
+    say: |
+      **Downloading** copies your program from the Chromebook into a **slot** on the Brain.
+      After that the Brain doesn't need the computer. Save the project first, with your team name,
+      so you can find it again.
+    picture: {type: shot, name: vx-save, caption: "Click the project name, type your team name, and click Save"}
+    wiring:
+      - "Turn on the Brain. Plug the USB cable into the **Brain** and the **Chromebook**."
+      - "Wait for the **Brain** icon in VEXcode to show it is connected. If Chrome asks, choose the VEX Brain."
+    do:
+      - Click the project name at the top, name it with your team name, and click **Save**.
+      - Click **Download**. Wait until it finishes.
+      - On the Brain, choose your program and press the check button.
+      - Listen. Does the real Brain sound like the simulator?
+    stuck:
+      - "**VEXcode can't find the Brain?** Check the Brain is on, try the other end of the cable, and close other VEXcode tabs."
+      - "**Nothing happens?** Check the battery is charged and clicked in."
+      - "**The same note played twice sounds like one long note?** Put `wait(50, msec);` after the note inside that loop."
+    test:
+      - The real Brain screen shows the song title
+      - The real Brain played Hot Cross Buns
+    ask: What was different between the simulator's sound and the real Brain's sound?
+
+  - part: "Part 2: On the real Brain"
+    title: Write your team's song
+    say: |
+      Now write the song your team will perform in the arena. Pick a tune the class will **know**,
+      because points depend on it. Use one from the table below, or work out your own by ear.
+      Test in the simulator first. It is much faster than downloading every time.
+    do:
+      - Choose your tune with your team. Print its **title** first.
+      - Type the notes a few at a time. Press **Run** often and listen.
+      - Find a part that repeats and put it in a **`for` loop**.
+      - When all the checks pass, press **Copy for VEXcode**, paste it over `int main()` in VEXcode, and **Download** it to the Brain.
+    what: |
+      Note numbers for some tunes everyone knows. A dash is a rest.
+
+      | Tune | Notes |
+      |---|---|
+      | **Mary Had a Little Lamb** | 2 1 0 1 2 2 2 - 1 1 1 - 2 4 4 - 2 1 0 1 2 2 2 2 1 1 2 1 0 |
+      | **Twinkle, Twinkle, Little Star** | 0 0 4 4 5 5 4 - 3 3 2 2 1 1 0 |
+      | **Ode to Joy** | 2 2 3 4 4 3 2 1 0 0 1 2 2 1 1 |
+
+      Remember: 0 = C, 1 = D, 2 = E, 3 = F, 4 = G, 5 = A, 6 = B. For a note above B, use the next octave up: `Brain.playNote(3, 0, 400);` is a high C.
+    tip: "**Watch out:** the loop must repeat a part that really repeats in the tune, such as the same note three times."
+    stuck:
+      - "**Can't find a part to loop?** Look for the same note two or more times in a row, such as `2 2 2` in Mary Had a Little Lamb."
+      - "**One note sounds wrong?** Run it, count the notes until the wrong one, and count the same number of `playNote` lines."
+    sim:
+      starter: |
+        int main() {
+          // TODO: print your song title on the Brain screen
+
+          // TODO: play your tune. It needs 8 or more notes.
+
+          // TODO: put a part that repeats inside a for loop
+
+        }
+      field: {start: {x: 48, y: 50, heading: 0}}
+      checks:
+        - {type: output, pattern: "[A-Za-z]", message: "The Brain screen shows my song title"}
+        - {type: notes, count: 8, different: 3, message: "My song plays 8 or more notes"}
+        - {type: code, pattern: "for\\s*\\(", message: "My song uses a for loop to repeat a part"}
+      solution: |
+        int main() {
+          Brain.Screen.print("Mary Had a Little Lamb");
+          Brain.playNote(2, 2, 400);
+          Brain.playNote(2, 1, 400);
+          Brain.playNote(2, 0, 400);
+          Brain.playNote(2, 1, 400);
+          for (int i = 0; i < 3; i++) {
+            Brain.playNote(2, 2, 350);
+            wait(50, msec);
+          }
+          wait(400, msec);
+          for (int i = 0; i < 3; i++) {
+            Brain.playNote(2, 1, 350);
+            wait(50, msec);
+          }
+          wait(400, msec);
+          Brain.playNote(2, 2, 400);
+          Brain.playNote(2, 4, 400);
+          Brain.playNote(2, 4, 400);
+        }
+    test:
+      - My team's song is downloaded to the real Brain
+    ask: Which part of your tune did you put in a loop? How many times does it repeat?
+
+  - part: "Part 2: On the real Brain"
+    title: "Arena challenge: Brain Song"
+    say: |
+      This is the first scored challenge of the Rookie Season. Each team runs its song on a **real Brain**
+      for the class. The class tries to **name the tune**. Your teacher will tell you the order of the teams.
+      Be a good crowd: quiet while a Brain plays, and clap for every team.
+    do:
+      - Practice once at your table. Make sure the title shows and the song plays to the end.
+      - When it is your turn, bring your Brain to the front and run your program.
+      - Have your code ready. A judge may ask you to point to your loop.
+      - Add up your points with the scoring guide below.
+      - Write your score in the boxes. Your teacher enters it on the class page.
+    what: |
+      **Scoring guide**
+
+      | What | Points |
+      |---|---|
+      | Plays 8 or more notes | 10 |
+      | The class can name the tune | 10 |
+      | Uses a loop to repeat a part | 5 |
+      | Shows the song title on the screen | 5 |
+      | Crowd favorite | 5 |
+
+      The most a team can score is 35. The class display shows the standings after your teacher enters the scores.
+    tip: "**Watch out:** if the title is on the screen, hide the screen with your hand until the class has guessed!"
+    stuck:
+      - "**The wrong program runs?** Check the slot. Download again and pick your team's name on the Brain."
+      - "**The Brain is too quiet for the room?** Ask the class for silence and hold the Brain up."
+    test:
+      - My team performed our song on a real Brain
+      - We wrote down our score
+    fields: ["Song title", "Our score"]
+    ask: Which line of the scoring guide did your team not get, or find hardest to get? What would you change next time?
+
+quiz:
+  - question: Where does a C++ robot program start running?
+    choices: ["At the top of the file, whatever is there", "At `int main()`", "At the first comment", "At the last line"]
+    answer: 1
+    why: The Brain always starts at `int main()` and runs the statements inside its curly braces, top to bottom.
+  - question: "What is wrong with this line? `Brain.playNote(2, 0, 400)`"
+    choices: ["playNote should be PlayNote", "It has too many numbers", "It is missing a semicolon at the end", "Nothing is wrong"]
+    answer: 2
+    why: Every C++ statement ends with a semicolon.
+  - question: "Which note does `Brain.playNote(2, 4, 500);` play? The notes 0 to 6 are C D E F G A B."
+    choices: ["C", "E", "G", "B"]
+    answer: 2
+    why: "Count from 0: C is 0, D is 1, E is 2, F is 3, G is 4. The middle number is the note."
+  - question: "How many notes does this play?\n\n`for (int i = 0; i < 3; i++) {`\n\n`Brain.playNote(2, 0, 200);`\n\n`Brain.playNote(2, 1, 200);`\n\n`}`"
+    choices: ["2", "3", "5", "6"]
+    answer: 3
+    why: The loop runs 3 times, and each time it plays 2 notes. 3 times 2 is 6.
+  - question: "What does `wait(400, msec);` do in a song?"
+    choices: ["Plays a note for 400 milliseconds", "Makes a silent rest of 400 milliseconds", "Repeats the song 400 times", "Turns the Brain off"]
+    answer: 1
+    why: "`wait` makes the Brain do nothing for that long. In music, a silent gap is called a rest."
+
+ship:
+  note: Your team's song from the last simulator step is turned in with your answers.
+  extensions:
+    - title: Take a bow
+      level: Easier
+      goal: After the last note, make the Brain show a second line on the screen, such as "The End" or your team name.
+      where: At the very end of `int main()`, after your last note.
+      code: |
+        Brain.Screen.newLine();
+        Brain.Screen.print("The End");
+      hints:
+        - "`newLine()` moves to the next line of the screen, so the words don't run into your title."
+        - "Because code runs top to bottom, these lines only run after the song has finished."
+    - title: Encore, but higher
+      level: Medium
+      goal: Play one phrase of your song, then play the same phrase again one octave higher.
+      where: After your song, or in place of a phrase you already have.
+      code: |
+        Brain.playNote(2, 2, 400);
+        Brain.playNote(2, 1, 400);
+        Brain.playNote(2, 0, 400);
+        wait(400, msec);
+        Brain.playNote(3, 2, 400);
+        Brain.playNote(3, 1, 400);
+        Brain.playNote(3, 0, 400);
+      new: "5-7"
+      hints:
+        - "The first number is the octave. Only that number changes."
+        - "Octave 3 is the highest. If your phrase is already in octave 3, drop the first copy to octave 2."
+    - title: Tempo control
+      level: Challenge
+      goal: Make one number at the top of your program set the speed of the whole song, so you can make it faster or slower by changing that one number.
+      where: Put the new line at the top of `int main()`. Then change the lengths of your notes to use it.
+      code: |
+        int beat = 400;
+        Brain.playNote(2, 2, beat);
+        Brain.playNote(2, 1, beat);
+        Brain.playNote(2, 0, beat * 2);
+      new: "1"
+      hints:
+        - "`int beat = 400;` makes a **variable**: a named box that holds a number."
+        - "Use `beat` for a normal note, `beat * 2` for a long note and `beat / 2` for a quick note."
+        - "Change 400 to 250 and run it. The whole song speeds up."
+  reflect:
+    - How did a loop make your song program shorter or easier to change?
+    - What was different between the simulator and the real Brain?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (steps 1-5) in the simulator. Fast finishers can start
+  choosing their team's tune. Day 2: Part 2 (steps 6-9) for about 25 minutes, then the Brain Song arena challenge
+  (about 15 minutes), then the quiz and Ship it. If Day 2 is tight, teams can perform Hot Cross Buns with a new
+  title, but they lose "the class can name the tune" if every team plays the same song, so push for their own.
+
+  **Before class.** Charge batteries. Set out one Brain and one USB cable per team. The Brain can stay on its
+  chassis; no motors are used. Check each Brain's firmware in VEXcode IQ once, so students aren't stopped by an
+  update prompt. Ask for headphones on Day 1, or have all Chromebooks at low volume: 15 simulators beeping is loud.
+
+  **Decide and tell the class.** The lesson says "your teacher will tell you" for: which Brain each team uses,
+  how teams are made, and the order teams perform in. Also decide how **Crowd favorite** is chosen (a show of
+  hands works, with no voting for your own team) and whether one team or several can earn it.
+
+  **Arena scoring.** The scoring guide in step 10 is copied from `rules.ARENA_EVENTS`: 8 or more notes 10,
+  class can name the tune 10, uses a loop 5, title on the screen 5, crowd favorite 5 (35 in all). Have teams hide
+  the screen until the class has guessed. Check the loop by looking at the code. Teams write their score in the
+  step; you enter it on the class page.
+
+  **Check on a real Brain:** `Brain.playNote(octave, note, milliseconds)`. The course uses octave 1-3 and note 0-6
+  (C D E F G A B) with the length in milliseconds. Before class, paste the step 5 solution into a 1st gen C++
+  project and confirm that it compiles, that the three numbers are in this order, and that it sounds like Hot Cross Buns.
+
+  **Check on a real Brain:** whether `playNote` waits for the note to end before the next statement runs.
+  The simulator waits. If the real Brain does not, the notes will pile up, and students need a `wait` of the same
+  length after each note.
+
+  **Check on a real Brain:** whether the same note played twice in a row runs together into one long note.
+  The step 8 "stuck" list suggests `wait(50, msec);` after the note. Also check that the speaker is loud enough
+  for the whole room to hear the performances.
+
+  **Check on a real Brain:** that the song title stays on the screen while the song plays, and that a long title
+  such as "Mary Had a Little Lamb" fits on one line of the 1st gen screen.
+
+  **Common trouble.** Pasting over the folded setup block in `main.cpp` (undo, paste lower). A semicolon after the
+  `for (...)` line, or a missing `}`. Downloading the old program again without pasting the new song first.
+  Tunes chosen from pop songs take too long to work out by ear: steer those teams to the table in step 9.
+  The tunes given (Hot Cross Buns, Mary Had a Little Lamb, Twinkle Twinkle, Ode to Joy) are all in the public domain.
+
+  **Check for understanding.** Ask a pair to read their program aloud as note names, "first E, then D, then C",
+  and to say how many times each loop runs, before they press Run.
+standards:
+  - code: 6-8.CT.d.3
+    how: Students write a program that shows a title and plays a tune, alone in the simulator and as a team for the arena.
+  - code: 6-8.CT.b.1
+    how: Students use for loops to repeat a phrase and to repeat a note, in Hot Cross Buns and in their own song.
+  - code: 6-8.CT.d.5
+    how: Students predict whether notes go up or down before running, and count the notes a loop plays in the quiz.
+  - code: 6-8.CT.d.6
+    how: Students build the song a few notes at a time, running and listening after each change, and fix errors from the messages.
+  - code: 6-8.CS.a.7
+    how: Students diagnose connection, battery and slot problems when downloading to the real Brain.

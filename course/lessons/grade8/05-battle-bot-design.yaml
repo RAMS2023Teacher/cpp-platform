@@ -1,21 +1,21 @@
 id: battle-bot-design
 title: Battle Bot Design
-tagline: Design, build and code a robot that wins a pushing match
+tagline: Add a mechanism to your chassis and code it for the first arena challenge
 minutes: 90          # about two class periods: Part 1 design and build, Part 2 code and test
 
 mission:
   big_question: "What makes one robot able to push another robot out of the ring?"
   goal: |
-    Next lesson is the **Battle Bot Challenge**: robot sumo, with you driving. Today your team turns your drive
-    base into a battle bot. You'll learn what wins a pushing match, read the rules, sketch a design, and build
-    **one** mechanism. Then you'll code controller **buttons** with `if / else` and test your robot against
-    something heavy.
-  picture: {type: vex, names: [plowbot], caption: "A plow on the front turns a drive base into a pusher."}
+    Next lesson is the first **Circuit City Arena** challenge of the Pro Season: the **Battle Bot Challenge**,
+    robot sumo with you driving. Today your team turns your chassis into a battle bot. You'll learn what wins
+    a pushing match, read the rules, and bolt on **one** add-on from the bins. Then you'll code controller
+    **buttons** with `if / else` and test against something heavy.
+  picture: {type: vex, names: [plowbot], caption: "A plow on the front turns a chassis into a pusher."}
   you_need:
-    - Your team and your drive base
+    - Your team and your chassis
     - Your Controller and a USB cable
-    - Extra beams, plates, pins and connectors
-    - One more Smart Motor, if you build a lifter arm
+    - "From the bins: beams, plates, pins and connectors for a wedge or pusher"
+    - "From the bins: one more Smart Motor, if you add an arm"
     - A heavy thing to push, like a stack of 3 textbooks
     - Paper and a pencil
   learn:
@@ -67,27 +67,29 @@ build:
   - part: "Part 1: Design and build"
     title: Know the rules
     say: |
-      Engineers design for the rules. These are the rules of the **Battle Bot Challenge**. Read them before
-      you sketch anything.
+      Engineers design for the rules. The **Battle Bot Challenge** is sumo. You may remember sumo from last
+      year. Two robots start in a **ring**, and each one has a **pillar** to guard. There are two ways to
+      win. Read the rules before you sketch anything.
     do:
-      - "**Start:** two robots start inside a taped circle, the ring."
-      - "**You lose a round if** your robot leaves the ring, or it does not move for 10 seconds."
-      - "**A match** is the best of 3 rounds."
+      - "**Win a match** by pushing the other bot out of the ring, **or** by knocking down its pillar."
+      - "**A tie:** time runs out and nobody has won."
+      - "**Points:** each match won 10, each match tied 5, won by knocking down the pillar 5 more, your mechanism worked in a match 5."
       - "**Allowed:** pushing. **Not allowed:** damaging the other robot, or lifting it off the ground."
-      - "**Size:** your robot must fit inside the size limit your teacher sets. Ask for it and write it down."
+      - "**The ring, the pillars, the match time and the size limit:** your teacher will show you. Write down the size limit."
     test:
       - We read every rule out loud as a team
+      - We know the two ways to win a match
       - We wrote down the size limit
     fields: ["Size limit (from your teacher)"]
-    ask: Which rule will change your design the most? Why?
+    ask: There are two ways to win. Which one will your team design for, and why?
 
   - part: "Part 1: Design and build"
     title: Sketch and choose
     say: |
-      You have time to build **one** mechanism well. Choose a **front wedge or plow** (no motor, hard to break)
-      or a **lifter arm** on a third motor (it raises and lowers a plow, but there is more to build and code).
-      Also think back to Motors and Gears: gearing for **strength** makes you slower, and gearing for
-      **speed** makes you weaker.
+      You have time to add **one** mechanism well. Choose a **wedge** or a **pusher** (a flat plow) on the
+      front: no motor, hard to break. Or choose an **arm** on a third motor: it can reach a pillar, but there
+      is more to build and code. Think back to Motors and Gears too. Every choice is a trade-off, and your
+      chassis has already made some.
     do:
       - Each teammate draws a quick side view of an idea. Two minutes, no talking.
       - Share the sketches. Pick one design, or mix the best parts.
@@ -104,20 +106,21 @@ build:
   - part: "Part 1: Design and build"
     title: Build it
     say: |
-      Build your mechanism onto the drive base. Remember Build the Drive Base: a part held by **one** pin
-      spins. Two pins hold it straight. A **brace** makes a triangle, and a triangle doesn't fold when it is
-      hit. Your battle bot will be hit a lot.
+      Fetch your parts from the bins and build your add-on onto your chassis. Do not take the chassis apart.
+      A part held by **one** pin swings. Two pins hold it straight. A **brace** makes a triangle, and a
+      triangle doesn't fold when it is hit. Your battle bot will be hit a lot.
     wiring:
-      - "Lifter arm teams only: plug the arm's Smart Motor into **Port 10**."
+      - "Arm teams only: plug the arm's Smart Motor into **Port 10**."
       - "Tuck every cable inside the frame so nothing can snag it."
     do:
-      - Build the wedge, plow or arm from your sketch. Keep it low, close to the floor but not dragging.
+      - Build the wedge, pusher or arm from your sketch. Keep it low, close to the floor but not dragging.
       - "Wiggle test: grab the mechanism and shake it gently. Add pins or a brace to anything that moves."
       - Check the size limit with a ruler.
       - Drive it. Make sure the wheels still turn freely and nothing rubs.
+      - Put the parts you did not use back in their bins.
     picture: {type: vex, names: [plowbot], caption: "A plow bot. Your design can look different."}
     stuck:
-      - "**The plow drags on the floor?** Raise it by one hole. It only needs to be lower than the other robot's frame."
+      - "**The pusher drags on the floor?** Raise it by one hole. It only needs to be lower than the other robot's frame."
       - "**The robot tips forward when it stops?** Too much weight is out front. Make the mechanism shorter or move the battery back."
       - "**Too big?** Shorten the mechanism before you remove a brace."
     test:
@@ -484,10 +487,10 @@ quiz:
     choices: ["80", "40", "160", "0"]
     answer: 1
     why: The variable starts at 80. The button is pressed, so the `if` block cuts it in half to 40.
-  - question: In the Battle Bot Challenge, which of these loses you a round?
-    choices: ["Pushing the other robot", "Using a wedge", "Your robot not moving for 10 seconds", "Driving backward"]
+  - question: In the Battle Bot Challenge, which of these wins you a match?
+    choices: ["Driving the fastest lap", "Lifting the other robot off the ground", "Knocking down the other bot's pillar", "Having the biggest robot"]
     answer: 2
-    why: You lose a round by leaving the ring or by not moving for 10 seconds. Pushing and wedges are allowed.
+    why: You win by pushing the other bot out of the ring or by knocking down its pillar. Lifting a robot off the ground is not allowed.
 
 ship:
   turn_in: code
@@ -534,19 +537,26 @@ ship:
 
 teacher_notes: |
   **Pacing (two periods).** Day 1: Mission and Part 1 (grip test, tip test, rules, sketch, build). Building is the
-  long step; teams that don't finish can keep building at the start of Day 2 while one teammate starts the code.
+  long step, but it is an add-on to a ready chassis, not a new robot: aim for 15 minutes. Teams that don't finish
+  can keep building at the start of Day 2 while one teammate starts the code.
   Day 2: Part 2 (three simulator steps, download, push test), then the quiz and Ship it.
 
   **Before class.** Decide the **size limit** and post it (for example, the robot must fit inside a box or a taped
-  square on the table). Set out textbooks for pushing, extra beams and plates, and one extra Smart Motor per team
-  that wants a lifter arm. Robots should still have the Take the Wheel program on the Brain for the grip test.
-  Tape one practice ring on the floor so teams can see how big it is.
+  square on the table). Set out textbooks for pushing, bins of beams and plates, and one extra Smart Motor per team
+  that wants an arm. Robots need the Take the Wheel program on the Brain for the grip test; on a shared robot,
+  teams may have to download it again first. Set up the ring with its two pillars so teams can see them. The
+  lesson does not give a ring size, pillar position or match time: students are told "your teacher will show you".
+  Decide whether add-ons stay on the robots until the challenge or are rebuilt next lesson, and tell the class.
 
-  **The rules.** They are in step 3 so teams design to them: two robots start inside the taped ring; a robot loses
-  the round if it leaves the ring or doesn't move for 10 seconds; best of 3; pushing is allowed, damaging or
-  lifting the other robot off the ground is not; robots must fit your size limit. Decide now what "leaves the
-  ring" means in your room (for example, any wheel fully outside the tape) and whether a lifter arm may tilt an
-  opponent's front edge.
+  **The rules.** They are in step 3 so teams design to them: win by pushing the other bot out of the ring or by
+  knocking down its pillar; a match nobody wins in time is a tie; pushing is allowed, damaging or lifting the other
+  robot off the ground is not; robots must fit your size limit. The points are the Circuit City Arena scoring guide
+  for this event (match won 10, tied 5, won by the pillar +5, mechanism worked in a match +5). Decide now what
+  "out of the ring" means in your room (for example, any wheel fully outside the tape), where each pillar stands,
+  how long a match lasts, and whether an arm may tilt an opponent's front edge.
+
+  **Check on a real robot:** that a wedge or pusher can be pinned to the front of each of the four chassis without
+  removing a brace, and that Port 10 is free on every chassis for ArmMotor.
 
   **Common trouble.** Wedges that drag on the floor or lift the drive wheels (the robot loses its own traction).
   Mechanisms held by one pin. Too much weight in front of the wheels. In code: a missing brace before `else`,
@@ -560,7 +570,7 @@ teacher_notes: |
   sits compared with the drive wheels.
 standards:
   - code: 6-8.CS.a.5
-    how: Teams design, build and demonstrate a battle bot with one mechanism that pushes a heavy object.
+    how: Teams design an add-on for their chassis, build it and demonstrate a battle bot that pushes a heavy object.
   - code: 6-8.CS.a.4
     how: Students use controller buttons as inputs and a third motor as an actuator, linked by the Brain's program.
   - code: 6-8.CT.b.1

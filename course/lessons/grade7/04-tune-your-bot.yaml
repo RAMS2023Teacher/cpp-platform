@@ -1,0 +1,410 @@
+id: tune-your-bot
+title: Tune Your Bot
+tagline: Get more grip, better balance and a slow mode before the bridge
+minutes: 80          # about two class periods: Part 1 in the simulator, Part 2 at the test ramp
+
+mission:
+  big_question: "Why does one robot climb a slope and another slip or tip?"
+  goal: |
+    Next lesson your bot has to climb **The Impossible Bridge**. A bot that slips, tips or goes too fast
+    will not make it. Today you **tune** your chassis. Tuning means making small changes and testing each one.
+    You add a **slow mode** to your driving code. Then you test wheels, weight and balance on a ramp.
+  picture:
+    type: compare
+    items:
+      - {icon: "🛞", title: "Grip", text: "Do the wheels hold the ramp, or do they spin and slide?"}
+      - {icon: "⚖️", title: "Balance", text: "Is the weight low and in the right place, or does the bot tip?"}
+      - {icon: "🐢", title: "Control", text: "Can the driver go slowly enough to stay on course?"}
+    caption: Three things you can tune. Change one at a time.
+  you_need:
+    - A partner
+    - The chassis you picked, its Controller and a USB cable
+    - The wheel and tire bins
+    - The test ramp
+    - A ruler or tape measure, and tape for marking
+  learn:
+    - "a **variable** is a named box that holds a number"
+    - "**traction** is grip between the wheels and the ground"
+    - "the **center of gravity** is the balance point of the robot"
+    - "a **fair test** changes only one thing at a time"
+  talk: You walk up a wet, steep hill in smooth socks, then in sneakers. What changes? What would you do with your body so you do not fall backward?
+
+build:
+  - part: "Part 1: Slow mode in the simulator"
+    title: A variable for speed
+    say: |
+      On a narrow bridge, full speed is too fast. You need a **slow mode**. A **variable** is a named box
+      that holds a number. `int speed = 60;` makes a box named `speed` and puts 60 in it. `int` means the
+      box holds a whole number. Then you **scale** each joystick number: multiply it by `speed` and divide
+      by 100. Now a full push gives 60, not 100.
+    do:
+      - "Type the first highlighted line above the loop. It makes the variable."
+      - "Change both `setVelocity` lines so the stick number is multiplied by `speed` and divided by 100."
+      - "Press **Run**. Hold **W** and the **up arrow**. Drive into the green goal. Does it feel slower?"
+    code: |
+      int main() {
+        int speed = 60;
+        while (true) {
+          LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+          RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+          LeftMotor.spin(forward);
+          RightMotor.spin(forward);
+          wait(20, msec);
+        }
+      }
+    new: "2, 4-5"
+    what: "`*` means multiply and `/` means divide. Stick all the way up is 100. 100 times 60 is 6000. 6000 divided by 100 is **60**. Stick halfway is 50, and 50 times 60 divided by 100 is **30**. The whole stick still works. It is just gentler."
+    tip: "**Watch out:** the `int speed = 60;` line goes **above** `while (true)`. The box is made one time. The loop uses it again and again."
+    stuck:
+      - "**speed was not declared?** The variable line is missing, or it is spelled differently from the word in the loop."
+      - "**Still full speed?** Both `setVelocity` lines need `* speed / 100`."
+    sim:
+      drive: true
+      pilot: [[0, {A: 100, D: 100}], [4.4, {}], [4.9, {}]]
+      starter: |
+        int main() {
+          // TODO: make a variable named speed that holds 60
+
+          while (true) {
+            // TODO: scale each stick number: multiply by speed, divide by 100
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 62, heading: 0}, goal: {x: 48, y: 20, r: 8}}
+      checks:
+        - {type: code, pattern: "int\\s+speed\\s*=\\s*60\\s*;", message: "My program has a variable named speed that holds 60"}
+        - {type: code, pattern: "AxisA\\s*\\.\\s*position\\s*\\(\\s*\\)\\s*\\*\\s*speed\\s*/\\s*100[\\s\\S]*AxisD\\s*\\.\\s*position\\s*\\(\\s*\\)\\s*\\*\\s*speed\\s*/\\s*100", message: "Both stick numbers are scaled by speed"}
+        - {type: reachGoal, message: "I drove into the green goal in slow mode"}
+      solution: |
+        int main() {
+          int speed = 60;
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+            RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    ask: With `speed` at 60, the driver pushes a stick halfway up (50). What number does the motor get? Show how you worked it out.
+
+  - part: "Part 1: Slow mode in the simulator"
+    title: Fast or slow? A fair test
+    say: |
+      Now use your variable to run a **fair test**. In a fair test you change **one thing** and keep
+      everything else the same. Then you know what caused the result. Here the one thing is the number in
+      `speed`. The job: park in the green spot between two walls without touching anything.
+    do:
+      - "Change `speed` to **100**. Press **Run** and try to park. Try three times. Count your bumps."
+      - "Change `speed` to **40**. Try three more times. Count your bumps again."
+      - "Leave `speed` at 50 or less. Park with no bumps to pass."
+    code: |
+      int speed = 40;
+    what: "You changed one number in one place, and the whole program changed. That is why programmers use variables."
+    stuck:
+      - "**You keep hitting the back wall?** Let go of the keys early. The robot stops as soon as you let go."
+      - "**The check will not pass?** The number in `speed` must be 50 or less, and you must reach the green spot with no bumps in the same run."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [6.8, {}], [7.3, {}]]
+      starter: |
+        int main() {
+          int speed = 60;
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+            RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 48, y: 62, heading: 0}
+        walls: [{x: 36, y: 8, w: 4, h: 22}, {x: 56, y: 8, w: 4, h: 22}]
+        goal: {x: 48, y: 18, r: 6}
+      checks:
+        - {type: code, pattern: "int\\s+speed\\s*=\\s*([1-9]|[1-4]\\d|50)\\s*;", message: "My speed variable is 50 or less"}
+        - {type: reachGoal, message: "I parked in the green spot"}
+        - {type: noCollision, message: "I did not bump into anything"}
+      solution: |
+        int main() {
+          int speed = 40;
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+            RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    fields: ["Bumps in 3 tries at speed 100", "Bumps in 3 tries at speed 40"]
+    ask: Slow mode is easier to control. What do you give up when you use it? When would that matter?
+
+  - part: "Part 2: Tune your chassis"
+    title: The first test climb
+    say: |
+      Before you change anything, find out what your chassis does **now**. Engineers call this first result
+      the **baseline**. Every later test gets compared with it. Use the driving program you downloaded in
+      Driver's Ed. Your teacher will show you the test ramp and where to start.
+    do:
+      - Put your bot at the start mark, facing straight up the ramp.
+      - One partner drives slowly up. The other is the **spotter**, with hands ready to catch the bot.
+      - Mark the highest spot the **front wheels** reached with a bit of tape. Measure from the bottom of the ramp.
+      - "Watch closely. Did the wheels **slip** (spin without moving)? Did the bot **tip**? Did the motors **stall** (stop because the job was too hard)?"
+      - Do it 3 times. Write down your best climb.
+    tip: "**Fair test rule:** same ramp, same start mark, same driver, same program, every time. Only the one thing you are testing changes."
+    test:
+      - We did 3 climbs from the same start mark
+      - We wrote down our baseline
+    fields: ["Chassis", "Baseline: how far up (in)", "Slip, tip or stall?"]
+    ask: What stopped your bot from going higher? If it reached the top, what looked the least safe?
+
+  - part: "Part 2: Tune your chassis"
+    title: "Grip: try other wheels"
+    say: |
+      **Traction** is the grip between a wheel and the ground. With good traction the wheel pushes the bot
+      forward. With poor traction the wheel just spins in place. Soft rubber tires grip more than hard, smooth
+      plastic. **Omni wheels** have little rollers so they can slide sideways. That helps turning, but they
+      can slide on a slope too.
+    do:
+      - Look at the wheels on your chassis now. Are they rubber tires, bare plastic or omni wheels?
+      - "Pick **one** change from the wheel bin. For example: rubber tires where there were none, or bigger wheels."
+      - Swap the wheels. Change nothing else.
+      - Run the same 3 climbs from the same start mark. Write down the best one.
+      - "If the change made it worse, put the old wheels back. That is still a useful result."
+    picture: {type: vex, names: [omniwheel], caption: "Omni wheels roll forward and also slide sideways on their small rollers"}
+    tip: "**Watch out:** push each wheel all the way onto its shaft. Both sides of the bot should match, or it will pull to one side."
+    stuck:
+      - "**The bot now curves to one side?** Check that the left and right wheels are the same kind and the same size."
+      - "**A wheel rubs the frame?** Bigger wheels may not fit. Try the next size down."
+    test:
+      - We changed only the wheels
+      - We ran 3 climbs and wrote down the best one
+    fields: ["Wheels before", "Wheels after", "Best climb now (in)"]
+    ask: Did the new wheels beat your baseline? Use your numbers to explain.
+
+  - part: "Part 2: Tune your chassis"
+    title: "Weight: the one-finger test"
+    say: |
+      Weight is not just bad. A wheel grips harder when more weight **presses down on it**. A wheel with
+      almost no weight on it spins and slips. So it matters **where** the weight sits. The wheels that are
+      driven by motors are the **drive wheels**. They need weight on them.
+    do:
+      - "Find your drive wheels. Which wheels are joined to a motor?"
+      - Drive up the ramp to the place where the wheels start to slip. Hold the sticks steady.
+      - "The spotter presses down gently with **one finger** on the frame, right above the drive wheels. Do the wheels grip now?"
+      - "Try again. This time press on the end of the bot that is far from the drive wheels. What happens?"
+      - Keep fingers away from the wheels and gears.
+    what: "Your finger acted like extra weight. If pressing above the drive wheels helped, your bot wants more of its own weight there. The next step shows how to move it."
+    tip: "**Watch out:** more weight everywhere is not the answer. A heavy bot makes the motors work harder on a slope, and they can stall."
+    test:
+      - We pressed above the drive wheels and watched what changed
+      - We pressed on the other end and watched what changed
+    fields: ["Where are the drive wheels? (front, back, all)", "Where did pressing help most?"]
+    ask: Why does a wheel with more weight on it grip better? Use the word traction.
+
+  - part: "Part 2: Tune your chassis"
+    title: "Balance: move the Brain"
+    say: |
+      The **center of gravity** is the balance point of your bot. It is where all the weight seems to sit.
+      The Brain, with its battery, is the heaviest part, so moving the Brain moves the center of gravity.
+      On a slope, a bot with its weight **high** or near the **downhill end** tips over backward. Weight that
+      is **low** and closer to the **uphill end** keeps the wheels down.
+    do:
+      - "Tip test: on the floor, lift the front of your bot slowly with one hand. How high does it go before it wants to fall backward?"
+      - "Move the Brain **one** way: forward, back or lower. Your teacher will show you how it mounts on your chassis."
+      - Do the tip test again. Then run the same 3 climbs. Write down the best one.
+      - Keep the change only if it helped.
+    tip: "**Watch out:** check that the motor cables still reach the Brain, and push each one in until it clicks."
+    stuck:
+      - "**The front wheels lift off the ramp?** The weight is too far back or too high. Move the Brain toward the front, or lower."
+      - "**The drive wheels slip more than before?** You moved weight off them. Try a spot in between."
+    test:
+      - We moved the Brain one way and changed nothing else
+      - We ran 3 climbs and wrote down the best one
+    fields: ["Which way we moved the Brain", "Best climb now (in)", "Tips more, less or the same?"]
+    ask: Where is the best place for the Brain on your chassis for climbing? What did you see that tells you so?
+
+  - part: "Part 2: Tune your chassis"
+    title: Slow mode on the real bot
+    say: |
+      The last thing to tune is the driver's control. Put your slow mode program on the real Brain. Then find
+      the `speed` number that climbs best. Too fast and the bot is hard to steer. Too slow and it may not
+      have enough push to get up the slope.
+    do:
+      - Your slow mode program is in the editor below. Press **Copy for VEXcode**, then **Copy code**.
+      - "In VEXcode IQ, open your Driver's Ed project. Paste over `int main()` and everything below it. Keep the folded device block."
+      - Download it to the Brain. Run 3 climbs.
+      - "Change the `speed` number **in VEXcode**, download again, and run 3 more climbs. Try at least two numbers."
+      - Write down your final setup. You will need it at the bridge.
+    stuck:
+      - "**The bot stops partway up and hums?** The motors have stalled. Use a bigger `speed` number."
+      - "**Devices is empty?** You opened a new project. Open your saved Driver's Ed project, or add LeftMotor, RightMotor and the Controller again."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [6.5, {}], [7, {}]]
+      starter: |
+        int main() {
+          int speed = 40;
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+            RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 62, heading: 0}, goal: {x: 48, y: 20, r: 8}}
+      checks:
+        - {type: code, pattern: "int\\s+speed\\s*=", message: "My program has a speed variable"}
+        - {type: reachGoal, message: "It still drives in the simulator"}
+      solution: |
+        int main() {
+          int speed = 40;
+          while (true) {
+            LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+            RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    test:
+      - Slow mode works on the real bot
+      - We tried at least two speed numbers on the ramp
+    fields: ["Best speed number", "Final wheels", "Final Brain position", "Best climb of the day (in)"]
+    ask: Which one change helped your bot the most today? How do you know it was that change and not something else?
+
+quiz:
+  - question: "What does `int speed = 60;` do?"
+    choices: ["Drives the robot 60 inches", "Makes a variable named speed that holds the number 60", "Waits 60 seconds", "Prints 60 on the Brain screen"]
+    answer: 1
+    why: A variable is a named box that holds a number. `int` means it is a whole number.
+  - question: "`speed` is 50. The driver pushes the stick all the way up (100). What does the motor get?\n\n`LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);`"
+    choices: ["100", "150", "50", "5000"]
+    answer: 2
+    why: 100 times 50 is 5000. 5000 divided by 100 is 50. The motor runs at half speed.
+  - question: Your wheels spin on the ramp but the bot does not move up. What is the problem?
+    choices: ["Not enough traction", "The program has no loop", "The Controller is not connected", "The center of gravity is too low"]
+    answer: 0
+    why: Traction is grip. Without enough grip the wheels spin in place and do not push the bot forward.
+  - question: Your bot tips over backward when it climbs. Which change is most likely to help?
+    choices: ["Move the Brain higher up", "Move the Brain lower and toward the front", "Drive faster", "Take the tires off"]
+    answer: 1
+    why: Weight that is low and near the uphill end keeps the front wheels down, so the bot is harder to tip backward.
+  - question: A team changes the wheels AND moves the Brain, then climbs higher. What is wrong with this test?
+    choices: ["Nothing is wrong", "They cannot tell which change helped", "They should have changed three things", "Climbing higher is bad"]
+    answer: 1
+    why: A fair test changes one thing at a time. With two changes, you do not know which one caused the result.
+
+ship:
+  turn_in: code
+  note: Your slow mode program from the last simulator step is turned in with your answers and your test results.
+  extensions:
+    - title: Show the speed
+      level: Easier
+      goal: Make the Brain screen show your speed number when the program starts, so the team always knows which setup is loaded.
+      where: Right under the `int speed` line, above the loop.
+      code: |
+        int speed = 40;
+        Brain.Screen.print("Speed: %d", speed);
+      new: "2"
+      hints:
+        - "The `%d` is a blank. It is filled with the number in `speed`."
+        - "Change the number in `speed` and run again. The screen changes too."
+    - title: Fix a bot that curves
+      level: Medium
+      goal: Some bots pull to one side with both sticks up. Use two variables, one for each side, and make the faster side a little slower.
+      where: Replace the `int speed` line, and use the new names in the two `setVelocity` lines.
+      code: |
+        int leftSpeed = 40;
+        int rightSpeed = 37;
+        while (true) {
+          LeftMotor.setVelocity(Controller.AxisA.position() * leftSpeed / 100, percent);
+          RightMotor.setVelocity(Controller.AxisD.position() * rightSpeed / 100, percent);
+      new: "1-2, 4-5"
+      hints:
+        - "If the bot curves **left**, the right side is faster. Make `rightSpeed` a little smaller."
+        - "Change the number by 2 or 3 at a time. Test on the floor along a line of tape."
+        - "Check for a rubbing wheel first. Fix the hardware before you fix it in code."
+    - title: Gentle sticks
+      level: Challenge
+      goal: Make the sticks extra gentle near the middle, for tiny moves, but still strong at a full push.
+      where: Inside the loop. Read each stick into a variable, then use the new math in `setVelocity`.
+      code: |
+        int left = Controller.AxisA.position();
+        int right = Controller.AxisD.position();
+        LeftMotor.setVelocity(left * abs(left) / 100 * speed / 100, percent);
+        RightMotor.setVelocity(right * abs(right) / 100 * speed / 100, percent);
+      hints:
+        - "`abs(left)` is the size of the number without its minus sign. `abs(-50)` is 50."
+        - "Work it out for a half push: 50 times 50 is 2500, divided by 100 is 25. Half stick now gives a quarter of the power."
+        - "Work it out for a full push: 100 times 100 divided by 100 is still 100."
+  reflect:
+    - What is your final setup (wheels, Brain position, speed number)? Give one test result that shows it is better than your baseline.
+    - Why is it important to change only one thing between tests?
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission, Part 1 (steps 1-2) in the simulator, then step 3, the baseline climb.
+  The baseline uses the Driver's Ed program that is already on each Brain, so no download is needed on Day 1.
+  Day 2: steps 4-7 (wheels, the one-finger test, the Brain, slow mode on the real bot), then the quiz and Ship it.
+  If time is short, a team can skip either step 4 or step 6, but should do step 7 so slow mode is on the Brain
+  for the bridge.
+
+  **Set out.** The chassis teams picked, with charged batteries and their paired Controllers. USB cables. The
+  wheel and tire bins. Rulers or tape measures and masking tape. One or more **test ramps**. The lesson only says
+  "the test ramp, your teacher will show you": use the bridge's own ramp if teams can get to it in turns, or a
+  board propped on books at about the same slope. With a full class, two or three ramps keep the line short.
+  Put a tape start mark at the bottom of each ramp, and make the ramps the same if you can.
+
+  **What is in the bins.** Step 4 talks about rubber tires, bare plastic wheels, bigger wheels and omni wheels in
+  general terms. Tell the class which of these your bins really hold, and which fit each chassis.
+  **Check on a real robot:** which wheel sizes clear the frame on each of the four chassis, and whether the 3WD
+  Side Crawler's wheels can be swapped at all without changing how it drives.
+
+  **Moving the Brain.** Students are told "your teacher will show you how it mounts". Show one example per chassis
+  type at the start of Day 2: which pins hold the Brain, and one or two other places it can go.
+  **Check on a real robot:** that the motor cables are long enough to reach the Brain in each new position, and
+  that the Brain can go lower on each chassis without rubbing the wheels or the floor.
+
+  **Slow mode numbers.** In the simulator any number works. On real motors a small number may not climb at all.
+  **Check on a real robot:** the lowest `speed` that still gets a bot up your ramp (the lesson suggests trying
+  several, and tells teams a humming, stopped bot needs a bigger number). The scaling line uses whole-number math
+  (`position() * speed / 100`), which is fine in VEXcode C++.
+
+  **The science, briefly.** Going up a slope shifts weight toward the downhill (rear) wheels. A bot with rear drive
+  wheels gains grip but lifts its front more easily. A bot with front drive wheels loses grip as it climbs. The 4WD
+  is the least fussy. Teams do not need this explained; the one-finger test and the tip test let them see it.
+  Different chassis will get different "best" answers, and that is the point.
+
+  **Common trouble.** `int speed` typed inside the loop (works, but move it above so the idea is clear). Only one
+  `setVelocity` line scaled (the bot curves). Wheels not pushed fully onto the shaft. Two changes made at once, so
+  the team cannot say what helped: send them back one step. Teams pasting into a new VEXcode project with no
+  devices: have them open the saved Driver's Ed project.
+
+  **Safety.** A spotter stands at the ramp with hands ready for every climb. Fingers stay away from wheels and
+  gears in the one-finger test: press on the frame. Stop the program before changing wheels or moving the Brain.
+
+  **Clean-up.** With about 30 sections sharing the room, decide whether teams leave their tuned setup on the
+  chassis for next lesson or put the wheels back. If the chassis must be reset, the "final setup" fields in step 7
+  are what lets a team rebuild it quickly at the start of the bridge lesson.
+
+  **Check for understanding.** Ask a pair: "What was your baseline, what did you change, and what happened?" If
+  they name two changes for one result, the test was not fair.
+standards:
+  - code: 6-8.CT.d.4
+    how: Students add a variable and an expression to their loop program to scale joystick numbers into a slow mode.
+  - code: 6-8.CT.b.2
+    how: Students work out the motor speed for given stick and speed numbers, in the build steps and the quiz.
+  - code: 6-8.CS.a.5
+    how: Teams modify a chassis (wheels, Brain position, speed setting) and show that it climbs a ramp better than before.
+  - code: 6-8.CS.a.6
+    how: Students measure ramp climbs with the robot, record the results and use them to choose a final setup.
+  - code: 6-8.CT.d.6
+    how: Students test, change one thing and test again, in the simulator parking test and on the real ramp.
