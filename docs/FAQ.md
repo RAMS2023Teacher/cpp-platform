@@ -25,13 +25,6 @@ the responsibility are his. If something in a lesson is wrong, that is his to fi
 No. There is no chatbot and no AI inside the site. Nothing a student types is sent to an AI while they
 work. Quizzes are checked by simple rules, and programs run in a simulator in the student's own browser.
 
-### Is any student work ever shown to an AI?
-
-Not with names. Students can flag a step as confusing and rate a lesson. The teacher can copy a summary
-of that feedback (counts, ratings and comments, **with names and emails left out**) and give it to
-Claude to help improve a lesson. A comment a student typed is copied as written, so Mr. Perkins reads
-the comments first and removes anything personal.
-
 ### Can other teachers use it?
 
 Yes. The lessons and the code are in a public GitHub repository (RAMS2023Teacher/cpp-platform), with
