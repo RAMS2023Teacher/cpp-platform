@@ -1,0 +1,36 @@
+/* B. Arena: bold competition-robotics look, squared corners, charcoal + red */
+:root { --sky-top:#e9ebee; --sky-mid:#e9ebee; --sky-low:#e9ebee; --panel:#fff; --panel-2:#f4f5f7;
+  --ink:#16181d; --ink-2:#3c424d; --ink-3:#69707d; --outline:#16181d; --line:#cdd1d8;
+  --brand:#d92d20; --brand-edge:#96170e; --brand-soft:#fde8e6; --go:#16181d; --go-edge:#000; --gold:#ffc400; --gold-edge:#b88c00;
+  --radius:6px; --chunk:none; --shadow:4px 4px 0 rgba(22,24,29,.14);
+  --display:'Barlow Condensed', 'Arial Narrow', sans-serif; --body:'Barlow', system-ui, sans-serif; --new-line:#fff1b8; }
+body { font-weight:500; background-image:linear-gradient(rgba(22,24,29,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(22,24,29,.05) 1px, transparent 1px); background-size:48px 48px; }
+h1,h2,h3,.brand,.display,.stage-name { font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+.topbar { background:#16181d; box-shadow:none; border-bottom:5px solid var(--gold); }
+.brand { text-shadow:none; font-size:1.6rem; } .brand-mark { border-radius:4px; border:0; }
+.topbar nav > a { border-radius:4px; font-family:var(--display); font-weight:600; font-size:1.1rem; text-transform:uppercase; letter-spacing:.04em; }
+.topbar nav > a.here { background:var(--brand); }
+.card,.panel,.lesson-card,.class-card,.side-panel { border:2px solid var(--outline); }
+.btn { font-weight:700; font-size:1.15rem; text-transform:uppercase; letter-spacing:.05em; background:var(--brand); border:2px solid var(--outline); border-radius:4px; box-shadow:3px 3px 0 var(--outline); text-shadow:none; }
+.btn:active { transform:translate(3px,3px); box-shadow:none; } .btn.small { box-shadow:2px 2px 0 var(--outline); font-size:1rem; }
+.btn.go,.btn.primary { background:var(--gold); color:var(--ink); } .btn.ghost,.btn.danger { background:#fff; }
+.banner { border:2px solid var(--outline); border-radius:6px; background-image:repeating-linear-gradient(-45deg, rgba(0,0,0,.07) 0 14px, transparent 14px 28px); }
+.banner h1 { text-shadow:none; font-size:2.8rem; } .banner-icon { border-radius:4px; border:2px solid rgba(255,255,255,.8); } .pill { border-radius:3px; border:0; background:rgba(0,0,0,.28); }
+.stage-dot { border:2px solid var(--outline); box-shadow:none; border-radius:6px; } .stage.here .stage-dot { transform:none; } .stage.done .stage-dot { background:var(--ink); }
+.stage-bar { height:4px; border-radius:0; background:var(--line); } .stage-bar.done { background:var(--ink); }
+.step-dots button { border-radius:4px; border:2px solid var(--outline); box-shadow:none; font-weight:700; } .step-dots button.done { background:var(--ink); }
+.panel-soft { border:0; border-left:6px solid var(--outline); border-radius:0 6px 6px 0; box-shadow:none; }
+.box-new { background:#f1f2f4; } .box-what { background:#eef1f5; border-left-color:#3b6fd4; } .box-tip { border-left-color:var(--gold); }
+.box-test { border-left-color:#1a9b53; } .box-stuck { border-left-color:var(--brand); } .box-ask { border:2px dashed var(--outline); border-radius:6px; }
+.code-box,.ide,.ide-code,.ide-field,.ide-brain { border:2px solid var(--outline); box-shadow:none; border-radius:6px; }
+.meter,.xpbar { border-radius:3px; } .meter i { border-radius:0; background:var(--brand); }
+.step-part { color:var(--brand); font-family:var(--display); font-size:1rem; }
+:root { --navy:#16181d; --accent:var(--gold); }
+body.screen-page { background:#16181d; background-image:linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size:48px 48px; }
+.screen-page .screen-head h1 { text-shadow:none; } .screen-page .screen-total, .screen-goal { border-radius:4px; }
+.screen-page .arcade-btn { background:var(--brand); } .screen-page .arcade-btn.on { background:var(--gold); color:var(--ink); }
+.tag, .course-card .tag, .part-tab, .try-controls button, .read-aloud, .map-me span, .ide-focus { border-radius:3px; }
+.arcade-pill { background:var(--gold) !important; color:var(--ink) !important; border-radius:4px; }
+.join-code, .reward-toast, .big-idea { border-radius:6px; } .reward-toast { border:2px solid var(--gold); }
+.ide-focus { background:rgba(22,24,29,.88); }
+.pill-xp, .part-tab, .board-tabs button, .seg button { border-radius:4px !important; }

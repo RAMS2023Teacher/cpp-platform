@@ -147,12 +147,12 @@
         }
         S.parts.forEach((p) => { g.globalAlpha = Math.max(0, p.t / 0.6); g.fillStyle = p.color; g.fillRect(p.x - 4, p.y - 4, 8, 8); });
         g.globalAlpha = 1;
-        g.font = '800 26px Nunito, sans-serif';
+        g.font = '800 26px Barlow, sans-serif';
         S.pops.forEach((p) => { g.globalAlpha = Math.min(1, p.t * 2); g.fillStyle = p.color; g.fillText(p.text, p.x + 60, p.y); });
         g.globalAlpha = 1;
         // HUD
         g.fillStyle = 'rgba(15,23,42,.75)'; g.fillRect(0, 0, W, 54);
-        g.textAlign = 'left'; g.font = '800 26px Nunito, sans-serif';
+        g.textAlign = 'left'; g.font = '800 26px Barlow, sans-serif';
         const left = Math.max(0, Math.ceil(total - S.t));
         g.fillStyle = left <= 5 && S.phase === 'race' ? '#f87171' : '#fff';
         g.fillText('⏱ ' + left + 's', 18, 28);
@@ -160,15 +160,15 @@
         g.fillStyle = '#fff'; g.fillText('🔩 ' + S.bolts, 330, 28);
         g.fillText('🛡️ ' + S.shields, 440, 28);
         g.fillText('🚀 ' + S.dashes + (pw.dash ? '  (Space)' : ''), 540, 28);
-        g.textAlign = 'right'; g.font = '700 18px Nunito, sans-serif'; g.fillStyle = '#cbd5e1';
+        g.textAlign = 'right'; g.font = '700 18px Barlow, sans-serif'; g.fillStyle = '#cbd5e1';
         g.fillText('↑ ↓ switch lanes', W - 16, 28);
         g.textAlign = 'center';
         if (S.phase === 'count') {
           g.fillStyle = 'rgba(15,23,42,.45)'; g.fillRect(0, 54, W, H - 54);
           const n = Math.ceil(S.countT - 0.2);
-          g.font = '400 150px "Lilita One", Nunito, sans-serif'; g.fillStyle = '#facc15';
+          g.font = '400 150px "Barlow Condensed", Barlow, sans-serif'; g.fillStyle = '#facc15';
           g.fillText(n > 0 ? String(n) : 'GO!', W / 2, H / 2 + 10);
-          g.font = '800 26px Nunito, sans-serif'; g.fillStyle = '#fff';
+          g.font = '800 26px Barlow, sans-serif'; g.fillStyle = '#fff';
           g.fillText('Dodge 🐛 👾 🧱 · grab 🔩 · ↑ ↓ to switch lanes' + (pw.dash ? ' · Space to dash' : ''), W / 2, H - 70);
         }
         g.restore();

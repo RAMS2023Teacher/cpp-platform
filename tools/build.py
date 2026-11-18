@@ -159,7 +159,7 @@ def read(path) -> str:
 def build_assets() -> dict:
     # CodeMirror's stylesheet goes first so the theme can restyle the editor. Its comments are dropped:
     # Apps Script strips comment marks out of <style> blocks anyway.
-    styles = re.sub(r"/\*.*?\*/", "", read("vendor/codemirror.css"), flags=re.S) + "\n" + read("css/base.css") + "\n" + read("css/theme.css") + "\n" + read("css/robocode.css")
+    styles = re.sub(r"/\*.*?\*/", "", read("vendor/codemirror.css"), flags=re.S) + "\n" + read("css/base.css") + "\n" + read("css/theme.css") + "\n" + read("css/robocode.css") + "\n" + read("css/arena.css")
     app = "\n".join([
         read("shim.js"), read("lib/avatar.js"), read("lib/rewards.js"), read("lib/visuals.js"), read("lib/screen.js"), read("lib/game.js"),
         "window.__runMap = function () {\n" + read("lib/map.js") + "\n};",

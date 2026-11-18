@@ -256,9 +256,9 @@ var LOADER_SCRIPT_ = '<script>(function(){var t=document.getElementById("ml-code
 
 function json_(v) { return JSON.stringify(v).replace(/</g, '\\u003c'); }
 
-// AppVenture's fonts: Lilita One for headings, Nunito for text (system fonts if Google Fonts is blocked). A <link>, not a
+// The Arena look's fonts: Barlow Condensed for headings, Barlow for text (system fonts if Google Fonts is blocked). A <link>, not a
 // CSS @import, because Apps Script strips "//" inside <style> blocks.
-var FONTS_HTML_ = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;700;800;900&display=swap">';
+var FONTS_HTML_ = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@500;600;700;800&display=swap">';
 
 function render_(me, page) {
   var nav = me.teacher

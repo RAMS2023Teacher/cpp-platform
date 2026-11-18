@@ -17,7 +17,7 @@ so the two can't share a project. The old project and its spreadsheet can stay a
 
 | File | Add it as | Size |
 |---|---|---|
-| `Assets.gs` | Script (+ → Script), name it `Assets` | 220 KB |
+| `Assets.gs` | Script (+ → Script), name it `Assets` | 221 KB |
 | `Code.gs` | Script (+ → Script), name it `Code` | 95 KB |
 | `Data.gs` | Script (+ → Script), name it `Data` | 361 KB |
 
