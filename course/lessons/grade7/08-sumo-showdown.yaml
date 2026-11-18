@@ -1,0 +1,474 @@
+id: sumo-showdown
+title: Sumo Showdown
+tagline: Tune your robot for pushing power, then battle in the ring
+minutes: 80          # about two class periods: Part 1 pushing power, Part 2 the tournament
+
+mission:
+  big_question: "What makes one robot able to push another robot out of the ring?"
+  goal: |
+    This week's arena challenge is **Sumo Showdown**. Two robots meet in a ring. You win by pushing the
+    other bot out, or by knocking down its pillar. Today you find out what gives a robot **pushing power**.
+    You'll run two fair tests, set up your bot for sumo, practice in the simulator, and then play for a score.
+  picture:
+    type: compare
+    items:
+      - {icon: "🐢", title: "Low and heavy", text: "Hard to push and hard to tip. Slow to get around."}
+      - {icon: "🐇", title: "Light and fast", text: "Gets there first and dodges well. Easy to push."}
+    caption: Every sumo robot is a trade-off.
+  you_need:
+    - Your team and your chassis
+    - Your Controller and a charged battery
+    - Wheels, a wedge or a pusher from the bins
+    - The test box and a ruler or tape measure
+    - The sumo ring, when it is your turn
+  learn:
+    - "**torque** is turning strength, and you trade it against **speed**"
+    - "**grip** and **weight** decide how hard a robot can push"
+    - "how to run a **fair test**: change one thing and keep the rest the same"
+  talk: A small, low sumo wrestler sometimes beats a taller one. How could a robot that is not the strongest still win a pushing match?
+
+build:
+  - part: "Part 1: Pushing power"
+    title: Torque or speed
+    say: |
+      **Torque** is turning strength. It is how hard a motor can twist a wheel. **Speed** is how fast the
+      wheel spins. A robot cannot have the most of both. Every robot here has the same motors, so the
+      trade comes from the **wheels**. Small wheels push harder but roll slower. Big wheels roll faster
+      but push with less force. More driven wheels means more motors and tires pushing.
+    do:
+      - Look at your robot. How many of its wheels are turned by a motor? Are the wheels big or small?
+      - Look at the four chassis in the room. Guess which one pushes hardest and which one is fastest.
+      - Write down your guesses. You will test them soon.
+    picture:
+      type: compare
+      items:
+        - {icon: "💪", title: "Torque", text: "Turning strength. More torque means a harder push."}
+        - {icon: "💨", title: "Speed", text: "How fast the wheels spin. More speed means you get there first."}
+    test:
+      - We counted our driven wheels
+      - We wrote down our two guesses
+    fields: ["Our chassis", "We think this chassis pushes hardest", "We think this chassis is fastest"]
+    ask: In sumo, when would speed help you more than torque? Think about the first second of a match.
+
+  - part: "Part 1: Pushing power"
+    title: The push test
+    say: |
+      A wheel can only push as hard as it **grips** the floor. That grip is called **traction**. When the
+      wheels spin but the robot does not move, the grip has run out. Two things add grip: **grippy tires**
+      and more **weight** pressing down on the driven wheels. Test it with a **fair test**: change one thing
+      and keep everything else the same.
+    do:
+      - Your teacher will show you the test box. Put it on a tape line and put your robot right behind it.
+      - Push with both sticks all the way up for 5 seconds. Measure how far the box moved.
+      - "Change **one** thing: swap to grippier wheels, or move the Brain so its weight sits over the driven wheels."
+      - Same box, same line, same 5 seconds. Push again and measure.
+    tip: "**Watch out:** if the motors hum and the wheels do not turn, let go of the sticks. That is called a **stall**. It wastes the battery and heats the motors."
+    test:
+      - We pushed the box for 5 seconds and measured
+      - We changed ONE thing
+      - We pushed again the same way and measured
+    fields: ["Push 1 (in)", "The one thing we changed", "Push 2 (in)"]
+    ask: Did your change help? Use the word grip to explain why or why not.
+
+  - part: "Part 1: Pushing power"
+    title: The tug test
+    say: |
+      The push test showed how your robot moves a box. A **tug test** shows how it does against another
+      **robot**. Two robots are tied back to back. Both drive forward. The one with more grip and torque
+      drags the other one. To keep it fair, both drivers start on "go" and push the sticks all the way.
+    do:
+      - Find a team with a **different** chassis from yours. Your teacher will give you a tug strap or string and show you where to tie it.
+      - Put the robots back to back on the floor with a tape line between them.
+      - "On \"go\", both drivers push both sticks up for 5 seconds. Then stop."
+      - Which robot crossed the line backward? Do it one more time to be sure.
+    tip: "**Safety:** stand back from the strap. Never pull on it with your hands, and keep fingers away from the wheels."
+    test:
+      - We did the tug test against a different chassis
+      - We did it twice
+    fields: ["The other team's chassis", "Which robot won the tug", "Did the wheels slip? Whose?"]
+    ask: Why did the winner win? Use torque, grip or weight in your answer.
+
+  - part: "Part 1: Pushing power"
+    title: Set up your sumo bot
+    say: |
+      Now set up for the ring. **Low and heavy** robots are hard to push and hard to tip. **Light and fast**
+      robots get there first. A **wedge** slides under the other bot and lifts its wheels, so it loses grip.
+      A **pusher** gives you a wide flat front, so the other bot cannot slide off to the side.
+    do:
+      - "Decide as a team: wheels, where the Brain sits, and **one** add-on (a wedge or a pusher)."
+      - Get the parts from the bins and make the changes. Use two or more pins for each part.
+      - "Wiggle test: shake the add-on gently. If it moves, add a pin."
+      - "Tip test: tilt the robot with one finger. If it falls over easily, move heavy parts lower."
+      - Drive it. The wheels must turn freely, and nothing may drag on the floor.
+    picture: {type: vex, names: [plowbot], caption: "A wide pusher on the front. The ones in your bins may look different."}
+    stuck:
+      - "**The wedge drags or lifts your own wheels?** Move it up one hole. If your driven wheels leave the floor, you lose your grip."
+      - "**The robot tips forward when it stops?** Too much weight is in front. Move the Brain back."
+      - "**Still have a claw or arm on?** You may take it off for sumo. Put it back in the right bin."
+    test:
+      - Our add-on passed the wiggle test
+      - Our robot passed the tip test
+      - The robot still drives and nothing drags
+    fields: ["Our wheels", "Where the Brain sits", "Our add-on"]
+    ask: What trade-off did your team make? Name one thing you gained and one thing you gave up.
+
+  - part: "Part 1: Pushing power"
+    title: Careful mode
+    say: |
+      Full speed is hard to control near the edge of the ring. In Tune Your Bot you used an `int` variable
+      called `speed` to slow your robot down. Now let a **button** pick the number with `if / else`.
+      Hold L Down and `speed` is 40. Let go and it is 100.
+    do:
+      - Add the highlighted lines at the top of the loop.
+      - Change the two `setVelocity` lines so each stick is multiplied by `speed` and divided by 100.
+      - "Press **Run**. Hold **Z** (L Down) and drive toward the edge of the ring with **W** and the **up arrow**."
+      - Stop before the middle of your robot crosses the line. Then try it without Z and feel the difference.
+    code: |
+      int main() {
+        int speed = 100;
+        while (true) {
+          if (Controller.ButtonLDown.pressing()) {
+            speed = 40;
+          } else {
+            speed = 100;
+          }
+          LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+          RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+          LeftMotor.spin(forward);
+          RightMotor.spin(forward);
+          wait(20, msec);
+        }
+      }
+    new: "2, 4-10"
+    what: "`* speed / 100` means: take the stick number, multiply it by `speed`, then divide by 100. A full stick is 100. With `speed` at 40, the motor gets 100 × 40 ÷ 100 = 40."
+    tip: "**Watch out:** slowing the wheels does not make your robot push harder. Careful mode is for **aiming** and for staying in the ring."
+    stuck:
+      - "**speed was not declared?** The line `int speed = 100;` must come before the loop."
+      - "**Careful mode does nothing?** Check that both `setVelocity` lines have `* speed / 100`."
+      - "**An error near else?** The `if` block must end with `}` before the word `else`."
+    sim:
+      drive: true
+      pilot: [[0, {A: 100, D: 100, LDown: 1}], [2, {}], [2.5, {}]]
+      starter: |
+        int main() {
+          int speed = 100;
+          while (true) {
+            // TODO: if L Down is pressed, set speed to 40
+            // TODO: else, set speed to 100
+
+            // TODO: multiply each stick by speed, then divide by 100
+            LeftMotor.setVelocity(Controller.AxisA.position(), percent);
+            RightMotor.setVelocity(Controller.AxisD.position(), percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field: {start: {x: 48, y: 36, heading: 0}, ring: {x: 48, y: 36, r: 20}}
+      checks:
+        - {type: code, pattern: "if\\s*\\(\\s*Controller\\.ButtonLDown\\.pressing\\s*\\(\\s*\\)\\s*\\)\\s*\\{\\s*speed\\s*=", message: "L Down changes the speed variable"}
+        - {type: code, pattern: "AxisA\\.position\\s*\\(\\s*\\)\\s*\\*\\s*speed\\s*/\\s*100", message: "The left stick is multiplied by speed and divided by 100"}
+        - {type: drove, inches: 10, message: "I drove at least 10 inches toward the edge"}
+        - {type: stayInRing, message: "The robot stayed inside the ring"}
+      solution: |
+        int main() {
+          int speed = 100;
+          while (true) {
+            if (Controller.ButtonLDown.pressing()) {
+              speed = 40;
+            } else {
+              speed = 100;
+            }
+            LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+            RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    ask: The left stick is all the way up and L Down is held. What number does the left motor get? Show your math.
+
+  - part: "Part 1: Pushing power"
+    title: Ring drill
+    say: |
+      No new code. This is **driver practice** for the ring. The two cubes stand in for the other robot.
+      Push **both** cubes out of the ring, but keep your own robot in. In the simulator you are out when
+      the **middle** of your robot crosses the line.
+    do:
+      - Press **Run**. Drive into the first cube and push it over the line. Then stop and back up.
+      - "Turn toward the second cube. For a turn in place, one stick goes up and the other goes down."
+      - Push the second cube out. Use careful mode (**Z**) when you get close to the edge.
+      - Take turns. The partner who is not driving calls out "edge!" when the robot gets close.
+    stuck:
+      - "**You keep going out?** Let go of the sticks sooner. Only the cube has to cross the line."
+      - "**The cube slid off to the side?** Back up, line up behind it, and push again."
+    sim:
+      drive: true
+      carry: true
+      pilot: [[0, {A: 100, D: 100}], [1.8, {}], [2.0, {A: -100, D: -100}], [3.05, {}], [3.25, {A: 50, D: -50}], [4.035, {}], [4.25, {A: 100, D: 100}], [5.3, {}], [5.8, {}]]
+      starter: |
+        int main() {
+          int speed = 100;
+          while (true) {
+            if (Controller.ButtonLDown.pressing()) {
+              speed = 40;
+            } else {
+              speed = 100;
+            }
+            LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+            RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+      field:
+        start: {x: 48, y: 48, heading: 0}
+        ring: {x: 48, y: 36, r: 22}
+        cubes: [{x: 48, y: 30, color: red}, {x: 60, y: 36, color: blue}]
+      checks:
+        - {type: cubesOutOfRing, message: "Both cubes are out of the ring"}
+        - {type: stayInRing, message: "My robot stayed in the ring"}
+        - {type: code, pattern: "speed\\s*/\\s*100", message: "My program still has careful mode"}
+      solution: |
+        int main() {
+          int speed = 100;
+          while (true) {
+            if (Controller.ButtonLDown.pressing()) {
+              speed = 40;
+            } else {
+              speed = 100;
+            }
+            LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);
+            RightMotor.setVelocity(Controller.AxisD.position() * speed / 100, percent);
+            LeftMotor.spin(forward);
+            RightMotor.spin(forward);
+            wait(20, msec);
+          }
+        }
+    test:
+      - Our program is downloaded to the real Brain, and careful mode works when I hold L Down
+    ask: In a real match the other robot pushes back and moves around. How should you drive differently from this drill?
+
+  - part: "Part 2: The tournament"
+    title: Rules and scoring
+    say: |
+      Here is how Sumo Showdown works. Two robots start inside the ring. Each robot has a **pillar** to
+      protect. You win a match in one of two ways: **push the other bot out of the ring**, or **knock down
+      its pillar**. Your teacher will show you the ring, where the pillars stand, what counts as "out", and
+      how long a match lasts.
+    do:
+      - "**Each match won: 10 points.**"
+      - "**Each match tied: 5 points.** A match is a tie when time runs out and nobody has won."
+      - "**Won by knocking down the pillar: 5 points.** These are added to the 10 points for the win."
+      - "**Allowed:** pushing, wedges and pushers. **Not allowed:** damaging the other robot on purpose."
+      - Read the rules out loud as a team. Ask your teacher about anything that is not clear.
+    picture:
+      type: compare
+      items:
+        - {icon: "⭕", title: "Push it out", text: "Push the other bot out of the ring and you win the match."}
+        - {icon: "🗼", title: "Drop its pillar", text: "Knock down the other bot's pillar and you win the match, with bonus points."}
+    test:
+      - Our team can say the two ways to win a match
+      - We know what counts as out of the ring
+      - We know where our pillar stands and how long a match lasts
+    fields: ["Match time (from your teacher)", "What counts as out"]
+    ask: Will your team go for the push or for the pillar? Why does that fit your robot?
+
+  - part: "Part 2: The tournament"
+    title: Safe and fair
+    say: |
+      Sumo is the roughest challenge of the season, so the safety rules matter most today. Robots push hard
+      and can shoot out of the ring. A team that wins rudely has not really won.
+    do:
+      - "**Hands out of the ring.** Nobody reaches in while a program is running. Not even to save your own robot."
+      - "**Stop on the whistle.** When you hear the whistle or \"stop\", let go of the sticks right away."
+      - "**Stay behind the line** around the ring unless you are placing or picking up your robot."
+      - "**Only drivers touch Controllers.** Pick up your robot with two hands, after the referee says so."
+      - "**The referee's call is final.**"
+      - "**Good sports:** say \"good luck\" before each match and \"good match\" after it, win or lose."
+    test:
+      - We know to keep hands out of the ring
+      - We know to stop on the whistle
+      - We agreed to say good luck and good match
+    ask: What does a good teammate say to a driver who just lost a match?
+
+  - part: "Part 2: The tournament"
+    title: Match time
+    say: |
+      When your team is called, bring your robot and Controller to the ring. Put the robot where the referee
+      shows you and start your program. Hands off until "go". After each match, **write the result down**
+      right away. At the end, add up your score. Your teacher enters it on the site, and the class display
+      shows the standings.
+    do:
+      - Find your matches on the board. While you wait, watch the other robots. Which ones push best, and why?
+      - Play your matches. You may switch drivers between matches.
+      - "Between matches, do a quick check: battery clicked in, cables tucked in, add-on tight, wheels turn freely."
+      - "After your last match, count: matches won, matches tied, and wins by knocking down the pillar."
+      - "Work out your score: wins times 10, plus ties times 5, plus pillar wins times 5. Write it in the box and tell your teacher."
+    stuck:
+      - "**The robot will not move at \"go\"?** Check that the program is running and the Controller is on."
+      - "**It died in the middle of a match?** Check the battery and the motor cables before the next one."
+      - "**The wheels spin but you do not push?** You need more grip. Check that your add-on is not lifting your driven wheels."
+    test:
+      - We played all our matches
+      - We wrote down every result
+      - We worked out our score and told our teacher
+    fields: ["Matches won", "Matches tied", "Wins by knocking down the pillar", "Our score"]
+
+  - part: "Part 2: The tournament"
+    title: Debrief
+    say: |
+      The matches are over. Now think like an engineer about **why** robots won. It was not luck. It was
+      **torque**, **grip**, low **weight**, a good wedge or pusher, and a calm driver.
+    do:
+      - Think of the robot that was hardest to beat. Which chassis and wheels did it have? What add-on?
+      - Look back at your guesses from the first step. Were you right about which chassis pushes hardest?
+      - Tell a team you played one thing you liked about their robot.
+      - Put your add-ons and spare parts back in the right bins.
+    test:
+      - We talked about why the best robot was hard to beat
+      - We checked our guesses from the first step
+      - We told another team one thing we liked about their robot
+    fields: ["The hardest robot to beat, and why", "What we would change first"]
+    ask: Pick torque, grip or weight. Explain how it helped or hurt a robot in a match you saw today.
+
+quiz:
+  - question: What is torque?
+    choices: ["How fast a wheel spins", "Turning strength: how hard a motor can twist a wheel", "The weight of the Brain", "The size of the ring"]
+    answer: 1
+    why: Torque is turning strength. More torque at the wheels means a harder push.
+  - question: In a match, your wheels spin but your robot does not push the other robot. What does your robot need?
+    choices: ["More grip", "A taller frame", "A longer program", "Bigger numbers on the Brain screen"]
+    answer: 0
+    why: Spinning wheels mean the tires are slipping. Grippy tires and more weight over the driven wheels add grip.
+  - question: Which chassis has the most grip and pushing power?
+    choices: ["2WD Lite", "2WD Standard", "3WD Side Crawler", "4WD"]
+    answer: 3
+    why: The 4WD has four driven wheels, so four tires push on the floor. It is slower to turn.
+  - question: "The left stick is at 100 and L Down is held. What speed does the left motor get?\n\n`if (Controller.ButtonLDown.pressing()) {`\n\n`  speed = 40;`\n\n`} else {`\n\n`  speed = 100;`\n\n`}`\n\n`LeftMotor.setVelocity(Controller.AxisA.position() * speed / 100, percent);`"
+    choices: ["100", "40", "140", "0"]
+    answer: 1
+    why: "The button is held, so `speed` is 40. Then 100 × 40 ÷ 100 = 40."
+  - question: "A team wins 2 matches by pushing and ties 1 match. What is its score? (Win: 10. Tie: 5.)"
+    choices: ["15", "20", "25", "30"]
+    answer: 2
+    why: "2 wins times 10 is 20. 1 tie is 5. 20 plus 5 is 25."
+
+ship:
+  turn_in: code
+  note: Your program from the last simulator step is turned in with your test results, your answers and your score.
+  extensions:
+    - title: Robot name on the screen
+      level: Easier
+      goal: Show your robot's sumo name on the Brain screen so the referee knows who is who.
+      where: At the top of `int main()`, above `while (true)`.
+      code: |
+        Brain.Screen.print("Team Bolt");
+        Brain.Screen.newLine();
+        Brain.Screen.print("Robot: Crusher");
+      hints:
+        - "This goes **before** the loop, so it prints only once."
+    - title: Three speeds
+      level: Medium
+      goal: Make normal driving 70, with L Up for full power (100) and L Down for careful mode (40).
+      where: Replace the `if / else` that sets `speed`.
+      code: |
+        if (Controller.ButtonLUp.pressing()) {
+          speed = 100;
+        } else if (Controller.ButtonLDown.pressing()) {
+          speed = 40;
+        } else {
+          speed = 70;
+        }
+      hints:
+        - "Only one block runs. With both buttons held, the first test wins."
+        - "Try other numbers. Which normal speed is easiest to aim with?"
+    - title: Spin move
+      level: Challenge
+      goal: Make the R Up button spin the robot in place at full speed, to shake off a robot that is pushing your side.
+      where: Around the two `setVelocity` lines.
+      hints:
+        - "Use `if (Controller.ButtonRUp.pressing()) { ... } else { ... }`. Your two normal `setVelocity` lines go in the `else` block."
+        - "In the `if` block, set the left motor to 100 percent and the right motor to -100 percent."
+        - "Test it in the simulator first. The **E** key is R Up."
+  reflect:
+    - What gave your robot its pushing power, and what was its biggest weakness?
+    - How was your team a good sport today? Give one example.
+
+teacher_notes: |
+  **Pacing (two periods).** Day 1: Mission and Part 1 (torque and speed, push test, tug test, sumo setup, two
+  simulator steps). The push test, tug test and setup are the long steps; teams that run out of time can do
+  the simulator steps first thing on Day 2 while one teammate downloads the program. Day 2: Part 2 (rules,
+  safety, the tournament, debrief), then the quiz and Ship it.
+
+  **Before class.** Make the **test box**: a box with books or other weight in it that a 2WD Standard can
+  just move. Use the same box, or identical boxes, for every team. Lay tape start lines on the floor. Cut
+  **tug straps** (string or a loop of cord) and decide where they tie on each chassis so nothing bends. Set
+  out wheels, wedges and pushers. Set up the ring and the two pillars, with a spectator line a step back.
+  Charge every battery and have spares. Bring a whistle.
+
+  **Decide and post before Part 2.** The lesson tells students "your teacher will show you" for all of these:
+  the ring and what counts as **out** (for example, any wheel fully outside the line), where each robot's
+  **pillar** stands and what counts as knocked down, the **match time** (60 seconds works; when time runs out
+  with no winner it is a tie), and whether a robot that stops moving loses. Also decide whether a robot may
+  knock down its own pillar by accident and what happens then.
+
+  **Scoring.** The guide is the one in `rules.ARENA_EVENTS`: each match won 10, each match tied 5, won by
+  knocking down the pillar 5. The lesson tells students the pillar 5 is a bonus added to the 10 for the win
+  (so a pillar win is 15). If you score it differently, tell the class before the first match. Teams record
+  wins, ties and pillar wins in the "Match time" step and work out their score. You enter each student's
+  points on the class page and the class display ranks them.
+
+  **Running the tournament with a whole class.** The fairest format is a **round robin in groups** of 3 or
+  4 teams: every team plays every other team in its group once, so every team gets 2 or 3 matches and
+  the same chance to score. Write the groups and match order on the board. With time left, the group winners
+  can play a short **bracket** for the title; do not add bracket matches to the score unless every team plays
+  the same number. With two rings, run two groups at once with a student referee on the second ring. Mix the
+  chassis types across groups so one group is not all 4WD. Waiting teams are timers, line judges and scouts.
+  A match with setup takes about 2 minutes.
+
+  **Fair tests.** Students change one thing between push 1 and push 2. Watch for teams that also change the
+  start spot or the push time. For the tug test, pair different chassis so the class sees a spread of results;
+  ask two or three pairs to report out. Expect the 4WD to win most tugs and the 2WD Lite to lose most.
+
+  **Check on a real robot:** the lesson says small wheels push harder and big wheels roll faster. That is
+  true for the same motor, but check that your bins really have two wheel sizes that fit every chassis. If
+  they do not, tell students to compare tires (grippy against smooth) instead.
+
+  **Check on a real robot:** run the push test and the tug test yourself first. Check that the box is not so
+  heavy that every robot stalls, and that the tug strap does not pull a chassis apart or lift its driven
+  wheels. A stalled Smart Motor gets warm; keep each push to 5 seconds.
+
+  **Check on a real robot:** `Controller.AxisA.position() * speed / 100` uses whole-number math, which works
+  in the simulator. Confirm on a real Brain that careful mode feels right at 40. Some robots need 50 to move
+  at all on your floor.
+
+  **The code.** The sumo program is driving plus careful mode. Teams that keep a motor add-on can paste their
+  button blocks from Claws and Arms under the driving lines in VEXcode. Most sumo robots use a wedge or
+  pusher and need no extra motor.
+
+  **Common trouble.** Wedges that drag or lift the robot's own driven wheels. Add-ons held by one pin.
+  Crossed Controllers: label each Controller and Brain with the team number, and turn on only the two robots
+  in the ring if links get confused. Dead batteries late in the tournament. Robots rebuilt between matches
+  until nothing is tight.
+
+  **Safety.** Hands stay out of the ring while any program runs. Everyone stops on the whistle. Spectators
+  stay behind the line, because robots leave the ring fast and at ankle height. Robots are carried with two
+  hands. Stop a match at once if a robot is being damaged or a part breaks off. No sharp or loose parts.
+
+  **Sportsmanship.** Give a "good sport" shout-out or the Teacher's Pick badge to a team that helps another
+  team fix its robot. Keep the debrief on why robots won, not on who won.
+standards:
+  - code: 6-8.CS.a.5
+    how: Teams set up their robot for pushing and demonstrate it in driver-controlled sumo matches.
+  - code: 6-8.CT.d.6
+    how: Teams run a push test, change one thing, and test again, then compare robots in a tug test.
+  - code: 6-8.CT.b.1
+    how: Students use if / else inside the forever loop so a button picks the robot's speed.
+  - code: 6-8.CT.b.2
+    how: Students predict the motor speed for a given stick position and button press.
+  - code: 6-8.CT.d.4
+    how: The program uses a loop, a conditional, an expression and an int variable (speed).
+  - code: 6-8.CT.e.3
+    how: Students use the simulator to practice pushing objects out of a ring before the real matches.

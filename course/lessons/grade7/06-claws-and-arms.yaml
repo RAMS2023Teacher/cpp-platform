@@ -433,7 +433,7 @@ build:
   - part: "Part 2: At the bench"
     title: Tell VEXcode about it
     say: |
-      VEXcode only knows about parts you list in **Devices**. Open your project from Driver's Ed. It already
+      VEXcode only knows about parts you list in **Devices**. Open your driving project in VEXcode. It already
       has LeftMotor, RightMotor and the Controller. Add your new motor with the **exact** name your code
       uses. Then move your program over and download it.
     do:
